@@ -5,9 +5,9 @@ import React, {
   useEffect,
   useMemo,
   useState,
-} from "react";
-import axiosClient from "../axios-client";
-import { getFromLS, setToLS } from "@/utils/storage";
+} from 'react';
+import axiosClient from '../axios-client';
+import { getFromLS, setToLS } from '@/utils/storage';
 
 const baseUrl = `https://boulder-problem.chabs.fr`;
 
@@ -15,12 +15,14 @@ interface AuthContextType {
   // We defined the user type in `index.d.ts`, but it's
   // a simple object with email, name and password.
   user?: User;
+  users?: Array<User>;
   token: string;
   loading: boolean;
   error?: any;
   login: (email: string, password: string) => void;
   signUp: (email: string, name: string, password: string) => void;
   logout: () => void;
+  getUsers: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -32,7 +34,8 @@ export function AuthProvider({
   children: ReactNode;
 }): JSX.Element {
   const [user, setUser] = useState<User>();
-  const [token, setToken] = useState<string>("");
+  const [users, setUsers] = useState<Array<User>>();
+  const [token, setToken] = useState<string>('');
   const [error, setError] = useState<any>();
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingInitial, setLoadingInitial] = useState<boolean>(true);
@@ -58,10 +61,9 @@ export function AuthProvider({
       .get(`${baseUrl}/user`)
       .then((user) => {
         setUser(user.data[0]);
-        console.log(user.data[0]);
       })
       .catch((_error) => {
-        console.log("error");
+        console.log('error');
       })
       .finally(() => setLoadingInitial(false));
   }, []);
@@ -81,13 +83,11 @@ export function AuthProvider({
     axiosClient
       .post(`${baseUrl}/login`, { email, password })
       .then((loginData) => {
-        console.log(loginData.data.token);
-        localStorage.setItem("ACCESS_TOKEN", loginData.data.token);
+        localStorage.setItem('ACCESS_TOKEN', loginData.data.token);
 
         setToken(loginData.data.token);
         axiosClient.get(`${baseUrl}/user`).then((user) => {
           setUser(user.data[0]);
-          console.log(user.data[0]);
         });
         // navigate("/", { replace: true });
       })
@@ -116,9 +116,28 @@ export function AuthProvider({
   // from the state.
   function logout() {
     axiosClient.get(`${baseUrl}/logout`).then(() => {
-      localStorage.removeItem("ACCESS_TOKEN");
+      localStorage.removeItem('ACCESS_TOKEN');
       setUser(null);
     });
+  }
+
+  function getUsers() {
+    setLoading(true);
+    setError(undefined);
+
+    console.log('bc');
+
+    axiosClient
+      .get(`${baseUrl}/users`)
+      .then((user) => {
+        console.log(user);
+
+        setUsers(user.data);
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
   }
 
   // Make the provider update only when it should.
@@ -133,14 +152,16 @@ export function AuthProvider({
   const memoedValue = useMemo(
     () => ({
       user,
+      users,
       token,
       loading,
       error,
       login,
       signUp,
       logout,
+      getUsers,
     }),
-    [user, token, loading, error]
+    [user, users, token, loading, error]
   );
 
   // We only want to render the underlying app after we

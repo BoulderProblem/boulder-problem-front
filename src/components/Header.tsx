@@ -1,8 +1,7 @@
-"use client";
+'use client';
 
-import * as React from "react";
+import * as React from 'react';
 
-import { cn } from "@/lib/utils";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -10,65 +9,62 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
-import { Link } from "react-router-dom";
-import { getFromLS, setToLS } from "@/utils/storage";
-import useAuth from "@/services/useAuth";
-import { AuthImage } from "react-auth-image";
+} from '@/components/ui/navigation-menu';
+import { Link } from 'react-router-dom';
+import { getFromLS, setToLS } from '@/utils/storage';
+import useAuth from '@/services/useAuth';
+import { AuthImage } from 'react-auth-image';
 
 const components: { title: string; href: string; description: string }[] = [
   {
-    title: "Alert Dialog",
-    href: "/docs/primitives/alert-dialog",
+    title: 'Alert Dialog',
+    href: '/docs/primitives/alert-dialog',
     description:
-      "A modal dialog that interrupts the user with important content and expects a response.",
+      'A modal dialog that interrupts the user with important content and expects a response.',
   },
   {
-    title: "Hover Card",
-    href: "/docs/primitives/hover-card",
+    title: 'Hover Card',
+    href: '/docs/primitives/hover-card',
     description:
-      "For sighted users to preview content available behind a link.",
+      'For sighted users to preview content available behind a link.',
   },
   {
-    title: "Progress",
-    href: "/docs/primitives/progress",
+    title: 'Progress',
+    href: '/docs/primitives/progress',
     description:
-      "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
+      'Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.',
   },
   {
-    title: "Scroll-area",
-    href: "/docs/primitives/scroll-area",
-    description: "Visually or semantically separates content.",
+    title: 'Scroll-area',
+    href: '/docs/primitives/scroll-area',
+    description: 'Visually or semantically separates content.',
   },
   {
-    title: "Tabs",
-    href: "/docs/primitives/tabs",
+    title: 'Tabs',
+    href: '/docs/primitives/tabs',
     description:
-      "A set of layered sections of content—known as tab panels—that are displayed one at a time.",
+      'A set of layered sections of content—known as tab panels—that are displayed one at a time.',
   },
   {
-    title: "Tooltip",
-    href: "/docs/primitives/tooltip",
+    title: 'Tooltip',
+    href: '/docs/primitives/tooltip',
     description:
-      "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
+      'A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.',
   },
 ];
 
 function Header({ stateChanger }) {
   const { user, token, logout } = useAuth();
   const [isBlack, setIsBlack] = React.useState(
-    JSON.parse(getFromLS("theme") ? getFromLS("theme") : false)
+    JSON.parse(getFromLS('theme') ? getFromLS('theme') : false)
   );
   const checkHandler = () => {
     setIsBlack(!isBlack);
     stateChanger(!isBlack);
-    setToLS("theme", JSON.stringify(!isBlack));
+    setToLS('theme', JSON.stringify(!isBlack));
   };
 
-  React.useEffect(() => {
-    console.log("a");
-  });
+  React.useEffect(() => {});
   return (
     <div className="navbar bg-base-300">
       <div className="navbar-start">
@@ -138,18 +134,13 @@ function Header({ stateChanger }) {
                       </a>
                     </NavigationMenuLink>
                   </li>
-                  <ListItem href="/docs" title="Introduction">
-                    Re-usable components built using Radix UI and Tailwind CSS.
-                  </ListItem>
-                  <ListItem href="/docs/installation" title="Installation">
-                    How to install dependencies and structure your app.
-                  </ListItem>
-                  <ListItem
-                    href="/docs/primitives/typography"
-                    title="Typography"
-                  >
+                  <Item href="/users" title="Users">
+                    Liste de tous les utilisateurs
+                  </Item>
+                  <Item href="/docs/installation" title="Installation"></Item>
+                  <Item href="/docs/primitives/typography" title="Typography">
                     Styles for headings, paragraphs, lists...etc
-                  </ListItem>
+                  </Item>
                 </ul>
               </NavigationMenuContent>
             </NavigationMenuItem>
@@ -158,13 +149,13 @@ function Header({ stateChanger }) {
               <NavigationMenuContent>
                 <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
                   {components.map((component) => (
-                    <ListItem
+                    <Item
                       key={component.title}
                       title={component.title}
                       href={component.href}
                     >
                       {component.description}
-                    </ListItem>
+                    </Item>
                   ))}
                 </ul>
               </NavigationMenuContent>
@@ -200,9 +191,9 @@ function Header({ stateChanger }) {
                 <div className="w-10 rounded-full">
                   <AuthImage
                     src={
-                      "https://boulder-problem.chabs.fr/users/" +
+                      'https://boulder-problem.chabs.fr/users/' +
                       user.id +
-                      "/avatar/" +
+                      '/avatar/' +
                       user.avatar
                     }
                     token={token}
@@ -267,28 +258,20 @@ function Header({ stateChanger }) {
 
 export default Header; // Don’t forget to use export default!
 
-const ListItem = React.forwardRef<
-  React.ElementRef<"a">,
-  React.ComponentPropsWithoutRef<"a">
->(({ className, title, children, ...props }, ref) => {
+function Item(props: any) {
   return (
     <li>
-      <NavigationMenuLink asChild>
-        <a
-          ref={ref}
-          className={cn(
-            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-            className
-          )}
-          {...props}
-        >
-          <div className="text-sm font-medium leading-none">{title}</div>
+      <NavigationMenuLink
+        className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+        asChild
+      >
+        <Link to={props.href || '/'}>
+          <div className="text-sm font-medium leading-none">{props.title}</div>
           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-            {children}
+            {props.children}
           </p>
-        </a>
+        </Link>
       </NavigationMenuLink>
     </li>
   );
-});
-ListItem.displayName = "ListItem";
+}
