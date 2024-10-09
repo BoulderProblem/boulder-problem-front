@@ -1,26 +1,26 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App.tsx';
-import './index.css';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Page2 from './pages/page2.tsx';
-import Page1 from './pages/page1.tsx';
-import Index from './pages/index.tsx';
-import Page_404 from './pages/Page_404.tsx';
-import Login from './pages/login.tsx';
-import { ProtectedRoute } from './components/ProtectedRoute.tsx';
-import { AuthProvider } from './services/useAuth.tsx';
-import { UnProtectedRoute } from './components/UnProtectedRoute.tsx';
-import Users from './pages/users.tsx';
-import { UserProvider } from './services/useUser.tsx';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.tsx";
+import "./index.css";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Index from "./pages/index.tsx";
+import Page_404 from "./pages/Page_404.tsx";
+import Login from "./pages/login.tsx";
+import { ProtectedRoute } from "./components/ProtectedRoute.tsx";
+import { AuthProvider } from "./services/useAuth.tsx";
+import { PlacesProvider } from "./services/usePlaces.tsx";
+import { UnProtectedRoute } from "./components/UnProtectedRoute.tsx";
+import Users from "./pages/users.tsx";
+import Places from "./pages/places.tsx";
+import PlaceId from "./pages/placeId.tsx";
 
 const route = [
   {
-    path: '/',
+    path: "/",
     element: <App />,
     children: [
       {
-        path: '/',
+        path: "/",
         element: (
           <ProtectedRoute>
             <Index />
@@ -28,35 +28,54 @@ const route = [
         ),
       },
       {
-        path: '/login',
+        path: "/users",
         element: (
-          <UnProtectedRoute>
-            <Login />
-          </UnProtectedRoute>
+          <ProtectedRoute>
+            <Users />
+          </ProtectedRoute>
         ),
       },
       {
-        path: '/users',
-        element: <Users />,
+        path: "/places",
+        element: (
+          <ProtectedRoute>
+            <Places />
+          </ProtectedRoute>
+        ),
       },
       {
-        path: '/page2',
-        element: <Page2 />,
+        path: "/places/:id",
+        element: (
+          <ProtectedRoute>
+            <PlaceId />
+          </ProtectedRoute>
+        ),
       },
+
       {
-        path: '*',
+        path: "*",
         element: <Page_404 />,
       },
     ],
+  },
+  {
+    path: "/login",
+    element: (
+      <UnProtectedRoute>
+        <Login />
+      </UnProtectedRoute>
+    ),
   },
 ];
 
 const router = createBrowserRouter(route);
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <AuthProvider>
-      <RouterProvider router={router} />
+      <PlacesProvider>
+        <RouterProvider router={router} />
+      </PlacesProvider>
     </AuthProvider>
   </React.StrictMode>
 );

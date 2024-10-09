@@ -1,0 +1,331 @@
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import axiosClient from "../axios-client";
+
+const baseUrl = `http://127.0.0.1:3333`;
+
+interface PlacesContextType {
+  // We defined the user type in `index.d.ts`, but it's
+  // a simple object with email, name and password.
+  colors: any;
+  difficulties: any;
+  places?: any;
+  zones?: any;
+  walls: any[];
+  ways?: any[];
+  place?: any;
+  loading: boolean;
+  error?: any;
+  getPlaces: (search: string, page: number | string) => void;
+  getPlace: (id: number | string) => Promise<any>;
+  getPlaceZones: (id: number | string) => Promise<any>;
+  updatePlace: (id: number | string, params: any) => Promise<any>;
+  getPlan: (id: number | string) => Promise<any>;
+  updateZone: (id: string, params: any) => Promise<any>;
+  createWall: (zone_id: string, name: string) => Promise<any>;
+  getWalls: (id: number | string) => Promise<any>;
+  getWays: (id: number | string) => Promise<any>;
+  getWay: (id: number | string) => Promise<any>;
+  addWay: (params: any) => Promise<any>;
+  updateWay: (id: number | string, params: any) => void;
+  deleteWay: (id: number | string, wallId: number | string) => void;
+}
+
+const PlacesContext = createContext<PlacesContextType>({} as PlacesContextType);
+
+// Export the provider as we need to wrap the entire app with it
+export function PlacesProvider({
+  children,
+}: {
+  children: ReactNode;
+}): JSX.Element {
+  const [colors, setColors] = useState<any>();
+  const [difficulties, setDifficulties] = useState<any>();
+  const [places, setPlaces] = useState<any>();
+  const [place, setPlace] = useState<any>();
+  const [zones, setPlaceZones] = useState<any>();
+  const [walls, setWalls] = useState<any>([]);
+  const [ways, setWays] = useState<any>([]);
+  const [error, setError] = useState<any>();
+  const [loading, setLoading] = useState<boolean>(false);
+  // We are using `react-router` for this example,
+  // but feel free to omit this or use the
+  // router of your choice.
+  //   const location = useLocation();
+
+  // Reset the error state if we change page
+  useEffect(() => {
+    if (error) setError(undefined);
+  }, [location.pathname]);
+
+  // Check if there is a currently active session
+  // when the provider is mounted for the first time.
+  //
+  // If there is an error, it means there is no session.
+  //
+  // Finally, just signal the component that the initial load
+  // is over.
+  useEffect(() => {
+    // set color and difficulty
+    getColors();
+    getDifficulties();
+  }, []);
+
+  // Flags the component loading state and posts the login
+  // data to the server.
+  //
+  // An error means that the email/password combination is
+  // not valid.
+  //
+  // Finally, just signal the component that loading the
+  // loading state is over.
+  function getDifficulties() {
+    axiosClient
+      .get(`${baseUrl}/difficulties`)
+      .then((response) => {
+        setDifficulties(response.data);
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
+  function getColors() {
+    axiosClient
+      .get(`${baseUrl}/colors`)
+      .then((response) => {
+        setColors(response.data);
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
+  function getPlaces(search: string, page: number | string) {
+    axiosClient
+      .get(`${baseUrl}/places?search=${search}&page=${page}`)
+      .then((response) => {
+        setPlaces(response.data);
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
+  async function getPlace(id: number | string) {
+    let place;
+    await axiosClient
+      .get(`${baseUrl}/places/${id}`)
+      .then((response) => {
+        setPlace(response.data);
+        place = response.data;
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+    return place;
+  }
+
+  async function getPlaceZones(id: number | string) {
+    await axiosClient
+      .get(`${baseUrl}/places/${id}/zones`)
+      .then((response) => {
+        setPlaceZones(response.data);
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
+  async function updatePlace(id: number | string, params: any) {
+    let place;
+    await axiosClient
+      .put(`${baseUrl}/places/${id}`, params)
+      .then((response) => {
+        place = response.data;
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+    return place;
+  }
+
+  async function updateZone(id: string, params: any) {
+    let place;
+    await axiosClient
+      .put(`${baseUrl}/zones/${id}`, params)
+      .then((response) => {
+        place = response.data;
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+    return place;
+  }
+
+  async function getPlan(id: number | string) {
+    let plan;
+    await axiosClient
+      .get(`${baseUrl}/zones/${id}/plan`)
+      .then((response) => {
+        plan = response.data;
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+    return plan;
+  }
+
+  async function createWall(zone_id: string, name: string) {
+    let wall;
+    await axiosClient
+      .post(`${baseUrl}/walls`, { zone_id, name })
+      .then((response) => {
+        wall = response.data;
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+    return wall;
+  }
+
+  function getWalls(id: number | string) {
+    axiosClient
+      .get(`${baseUrl}/zones/${id}/walls`)
+      .then((response) => {
+        setWalls(response.data);
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
+  function getWays(id: number | string) {
+    axiosClient
+      .get(`${baseUrl}/walls/${id}/ways`)
+      .then((response) => {
+        setWays(response.data);
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
+  async function getWay(id: number | string) {
+    let way;
+    await axiosClient
+      .get(`${baseUrl}/ways/${id}`)
+      .then((response) => {
+        way = response.data;
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+    return way;
+  }
+
+  function addWay(params: any) {
+    axiosClient
+      .post(`${baseUrl}/ways`, params)
+      .then((response) => {
+        getWays(params.wallId);
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
+  function updateWay(id: number | string, params: any) {
+    axiosClient
+      .put(`${baseUrl}/ways/${id}`, params)
+      .then((response) => {
+        getWays(params.wallId);
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
+  function deleteWay(id: number | string, wallId: number | string) {
+    axiosClient
+      .delete(`${baseUrl}/ways/${id}`)
+      .then((response) => {
+        getWays(wallId);
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
+  // Make the provider update only when it should.
+  // We only want to force re-renders if the user,
+  // loading or error states change.
+  //
+  // Whenever the `value` passed into a provider changes,
+  // the whole tree under the provider re-renders, and
+  // that can be very costly! Even in this case, where
+  // you only get re-renders when logging in and out
+  // we want to keep things very performant.
+  const memoedValue = useMemo(
+    () => ({
+      colors,
+      difficulties,
+      places,
+      place,
+      zones,
+      walls,
+      ways,
+      loading,
+      error,
+      getPlaces,
+      getPlace,
+      updatePlace,
+      getPlaceZones,
+      getPlan,
+      createWall,
+      updateZone,
+      getWalls,
+      getWays,
+      getWay,
+      addWay,
+      updateWay,
+      deleteWay,
+    }),
+    [colors, difficulties, places, place, zones, walls, ways, loading, error]
+  );
+
+  // We only want to render the underlying app after we
+  // assert for the presence of a current user.
+  return (
+    <PlacesContext.Provider value={memoedValue}>
+      {children}
+    </PlacesContext.Provider>
+  );
+}
+
+// Let's only export the `usePlaces` hook instead of the context.
+// We only want to use the hook directly and never the context component.
+export default function usePlaces() {
+  return useContext(PlacesContext);
+}

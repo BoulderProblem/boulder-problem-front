@@ -1,7 +1,7 @@
-import Roles from '@/enums/role';
-import useAuth from '@/services/useAuth';
-import { useEffect } from 'react';
-import { AuthImage } from 'react-auth-image';
+import Roles from "@/enums/role";
+import useAuth from "@/services/useAuth";
+import { useEffect } from "react";
+import ImageWithToken from "react-image-with-auth";
 
 const Users = () => {
   const { users, loading, token, getUsers } = useAuth();
@@ -33,14 +33,16 @@ const Users = () => {
                       <div className="avatar">
                         <div className="mask mask-circle h-12 w-12">
                           {user.avatar ? (
-                            <AuthImage
-                              src={
-                                'https://boulder-problem.chabs.fr/users/' +
+                            <ImageWithToken
+                              imageUrl={
+                                "http://127.0.0.1:3333/users/" +
                                 user.id +
-                                '/avatar/' +
-                                user.avatar
+                                "/avatar/" +
+                                user.avatar +
+                                "?size=50"
                               }
                               token={token}
+                              alt="avatar"
                             />
                           ) : (
                             <svg

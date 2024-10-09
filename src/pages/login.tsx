@@ -1,5 +1,14 @@
 import React, { FormEvent, useState } from "react";
 import useAuth from "../services/useAuth";
+import {
+  InputLabel,
+  Input,
+  TextField,
+  InputAdornment,
+  IconButton,
+} from "@mui/material";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 const Login = () => {
   const { login, loading, error } = useAuth();
@@ -8,7 +17,21 @@ const Login = () => {
   const [password, setPassword] = useState(
     localStorage.getItem("login-email") || ""
   );
-  // const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleMouseDownPassword = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+  };
+
+  const handleMouseUpPassword = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+  };
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -30,34 +53,40 @@ const Login = () => {
               Connectez vous
             </h1>
             <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
-              <div>
-                <label className="block mb-2 text-sm font-medium">
-                  Votre email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  id="email"
-                  className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                  placeholder="name@company.com"
-                  onChange={(e) => setEmail(e.target.value)}
-                  value={email}
-                />
-              </div>
-              <div>
-                <label className="block mb-2 text-sm font-medium">
-                  Mot de passe
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  id="password"
-                  placeholder="••••••••"
-                  onChange={(e) => setPassword(e.target.value)}
-                  value={password}
-                  className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                />
-              </div>
+              <TextField
+                id="standard-basic"
+                label="Votre email"
+                fullWidth
+                variant="standard"
+                name="email"
+                type="email"
+                onChange={(e) => setEmail(e.target.value)}
+                value={email}
+              />
+              <InputLabel htmlFor="standard-adornment-password">
+                Mot de passe
+              </InputLabel>
+              <Input
+                id="standard-adornment-password"
+                fullWidth
+                variant="standard"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                onChange={(e) => setPassword(e.target.value)}
+                value={password}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                      onMouseUp={handleMouseUpPassword}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                }
+              />
               <div className="flex items-center justify-between">
                 <a
                   href="#"
