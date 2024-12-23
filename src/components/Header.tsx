@@ -10,7 +10,7 @@ import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 
-function Header({ stateChanger }) {
+function Header({ stateChanger }: any) {
   const { user, token, logout } = useAuth();
   const [isBlack, setIsBlack] = React.useState(
     JSON.parse(getFromLS("theme") ? getFromLS("theme") : false)
@@ -49,6 +49,7 @@ function Header({ stateChanger }) {
             aria-controls={open ? "basic-menu" : undefined}
             aria-haspopup="true"
             aria-expanded={open ? "true" : undefined}
+            aria-label="menu"
             onClick={handleClick}
           >
             <svg
@@ -122,7 +123,7 @@ function Header({ stateChanger }) {
                 <div className="w-10 rounded-full">
                   <ImageWithToken
                     imageUrl={
-                      "http://127.0.0.1:3333/users/" +
+                      "https://boulder-problem.chabs.fr/api/users/" +
                       user.id +
                       "/avatar/" +
                       user.avatar +
@@ -145,7 +146,7 @@ function Header({ stateChanger }) {
             >
               <MenuItem
                 component={Link}
-                to="/users"
+                to={"/users/" + user.id}
                 onClick={handleCloseProfile}
               >
                 Profile

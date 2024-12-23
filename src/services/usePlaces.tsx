@@ -1,4 +1,4 @@
-import React, {
+import {
   createContext,
   ReactNode,
   useContext,
@@ -7,21 +7,25 @@ import React, {
   useState,
 } from "react";
 import axiosClient from "../axios-client";
+import { WAY } from "@/types/way";
+import { PLACE } from "@/types/place";
 
-const baseUrl = `http://127.0.0.1:3333`;
+const baseUrl = `https://boulder-problem.chabs.fr/api`;
 
 interface PlacesContextType {
   // We defined the user type in `index.d.ts`, but it's
   // a simple object with email, name and password.
   colors: any;
   difficulties: any;
-  places?: any;
+  places?: { data: PLACE[]; meta: any };
   zones?: any;
   walls: any[];
-  ways?: any[];
-  place?: any;
+  ways?: WAY[];
+  place?: PLACE;
   loading: boolean;
   error?: any;
+  getColors: () => void;
+  getDifficulties: () => void;
   getPlaces: (search: string, page: number | string) => void;
   getPlace: (id: number | string) => Promise<any>;
   getPlaceZones: (id: number | string) => Promise<any>;
@@ -29,10 +33,10 @@ interface PlacesContextType {
   getPlan: (id: number | string) => Promise<any>;
   updateZone: (id: string, params: any) => Promise<any>;
   createWall: (zone_id: string, name: string) => Promise<any>;
-  getWalls: (id: number | string) => Promise<any>;
-  getWays: (id: number | string) => Promise<any>;
+  getWalls: (id: number | string) => void;
+  getWays: (id: number | string) => void;
   getWay: (id: number | string) => Promise<any>;
-  addWay: (params: any) => Promise<any>;
+  addWay: (params: any) => void;
   updateWay: (id: number | string, params: any) => void;
   deleteWay: (id: number | string, wallId: number | string) => void;
 }
@@ -73,8 +77,6 @@ export function PlacesProvider({
   // is over.
   useEffect(() => {
     // set color and difficulty
-    getColors();
-    getDifficulties();
   }, []);
 
   // Flags the component loading state and posts the login
@@ -113,7 +115,14 @@ export function PlacesProvider({
     axiosClient
       .get(`${baseUrl}/places?search=${search}&page=${page}`)
       .then((response) => {
-        setPlaces(response.data);
+        if (
+          response.data.data.length === 0 &&
+          response.data.meta.currentPage !== 1
+        ) {
+          getPlaces(search, response.data.meta.lastPage);
+        } else {
+          setPlaces(response.data);
+        }
       })
       .catch((errors) => {
         setError(errors.response.data.errors[0].message);
@@ -245,7 +254,7 @@ export function PlacesProvider({
   function addWay(params: any) {
     axiosClient
       .post(`${baseUrl}/ways`, params)
-      .then((response) => {
+      .then(() => {
         getWays(params.wallId);
       })
       .catch((errors) => {
@@ -257,7 +266,7 @@ export function PlacesProvider({
   function updateWay(id: number | string, params: any) {
     axiosClient
       .put(`${baseUrl}/ways/${id}`, params)
-      .then((response) => {
+      .then(() => {
         getWays(params.wallId);
       })
       .catch((errors) => {
@@ -269,7 +278,7 @@ export function PlacesProvider({
   function deleteWay(id: number | string, wallId: number | string) {
     axiosClient
       .delete(`${baseUrl}/ways/${id}`)
-      .then((response) => {
+      .then(() => {
         getWays(wallId);
       })
       .catch((errors) => {
@@ -298,6 +307,8 @@ export function PlacesProvider({
       ways,
       loading,
       error,
+      getColors,
+      getDifficulties,
       getPlaces,
       getPlace,
       updatePlace,

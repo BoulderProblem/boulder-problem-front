@@ -21,7 +21,6 @@ const Places = () => {
   const changePage = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
     getPlaces(search, value);
-    console.log(value);
   };
 
   return (

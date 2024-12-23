@@ -11,17 +11,16 @@ import {
   DialogTitle,
   TextField,
 } from "@mui/material";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import Way from "@/components/places/Way";
-import Wall from "@/components/places/wall";
+import Wall from "@/components/places/Wall";
+import { Helmet } from "react-helmet-async";
 
 const PlaceId = () => {
   const { id } = useParams();
   const {
     zones,
-    walls,
-    loading,
+    getColors,
+    getDifficulties,
     getPlaceZones,
     getPlan,
     createWall,
@@ -38,6 +37,8 @@ const PlaceId = () => {
   const wallRef = useRef();
 
   useEffect(() => {
+    getColors();
+    getDifficulties();
     getPlaceZones(parseInt(id || "0"));
   }, []);
 
@@ -52,11 +53,11 @@ const PlaceId = () => {
   };
 
   // set plan form
-  const [file, setFile] = useState();
+  const [file, setFile] = useState<any>();
   function handleChangeFile(event: any) {
     setFile(event.target.files[0]);
   }
-  function handleAddPlan(event: any) {
+  function handleAddPlan() {
     const formData = new FormData();
     formData.append("image", file);
     updateZone(zoneId, formData);
@@ -68,8 +69,8 @@ const PlaceId = () => {
     // create wall
     createWall(zoneId, wallName).then((response) => {
       // set new id
-      document.getElementById(wallId).setAttribute("fill", "#46768B");
-      document.getElementById(wallId).setAttribute("id", response.id);
+      document.getElementById(wallId)?.setAttribute("fill", "#46768B");
+      document.getElementById(wallId)?.setAttribute("id", response.id);
       setWallId(response.id);
       getWays(response.id);
       var paths = document.querySelectorAll('[id^="temp"]');
@@ -91,7 +92,7 @@ const PlaceId = () => {
       const formData = new FormData();
       formData.append("image", myBlob, "a.svg");
 
-      updateZone(zoneId, formData).then((x) => {
+      updateZone(zoneId, formData).then(() => {
         getPlan(parseInt(zoneId)).then((response) => {
           setPlan(addIdToSVG(response));
         });
@@ -107,7 +108,7 @@ const PlaceId = () => {
       setPlan(addIdToSVG(response));
     });
     if (document.getElementById(wallId)) {
-      document.getElementById(wallId).setAttribute("fill", "#46768B");
+      document.getElementById(wallId)?.setAttribute("fill", "#46768B");
     }
     setWallId("");
     getWays(0);
@@ -120,7 +121,7 @@ const PlaceId = () => {
 
     if (id) {
       if (document.getElementById(wallId)) {
-        document.getElementById(wallId).setAttribute("fill", "#46768B");
+        document.getElementById(wallId)?.setAttribute("fill", "#46768B");
       }
       event.target.setAttribute("fill", "#ffffff");
       event.target.setAttribute("stroke", "#46768B");
@@ -142,10 +143,10 @@ const PlaceId = () => {
   // action when click in wall list
   const selectWall = (id: string) => {
     if (document.getElementById(wallId)) {
-      document.getElementById(wallId).setAttribute("fill", "#46768B");
+      document.getElementById(wallId)?.setAttribute("fill", "#46768B");
     }
-    document.getElementById(id).setAttribute("fill", "#ffffff");
-    document.getElementById(id).setAttribute("stroke", "#46768B");
+    document.getElementById(id)?.setAttribute("fill", "#ffffff");
+    document.getElementById(id)?.setAttribute("stroke", "#46768B");
     setWallId(id.toString());
     getWays(id);
   };
@@ -153,7 +154,7 @@ const PlaceId = () => {
   function addPlan(id: string) {
     setZoneId(id);
     if (document.getElementById(wallId)) {
-      document.getElementById(wallId).setAttribute("fill", "#46768B");
+      document.getElementById(wallId)?.setAttribute("fill", "#46768B");
     }
     setWallId("");
     getWays(0);
@@ -180,8 +181,6 @@ const PlaceId = () => {
   }
 
   const openModalWay = () => {
-    console.log("a");
-
     wayRef.current.openModalWay();
   };
 
@@ -191,6 +190,10 @@ const PlaceId = () => {
 
   return (
     <div className="overflow-¬x-auto">
+      <Helmet>
+        <title>Boulder problem</title>
+        <meta name="description" content="page de la salle d'escalade" />
+      </Helmet>
       <Place id={id} />
       <div>
         <h1 className="text-center mt-20 mb-5 mx-5">Zones</h1>
@@ -218,7 +221,7 @@ const PlaceId = () => {
                           type="checkbox"
                           className="checkbox"
                           checked={zone.id === zoneId}
-                          onChange={(e) => {
+                          onChange={() => {
                             showPlan(zone.id);
                           }}
                         />

@@ -8,6 +8,9 @@ export default defineConfig({
     port: 3006,
   },
   plugins: [react()],
+  build: {
+    chunkSizeWarningLimit: 1600,
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

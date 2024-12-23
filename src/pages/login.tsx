@@ -1,5 +1,5 @@
 import React, { FormEvent, useState } from "react";
-import useAuth from "../services/useAuth";
+import useAuth from "../services/useAuth.tsx";
 import {
   InputLabel,
   Input,
@@ -7,8 +7,7 @@ import {
   InputAdornment,
   IconButton,
 } from "@mui/material";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const Login = () => {
   const { login, loading, error } = useAuth();
@@ -69,7 +68,6 @@ const Login = () => {
               <Input
                 id="standard-adornment-password"
                 fullWidth
-                variant="standard"
                 name="password"
                 type={showPassword ? "text" : "password"}
                 onChange={(e) => setPassword(e.target.value)}

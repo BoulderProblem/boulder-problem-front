@@ -1,5 +1,4 @@
 import React, { useEffect, useImperativeHandle, useState } from "react";
-import Grid from "@mui/material/Grid2";
 import "leaflet/dist/leaflet.css";
 import usePlaces from "@/services/usePlaces";
 import {
@@ -13,6 +12,7 @@ import {
 } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import { WAY } from "@/types/way";
 
 const Way = React.forwardRef((props: { wallId: string }, ref) => {
   const { ways, colors, difficulties, getWay, updateWay, addWay, deleteWay } =
@@ -55,15 +55,16 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
     setOrderWay(isAsc ? "desc" : "asc");
     setOrderWayBy(property);
   };
-
-  const sortedWays = [...ways].sort((a, b) => {
-    if (a[orderWayBy] < b[orderWayBy]) return orderWay === "asc" ? -1 : 1;
-    if (a[orderWayBy] > b[orderWayBy]) return orderWay === "asc" ? 1 : -1;
-    return 0;
-  });
-
+  let sortedWays: WAY[] = [];
+  if (ways) {
+    sortedWays = [...ways].sort((a, b) => {
+      if (a[orderWayBy] < b[orderWayBy]) return orderWay === "asc" ? -1 : 1;
+      if (a[orderWayBy] > b[orderWayBy]) return orderWay === "asc" ? 1 : -1;
+      return 0;
+    });
+  }
   // way form
-  const [wayInputs, setWayInputs] = useState(null);
+  const [wayInputs, setWayInputs] = useState<WAY | null>(null);
 
   const handleWayChange = (event: any) => {
     const name = event.target.name;
@@ -186,12 +187,12 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
                       className="dropdown-content menu bg-base-300 rounded-box z-[1] w-52 p-2 shadow"
                     >
                       <li>
-                        <a onClick={(e) => openModalWay(way.id)}>
+                        <a onClick={() => openModalWay(way.id)}>
                           Modifier la voie
                         </a>
                       </li>
                       <li>
-                        <a onClick={(e) => openModalDeleteWay(way.id)}>
+                        <a onClick={() => openModalDeleteWay(way.id)}>
                           supprimer la voie
                         </a>
                       </li>

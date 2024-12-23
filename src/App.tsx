@@ -1,14 +1,11 @@
 import "./App.css";
-import {
-  ThemeProvider,
-  createMuiTheme,
-  createTheme,
-} from "@mui/material/styles";
-import Footer from "./components/Footer";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { Helmet, HelmetProvider } from "react-helmet-async";
+import Footer from "./components/Footer.tsx";
 import { Outlet } from "react-router-dom";
-import { getFromLS } from "./utils/storage";
+import { getFromLS } from "./utils/storage.ts";
 import { useState } from "react";
-import Header from "./components/Header";
+import Header from "./components/Header.tsx";
 
 function App() {
   const [isBlack, setIsBlack] = useState(
@@ -47,15 +44,21 @@ function App() {
   });
 
   return (
-    <ThemeProvider theme={darkTheme}>
-      <div className={"layout " + (isBlack ? "dark" : "")}>
-        <Header stateChanger={setIsBlack} />
-        <main>
-          <Outlet />
-        </main>
-        <Footer />
-      </div>
-    </ThemeProvider>
+    <HelmetProvider>
+      <ThemeProvider theme={darkTheme}>
+        <Helmet>
+          <title>Boulder problem</title>
+          <meta name="description" content="page de la salle d'escalade" />
+        </Helmet>
+        <div className={"layout " + (isBlack ? "dark" : "")}>
+          <Header stateChanger={setIsBlack} />
+          <main>
+            <Outlet />
+          </main>
+          <Footer />
+        </div>
+      </ThemeProvider>
+    </HelmetProvider>
   );
 }
 

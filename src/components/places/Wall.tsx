@@ -1,19 +1,13 @@
-import React, { Component, useEffect, useState } from "react";
-import Grid from "@mui/material/Grid2";
+import React, { useEffect, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import usePlaces from "@/services/usePlaces";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@mui/material";
+
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 
 const Wall = React.forwardRef(
   (props: { wallId: string; openModalWay: any; setWall: any }, ref) => {
-    const { walls, getWalls } = usePlaces();
+    const { walls } = usePlaces();
 
     useEffect(() => {}, []);
 
@@ -61,16 +55,16 @@ const Wall = React.forwardRef(
                   key={wall.id}
                   className={wall.id == props.wallId ? "bg-base-200" : ""}
                 >
-                  <th onClick={(e) => props.setWall(wall.id)}>
+                  <th onClick={() => props.setWall(wall.id)}>
                     <input
                       type="checkbox"
                       className="checkbox"
                       checked={wall.id == props.wallId}
-                      onChange={(e) => props.setWall(wall.id)}
+                      onChange={() => props.setWall(wall.id)}
                     />
                   </th>
-                  <th onClick={(e) => props.setWall(wall.id)}>{wall.name}</th>
-                  <th onClick={(e) => props.setWall(wall.id)}>
+                  <th onClick={() => props.setWall(wall.id)}>{wall.name}</th>
+                  <th onClick={() => props.setWall(wall.id)}>
                     <div className="dropdown dropdown-hover dropdown-end">
                       <div
                         tabIndex={0}
@@ -85,7 +79,7 @@ const Wall = React.forwardRef(
                       >
                         <li>
                           <a
-                            onClick={(e) => {
+                            onClick={() => {
                               props.openModalWay();
                             }}
                           >

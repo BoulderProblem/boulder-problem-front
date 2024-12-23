@@ -9,23 +9,25 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/card.tsx";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
-import useAuth from "@/services/useAuth";
+} from "@/components/ui/chart.tsx";
+import useAuth from "@/services/useAuth.tsx";
 
 const chartConfig = {
-  views: {
-    label: "création",
-  },
   users: {
     prefix: "d'",
     label: "Utilisateurs",
     color: "hsl(var(--chart-1))",
+  },
+  gerants: {
+    prefix: "de ",
+    label: "Gérants",
+    color: "hsl(var(--chart-2))",
   },
   posts: {
     prefix: "de ",
@@ -56,7 +58,7 @@ export function GraphHome() {
               </CardDescription>
             </div>
             <div className="flex">
-              {["users", "posts"].map((key) => {
+              {["users", "gerants", "posts"].map((key) => {
                 const chart = key as keyof typeof chartConfig;
                 return (
                   <button
@@ -128,7 +130,7 @@ export function GraphHome() {
           </CardContent>
         </Card>
       ) : (
-        <p>plop</p>
+        <div></div>
       )}
     </div>
   );

@@ -1,22 +1,22 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Grid from "@mui/material/Grid2";
 import "leaflet/dist/leaflet.css";
 import usePlaces from "@/services/usePlaces";
 import { TextField } from "@mui/material";
 
 import { MapContainer, Marker, TileLayer } from "react-leaflet";
+import { PLACE } from "@/types/place";
 
-const Place = (props) => {
-  const { place, getPlace, updatePlace, getPlaceZones } = usePlaces();
+const Place = (props: any) => {
+  const { getPlace, updatePlace, getPlaceZones } = usePlaces();
 
+  const [inputs, setInputs] = useState<PLACE | null>(null);
   useEffect(() => {
-    getPlace(parseInt(props.id || "0")).then((response) => {
+    getPlace(parseInt(props.id || "0")).then((response: PLACE) => {
       setInputs(response);
     });
     getPlaceZones(parseInt(props.id || "0"));
   }, []);
-
-  const [inputs, setInputs] = useState(null);
 
   const handleChange = (event: any) => {
     const name = event.target.name;
@@ -32,9 +32,9 @@ const Place = (props) => {
 
   return (
     <div>
-      {place ? (
+      {inputs ? (
         <div>
-          <h1 className="text-center my-5">{inputs.name}</h1>
+          <h1 className="text-center my-5">{inputs.name || ""}</h1>
           <Grid container spacing={2} columns={{ xs: 1, sm: 12 }}>
             <Grid size={8} className="p-6">
               <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
@@ -44,7 +44,7 @@ const Place = (props) => {
                   fullWidth
                   variant="standard"
                   name="name"
-                  value={(inputs && inputs.name) || ""}
+                  value={inputs.name || ""}
                   onChange={handleChange}
                 />
                 <Grid container spacing={2}>
@@ -55,7 +55,7 @@ const Place = (props) => {
                       fullWidth
                       variant="standard"
                       name="address"
-                      value={(inputs && inputs.address) || ""}
+                      value={inputs.address || ""}
                       onChange={handleChange}
                     />
                   </Grid>
@@ -66,7 +66,7 @@ const Place = (props) => {
                       fullWidth
                       variant="standard"
                       name="city"
-                      value={(inputs && inputs.city) || ""}
+                      value={inputs.city || ""}
                       onChange={handleChange}
                     />
                   </Grid>
@@ -77,7 +77,7 @@ const Place = (props) => {
                       fullWidth
                       variant="standard"
                       name="postalCode"
-                      value={(inputs && inputs.postalCode) || ""}
+                      value={inputs.postalCode || ""}
                       onChange={handleChange}
                     />
                   </Grid>
@@ -88,7 +88,7 @@ const Place = (props) => {
                   fullWidth
                   variant="standard"
                   name="phone"
-                  value={(inputs && inputs.phone) || ""}
+                  value={inputs.phone || ""}
                   onChange={handleChange}
                 />
                 <TextField
@@ -97,7 +97,7 @@ const Place = (props) => {
                   fullWidth
                   variant="standard"
                   name="website"
-                  value={(inputs && inputs.website) || ""}
+                  value={inputs.website || ""}
                   onChange={handleChange}
                 />
 
@@ -114,7 +114,7 @@ const Place = (props) => {
             <Grid size={4} className="max-h-[500px] min-h-[300px] p-6">
               <div className="map-container h-full">
                 <MapContainer
-                  center={[place.coordinate.y, place.coordinate.x]}
+                  center={[inputs.coordinate.y, inputs.coordinate.x]}
                   zoom={13}
                   className="h-full rounded-lg"
                 >
@@ -124,7 +124,7 @@ const Place = (props) => {
                   />
                   <Marker
                     key={1}
-                    position={[place.coordinate.y, place.coordinate.x]}
+                    position={[inputs.coordinate.y, inputs.coordinate.x]}
                   ></Marker>
                 </MapContainer>
               </div>
@@ -132,7 +132,7 @@ const Place = (props) => {
           </Grid>
         </div>
       ) : (
-        "coucou"
+        ""
       )}
     </div>
   );
