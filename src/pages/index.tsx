@@ -23,8 +23,8 @@ function App() {
             content={`
                       default-src 'self';
                       script-src 'self';
-                      img-src https://*.my-s3-endpoint.com;
-                      media-src https://*.my-s3-endpoint.com;
+                      img-src https://*.boulder-problem.chabs.fr;
+                      media-src https://*.boulder-problem.chabs.fr;
                 `}
           />
         </Helmet>
