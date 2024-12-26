@@ -5,11 +5,11 @@ import {
   MessageCircle,
   Mountain,
   Camera,
-} from "lucide-react";
-import { Feature } from "@/components/Feature.tsx";
-import { Helmet, HelmetProvider } from "react-helmet-async";
-import { Link } from "react-router-dom";
-import background from "../assets/home-background.webp";
+} from 'lucide-react';
+import { Feature } from '@/components/Feature.tsx';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
+import { Link } from 'react-router-dom';
+import background from '../assets/home-background.webp';
 
 function App() {
   return (
@@ -18,6 +18,15 @@ function App() {
         <Helmet>
           <title>Boulder problem</title>
           <meta name="description" content="page d'accueil" />
+          <meta
+            httpEquiv="Content-Security-Policy"
+            content={`
+                      default-src 'self';
+                      script-src 'self';
+                      img-src https://*.my-s3-endpoint.com;
+                      media-src https://*.my-s3-endpoint.com;
+                `}
+          />
         </Helmet>
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
           {/* Hero Section */}
@@ -38,7 +47,7 @@ function App() {
               <p className="text-xl md:text-2xl text-gray-200 mb-8">
                 Connectez-vous avec la communauté des grimpeurs
               </p>
-              <Link to={"/login"}>
+              <Link to={'/login'}>
                 <button className="bg-primary-600 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-primary-700 transition-colors">
                   Rejoignez l'aventure
                 </button>
