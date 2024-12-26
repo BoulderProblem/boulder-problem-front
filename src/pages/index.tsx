@@ -19,8 +19,11 @@ function App() {
           <title>Boulder problem</title>
           <meta name="description" content="page d'accueil" />
           <meta
-            http-equiv="Content-Security-Policy"
-            content="script-src 'unsafe-eval'"
+            httpEquiv="Content-Security-Policy"
+            content={`
+                      default-src 'self';
+                      script-src 'self';
+                `}
           />
         </Helmet>
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
