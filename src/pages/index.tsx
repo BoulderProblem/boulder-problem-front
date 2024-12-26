@@ -19,11 +19,8 @@ function App() {
           <title>Boulder problem</title>
           <meta name="description" content="page d'accueil" />
           <meta
-            httpEquiv="Content-Security-Policy"
-            content={`
-                      default-src 'self';
-                      script-src 'self';
-                      img-src 'self' boulder-problem.chabs.fr`}
+            http-equiv="Content-Security-Policy"
+            content="default-src https://boulder-problem.chabs.fr; child-src 'none'; object-src 'none'"
           />
         </Helmet>
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
