@@ -20,7 +20,16 @@ function App() {
           <meta name="description" content="page d'accueil" />
           <meta
             http-equiv="Content-Security-Policy"
-            content="default-src https://boulder-problem.chabs.fr; child-src 'none'; object-src 'none'"
+            content=" default-src 'self';
+              script-src 'self' 'strict-dynamic';
+              style-src 'self';
+              img-src 'self' blob: data:;
+              font-src 'self';
+              object-src 'none';
+              base-uri 'self';
+              form-action 'self';
+              frame-ancestors 'none';
+              upgrade-insecure-requests;"
           />
         </Helmet>
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
