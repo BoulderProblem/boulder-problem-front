@@ -10,6 +10,7 @@ export default defineConfig({
   plugins: [react()],
   build: {
     chunkSizeWarningLimit: 1600,
+    sourcemap: true
   },
   resolve: {
     alias: {
