@@ -1,8 +1,13 @@
+import { useLayoutEffect } from 'react';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 
 function Conditions() {
   const navigate = useNavigate();
+
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  });
 
   return (
     <HelmetProvider>
@@ -13,7 +18,7 @@ function Conditions() {
         </Helmet>
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-200">
           {/* Header */}
-          <header className="bg-primary-600 text-white py-4">
+          <header className="sticky top-0 z-50 bg-primary-600 text-white py-4">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <h1 className="text-3xl font-bold">
                 <button
@@ -44,7 +49,7 @@ function Conditions() {
           <main className="flex-grow py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto mb-10">
               <h1 className="text-3xl font-bold">
-                Politique de Confidentialité de Boulder Problem
+                Politique de Confidentialité
               </h1>
             </div>
             <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg">
