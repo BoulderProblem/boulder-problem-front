@@ -1,20 +1,20 @@
-import React, { FormEvent, useState } from "react";
-import useAuth from "../services/useAuth.tsx";
+import React, { FormEvent, useState } from 'react';
+import useAuth from '../../services/useAuth.tsx';
 import {
   InputLabel,
   Input,
   TextField,
   InputAdornment,
   IconButton,
-} from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+} from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 const Login = () => {
   const { login, loading, error } = useAuth();
 
-  const [email, setEmail] = useState(localStorage.getItem("login-email") || "");
+  const [email, setEmail] = useState(localStorage.getItem('login-email') || '');
   const [password, setPassword] = useState(
-    localStorage.getItem("login-email") || ""
+    localStorage.getItem('login-email') || ''
   );
   const [showPassword, setShowPassword] = React.useState(false);
 
@@ -37,7 +37,7 @@ const Login = () => {
 
     const formData = new FormData(event.currentTarget);
 
-    login(formData.get("email") as string, formData.get("password") as string);
+    login(formData.get('email') as string, formData.get('password') as string);
   }
 
   return (
@@ -69,7 +69,7 @@ const Login = () => {
                 id="standard-adornment-password"
                 fullWidth
                 name="password"
-                type={showPassword ? "text" : "password"}
+                type={showPassword ? 'text' : 'password'}
                 onChange={(e) => setPassword(e.target.value)}
                 value={password}
                 endAdornment={
@@ -100,12 +100,12 @@ const Login = () => {
                 {loading ? (
                   <span className="loading loading-spinner loading-md"></span>
                 ) : (
-                  "Sign in"
+                  'Sign in'
                 )}
               </button>
               <p className=" text-red-500 text-center italic">{error}</p>
               <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                Vous n'avez pas de compte ?{" "}
+                Vous n'avez pas de compte ?{' '}
                 <a
                   href="#"
                   className="font-medium text-primary-600 hover:underline dark:text-primary-500"

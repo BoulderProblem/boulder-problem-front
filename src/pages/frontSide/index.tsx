@@ -6,17 +6,18 @@ import {
   Mountain,
   Camera,
 } from 'lucide-react';
-import { Feature } from '@/components/Feature.tsx';
+import { Feature } from '@/components/frontSide/Feature';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import background from '../assets/home-background.webp';
+import background from '../../assets/home-background.webp';
+import { StoreButton } from '@/components/frontSide/StoreButton';
 
-function App() {
+function Index() {
   return (
     <HelmetProvider>
       <div>
         <Helmet>
-          <title>Boulder problem</title>
+          <title>Boulder Problem</title>
           <meta name="description" content="page d'accueil" />
         </Helmet>
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
@@ -33,7 +34,7 @@ function App() {
 
             <div className="relative z-10 text-center px-4">
               <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
-                ClimbConnect
+                Boulder problem
               </h1>
               <p className="text-xl md:text-2xl text-gray-200 mb-8">
                 Connectez-vous avec la communauté des grimpeurs
@@ -43,6 +44,11 @@ function App() {
                   Rejoignez l'aventure
                 </button>
               </Link>
+
+              <div className="max-w-7xl mx-auto grid grid-cols-2 gap-8 mt-10 text-center">
+                <StoreButton store="apple" />
+                <StoreButton store="google" />
+              </div>
             </div>
           </header>
 
@@ -86,6 +92,22 @@ function App() {
             </div>
           </section>
 
+          <section className="bg-white py-20 px-4">
+            <div className="max-w-4xl mx-auto text-center">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                Emportez la communauté partout avec vous
+              </h2>
+              <p className="text-xl text-gray-600 mb-8">
+                Téléchargez l'application ClimbConnect et restez connecté avec
+                la communauté des grimpeurs
+              </p>
+              <div className="max-w-7xl mx-auto grid grid-cols-2 gap-8 mt-10 text-center">
+                <StoreButton store="apple" />
+                <StoreButton store="google" />
+              </div>
+            </div>
+          </section>
+
           {/* CTA Section */}
           <section className="bg-primary-600 py-20 px-4">
             <div className="max-w-4xl mx-auto text-center">
@@ -96,9 +118,11 @@ function App() {
                 Inscrivez-vous gratuitement et commencez à grimper avec des
                 passionnés comme vous
               </p>
-              <button className="bg-white text-primary-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-100 transition-colors">
-                Créer un compte
-              </button>
+              <Link to={'/login'}>
+                <button className="bg-white text-primary-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-100 transition-colors">
+                  Rejoignez l'aventure
+                </button>
+              </Link>
             </div>
           </section>
 
@@ -107,7 +131,7 @@ function App() {
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               <div>
                 <h3 className="text-white text-lg font-semibold mb-4">
-                  ClimbConnect
+                  Boulder Problem
                 </h3>
                 <p>La communauté des grimpeurs passionnés</p>
               </div>
@@ -137,14 +161,18 @@ function App() {
                 <h4 className="text-white text-lg font-semibold mb-4">Légal</h4>
                 <ul className="space-y-2">
                   <li>
-                    <a href="#" className="hover:text-white transition-colors">
-                      Conditions d'utilisation
-                    </a>
+                    <Link to={'/conditions_d_utilisation'}>
+                      <p className="hover:text-white transition-colors">
+                        Conditions d'utilisation
+                      </p>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#" className="hover:text-white transition-colors">
-                      Politique de confidentialité
-                    </a>
+                    <Link to={'/politique_de_confidentialité'}>
+                      <p className="hover:text-white transition-colors">
+                        Politique de confidentialité
+                      </p>
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -172,4 +200,4 @@ function App() {
   );
 }
 
-export default App;
+export default Index;

@@ -1,33 +1,35 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
-import "./index.css";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Index from "./pages/index.tsx";
-import Home from "./pages/home.tsx";
-import Page_404 from "./pages/Page_404.tsx";
-import Login from "./pages/login.tsx";
-import { ProtectedRoute } from "./components/ProtectedRoute.tsx";
-import { AuthProvider } from "./services/useAuth.tsx";
-import { PlacesProvider } from "./services/usePlaces.tsx";
-import { UnProtectedRoute } from "./components/UnProtectedRoute.tsx";
-import Users from "./pages/users.tsx";
-import Places from "./pages/places.tsx";
-import PlaceId from "./pages/placeId.tsx";
-import UserId from "./pages/userId.tsx";
-import { UsersProvider } from "./services/useUsers.tsx";
-import useAuth from "./services/useAuth.tsx";
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App.tsx';
+import './index.css';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import Index from './pages/frontSide/index.tsx';
+import Home from './pages/home.tsx';
+import Page_404 from './pages/Page_404.tsx';
+import Login from './pages/frontSide/login.tsx';
+import { ProtectedRoute } from './components/ProtectedRoute.tsx';
+import { AuthProvider } from './services/useAuth.tsx';
+import { PlacesProvider } from './services/usePlaces.tsx';
+import { UnProtectedRoute } from './components/UnProtectedRoute.tsx';
+import Users from './pages/users.tsx';
+import Places from './pages/places.tsx';
+import PlaceId from './pages/placeId.tsx';
+import UserId from './pages/userId.tsx';
+import { UsersProvider } from './services/useUsers.tsx';
+import useAuth from './services/useAuth.tsx';
+import Confidentialité from './pages/frontSide/confidentialite.tsx';
+import Conditions from './pages/frontSide/conditions.tsx';
 
 const Main = () => {
   const { user } = useAuth();
 
   const route = [
     {
-      path: "/",
+      path: '/',
       element: user ? <App /> : <Index />,
       children: [
         {
-          path: "/",
+          path: '/',
           element: (
             <ProtectedRoute>
               <Home />
@@ -35,7 +37,7 @@ const Main = () => {
           ),
         },
         {
-          path: "/users",
+          path: '/users',
           element: (
             <ProtectedRoute>
               <Users />
@@ -43,7 +45,7 @@ const Main = () => {
           ),
         },
         {
-          path: "/users/:id",
+          path: '/users/:id',
           element: (
             <ProtectedRoute>
               <UserId />
@@ -51,7 +53,7 @@ const Main = () => {
           ),
         },
         {
-          path: "/places",
+          path: '/places',
           element: (
             <ProtectedRoute>
               <Places />
@@ -59,7 +61,7 @@ const Main = () => {
           ),
         },
         {
-          path: "/places/:id",
+          path: '/places/:id',
           element: (
             <ProtectedRoute>
               <PlaceId />
@@ -68,16 +70,32 @@ const Main = () => {
         },
 
         {
-          path: "*",
+          path: '*',
           element: <Page_404 />,
         },
       ],
     },
     {
-      path: "/login",
+      path: '/login',
       element: (
         <UnProtectedRoute>
           <Login />
+        </UnProtectedRoute>
+      ),
+    },
+    {
+      path: '/politique_de_confidentialité',
+      element: (
+        <UnProtectedRoute>
+          <Confidentialité />
+        </UnProtectedRoute>
+      ),
+    },
+    {
+      path: '/conditions_d_utilisation',
+      element: (
+        <UnProtectedRoute>
+          <Conditions />
         </UnProtectedRoute>
       ),
     },
@@ -88,7 +106,7 @@ const Main = () => {
   return <RouterProvider router={router} />;
 };
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <AuthProvider>
       <UsersProvider>
