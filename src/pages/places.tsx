@@ -1,13 +1,13 @@
-import usePlaces from "@/services/usePlaces";
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import Pagination from "@mui/material/Pagination";
-import Stack from "@mui/material/Stack";
+import usePlaces from '@/services/usePlaces';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
 
 const Places = () => {
   const { places, loading, getPlaces } = usePlaces();
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     getPlaces(search, 1);
@@ -64,15 +64,15 @@ const Places = () => {
               {places &&
                 places.data.map((place: any) => (
                   <tr key={place.id}>
-                    <th>{place.name}</th>
-                    <th>
+                    <td>{place.name}</td>
+                    <td>
                       {place.address} {place.city}
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                       <button className="btn btn-xs bg-primary-300 text-white">
-                        <Link to={"/places/" + place.id}>Détails</Link>
+                        <Link to={'/places/' + place.id}>Détails</Link>
                       </button>
-                    </th>
+                    </td>
                   </tr>
                 ))}
             </tbody>
@@ -94,7 +94,7 @@ const Places = () => {
               />
             </Stack>
           ) : (
-            ""
+            ''
           )}
         </div>
       )}

@@ -1,24 +1,24 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { Link } from "react-router-dom";
-import { getFromLS, setToLS } from "@/utils/storage";
-import useAuth from "@/services/useAuth";
-import ImageWithToken from "react-image-with-auth";
+import * as React from 'react';
+import { Link } from 'react-router-dom';
+import { getFromLS, setToLS } from '@/utils/storage';
+import useAuth from '@/services/useAuth';
+import ImageWithToken from 'react-image-with-auth';
 
-import Button from "@mui/material/Button";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
+import Button from '@mui/material/Button';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 
 function Header({ stateChanger }: any) {
   const { user, token, logout } = useAuth();
   const [isBlack, setIsBlack] = React.useState(
-    JSON.parse(getFromLS("theme") ? getFromLS("theme") : false)
+    JSON.parse(getFromLS('theme') ? getFromLS('theme') : false)
   );
   const checkHandler = () => {
     setIsBlack(!isBlack);
     stateChanger(!isBlack);
-    setToLS("theme", JSON.stringify(!isBlack));
+    setToLS('theme', JSON.stringify(!isBlack));
   };
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -46,9 +46,9 @@ function Header({ stateChanger }: any) {
       <div className="navbar-start">
         <div className="contents lg:hidden">
           <Button
-            aria-controls={open ? "basic-menu" : undefined}
+            aria-controls={open ? 'basic-menu' : undefined}
             aria-haspopup="true"
-            aria-expanded={open ? "true" : undefined}
+            aria-expanded={open ? 'true' : undefined}
             aria-label="menu"
             onClick={handleClick}
           >
@@ -73,7 +73,7 @@ function Header({ stateChanger }: any) {
             open={open}
             onClose={handleClose}
             MenuListProps={{
-              "aria-labelledby": "basic-button",
+              'aria-labelledby': 'basic-button',
             }}
           >
             <MenuItem component={Link} to="/users" onClick={handleClose}>
@@ -110,24 +110,24 @@ function Header({ stateChanger }: any) {
         {user ? (
           <div className="contents">
             <Button
-              aria-controls={openProfile ? "basic-menu" : undefined}
+              aria-controls={openProfile ? 'basic-menu' : undefined}
               aria-haspopup="true"
-              aria-expanded={openProfile ? "true" : undefined}
+              aria-expanded={openProfile ? 'true' : undefined}
               onClick={handleClickProfile}
             >
-              <div className="mr-5">
+              <div className="mr-5 text-primary-500">
                 <p className="text-sm">{user.firstname}</p>
                 <p className="text-sm">{user.lastname}</p>
               </div>
-              <div className=" btn btn-ghost btn-circle avatar">
+              <div className="btn btn-ghost btn-circle avatar">
                 <div className="w-10 rounded-full">
                   <ImageWithToken
                     imageUrl={
-                      "https://boulder-problem.chabs.fr/api/users/" +
+                      'https://boulder-problem.chabs.fr/api/users/' +
                       user.id +
-                      "/avatar/" +
+                      '/avatar/' +
                       user.avatar +
-                      "?size=50"
+                      '?size=50'
                     }
                     token={token}
                     alt="avatar"
@@ -141,12 +141,12 @@ function Header({ stateChanger }: any) {
               open={openProfile}
               onClose={handleCloseProfile}
               MenuListProps={{
-                "aria-labelledby": "basic-button",
+                'aria-labelledby': 'basic-button',
               }}
             >
               <MenuItem
                 component={Link}
-                to={"/users/" + user.id}
+                to={'/users/' + user.id}
                 onClick={handleCloseProfile}
               >
                 Profile

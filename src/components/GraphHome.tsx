@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import * as React from 'react';
+import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 
 import {
   Card,
@@ -9,37 +9,37 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card.tsx";
+} from '@/components/ui/card.tsx';
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart.tsx";
-import useAuth from "@/services/useAuth.tsx";
+} from '@/components/ui/chart.tsx';
+import useAuth from '@/services/useAuth.tsx';
 
 const chartConfig = {
   users: {
     prefix: "d'",
-    label: "Utilisateurs",
-    color: "hsl(var(--chart-1))",
+    label: 'Utilisateurs',
+    color: 'hsl(var(--chart-1))',
   },
   gerants: {
-    prefix: "de ",
-    label: "Gérants",
-    color: "hsl(var(--chart-2))",
+    prefix: 'de ',
+    label: 'Gérants',
+    color: 'hsl(var(--chart-2))',
   },
   posts: {
-    prefix: "de ",
-    label: "Posts",
-    color: "hsl(var(--chart-2))",
+    prefix: 'de ',
+    label: 'Posts',
+    color: 'hsl(var(--chart-3))',
   },
 } satisfies ChartConfig;
 
 export function GraphHome() {
   const { stats } = useAuth();
   const [activeChart, setActiveChart] =
-    React.useState<keyof typeof chartConfig>("users");
+    React.useState<keyof typeof chartConfig>('users');
 
   return (
     <div>
@@ -58,7 +58,7 @@ export function GraphHome() {
               </CardDescription>
             </div>
             <div className="flex">
-              {["users", "gerants", "posts"].map((key) => {
+              {['users', 'gerants', 'posts'].map((key) => {
                 const chart = key as keyof typeof chartConfig;
                 return (
                   <button
@@ -100,9 +100,9 @@ export function GraphHome() {
                   minTickGap={32}
                   tickFormatter={(value) => {
                     const date = new Date(value);
-                    return date.toLocaleDateString("fr-FR", {
-                      month: "short",
-                      year: "numeric",
+                    return date.toLocaleDateString('fr-FR', {
+                      month: 'short',
+                      year: 'numeric',
                     });
                   }}
                 />
@@ -112,10 +112,10 @@ export function GraphHome() {
                       className="w-[150px]"
                       nameKey="views"
                       labelFormatter={(value) => {
-                        return new Date(value).toLocaleDateString("fr-FR", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
+                        return new Date(value).toLocaleDateString('fr-FR', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
                         });
                       }}
                     />
