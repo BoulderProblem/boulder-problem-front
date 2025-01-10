@@ -5,8 +5,8 @@ import {
   useEffect,
   useMemo,
   useState,
-} from "react";
-import axiosClient from "../axios-client";
+} from 'react';
+import axiosClient from '../axios-client';
 
 const baseUrl = `https://boulder-problem.chabs.fr/api`;
 
@@ -17,7 +17,7 @@ interface UsersContextType {
   user: any;
   loading: boolean;
   error?: any;
-  getUsers: (search: string, page: number | string) => void;
+  getUsers: (search: string, page: number | string) => Promise<any>;
   getUser: (id: string) => Promise<any>;
   updateUser: (id: string, params: any) => Promise<any>;
   deleteUser: (id: string) => void;
@@ -64,9 +64,9 @@ export function UsersProvider({
   //
   // Finally, just signal the component that loading the
   // loading state is over.
-  function getUsers(search: string, page: number | string) {
-    // setLoading(true);
-    axiosClient
+  async function getUsers(search: string, page: number | string) {
+    setLoading(true);
+    await axiosClient
       .get(`${baseUrl}/users?search=${search}&page=${page}`)
       .then((response) => {
         if (
@@ -82,6 +82,7 @@ export function UsersProvider({
         setError(errors.response.data.errors[0].message);
       })
       .finally(() => setLoading(false));
+    return;
   }
 
   async function getUser(id: number | string) {

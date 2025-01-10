@@ -7,4 +7,6 @@ export type PLACE = {
   phone: string;
   website: string;
   coordinate: { x: number; y: number };
+  ownerId: any;
+  owner: any;
 };

@@ -1,13 +1,13 @@
-import Roles from "@/enums/role";
-import useAuth from "@/services/useAuth";
-import useUsers from "@/services/useUsers";
-import { useEffect, useState } from "react";
-import Grid from "@mui/material/Grid2";
-import ImageWithToken from "react-image-with-auth";
-import { useParams } from "react-router-dom";
-import { TextField, MenuItem } from "@mui/material";
-import Genders from "@/enums/gender";
-import { USER } from "@/types/user";
+import Roles from '@/enums/role';
+import useAuth from '@/services/useAuth';
+import useUsers from '@/services/useUsers';
+import { useEffect, useState } from 'react';
+import Grid from '@mui/material/Grid2';
+import ImageWithToken from 'react-image-with-auth';
+import { useParams } from 'react-router-dom';
+import { TextField, MenuItem } from '@mui/material';
+import Genders from '@/enums/gender';
+import { USER } from '@/types/user';
 
 const UserId = () => {
   const { id } = useParams();
@@ -19,7 +19,7 @@ const UserId = () => {
   useEffect(() => {
     console.log(id);
 
-    getUser(id || "0").then((response: USER) => {
+    getUser(id || '0').then((response: USER) => {
       console.log(response);
 
       setInputs(response);
@@ -38,7 +38,7 @@ const UserId = () => {
     console.log(inputs);
     let update = Object.assign({}, inputs);
     delete update.avatar;
-    updateUser(id || "0", update).then((response) => {
+    updateUser(id || '0', update).then((response) => {
       setInputs(response);
     });
   };
@@ -71,11 +71,11 @@ const UserId = () => {
                     {inputs.avatar ? (
                       <ImageWithToken
                         imageUrl={
-                          "https://boulder-problem.chabs.fr/api/users/" +
+                          'https://boulder-problem.chabs.fr/api/users/' +
                           inputs.id +
-                          "/avatar/" +
+                          '/avatar/' +
                           inputs.avatar +
-                          "?size=500"
+                          '?size=500'
                         }
                         token={token}
                         alt="avatar"
@@ -108,7 +108,7 @@ const UserId = () => {
                   fullWidth
                   variant="standard"
                   name="firstname"
-                  value={inputs.firstname || ""}
+                  value={inputs.firstname || ''}
                   onChange={handleChange}
                 />
               </Grid>
@@ -119,7 +119,7 @@ const UserId = () => {
                   fullWidth
                   variant="standard"
                   name="lastname"
-                  value={inputs.lastname || ""}
+                  value={inputs.lastname || ''}
                   onChange={handleChange}
                 />
               </Grid>
@@ -130,7 +130,7 @@ const UserId = () => {
                   fullWidth
                   variant="standard"
                   name="email"
-                  value={inputs.email || ""}
+                  value={inputs.email || ''}
                   onChange={handleChange}
                 />
               </Grid>
@@ -142,8 +142,8 @@ const UserId = () => {
                   label="Rôle"
                   variant="standard"
                   name="roleId"
-                  disabled={user && user.roleId !== 2}
-                  value={(inputs && inputs.roleId) || "0"}
+                  disabled={user && user.roleId === 2}
+                  value={(inputs && inputs.roleId) || '0'}
                   onChange={handleChange}
                 >
                   {enumToArray(Roles).map((difficulty: any) => (
@@ -161,7 +161,7 @@ const UserId = () => {
                   label="Genre"
                   variant="standard"
                   name="genderId"
-                  value={inputs.genderId || "0"}
+                  value={inputs.genderId || '0'}
                   onChange={handleChange}
                 >
                   {enumToArray(Genders).map((difficulty: any) => (

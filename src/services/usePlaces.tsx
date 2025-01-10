@@ -5,10 +5,10 @@ import {
   useEffect,
   useMemo,
   useState,
-} from "react";
-import axiosClient from "../axios-client";
-import { WAY } from "@/types/way";
-import { PLACE } from "@/types/place";
+} from 'react';
+import axiosClient from '../axios-client';
+import { WAY } from '@/types/way';
+import { PLACE } from '@/types/place';
 
 const baseUrl = `https://boulder-problem.chabs.fr/api`;
 
@@ -18,6 +18,7 @@ interface PlacesContextType {
   colors: any;
   difficulties: any;
   places?: { data: PLACE[]; meta: any };
+  myPlaces?: PLACE[];
   zones?: any;
   walls: any[];
   ways?: WAY[];
@@ -27,6 +28,7 @@ interface PlacesContextType {
   getColors: () => void;
   getDifficulties: () => void;
   getPlaces: (search: string, page: number | string) => void;
+  getMyPlaces: () => void;
   getPlace: (id: number | string) => Promise<any>;
   getPlaceZones: (id: number | string) => Promise<any>;
   updatePlace: (id: number | string, params: any) => Promise<any>;
@@ -52,6 +54,7 @@ export function PlacesProvider({
   const [colors, setColors] = useState<any>();
   const [difficulties, setDifficulties] = useState<any>();
   const [places, setPlaces] = useState<any>();
+  const [myPlaces, setMyPlaces] = useState<any>();
   const [place, setPlace] = useState<any>();
   const [zones, setPlaceZones] = useState<any>();
   const [walls, setWalls] = useState<any>([]);
@@ -123,6 +126,18 @@ export function PlacesProvider({
         } else {
           setPlaces(response.data);
         }
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
+  function getMyPlaces() {
+    axiosClient
+      .get(`${baseUrl}/places/mine`)
+      .then((response) => {
+        setMyPlaces(response.data);
       })
       .catch((errors) => {
         setError(errors.response.data.errors[0].message);
@@ -301,6 +316,7 @@ export function PlacesProvider({
       colors,
       difficulties,
       places,
+      myPlaces,
       place,
       zones,
       walls,
@@ -310,6 +326,7 @@ export function PlacesProvider({
       getColors,
       getDifficulties,
       getPlaces,
+      getMyPlaces,
       getPlace,
       updatePlace,
       getPlaceZones,
@@ -323,7 +340,18 @@ export function PlacesProvider({
       updateWay,
       deleteWay,
     }),
-    [colors, difficulties, places, place, zones, walls, ways, loading, error]
+    [
+      colors,
+      difficulties,
+      places,
+      myPlaces,
+      place,
+      zones,
+      walls,
+      ways,
+      loading,
+      error,
+    ]
   );
 
   // We only want to render the underlying app after we
