@@ -2,16 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Grid from '@mui/material/Grid2';
 import 'leaflet/dist/leaflet.css';
 import usePlaces from '@/services/usePlaces';
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  Autocomplete,
-  CircularProgress,
-  Box,
-} from '@mui/material';
+import { TextField, Autocomplete } from '@mui/material';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import { PLACE } from '@/types/place';
 import useUsers from '@/services/useUsers';
@@ -62,7 +53,20 @@ const Place = (props: any) => {
     <div>
       {inputs ? (
         <div>
-          <h1 className="text-center my-5">{inputs.name || ''}</h1>
+          <div className="mt-5">
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 3, sm: 3 }}></Grid>
+              <Grid size={{ xs: 6, sm: 6 }}>
+                <h1 className="text-center my-5">{inputs.name || ''}</h1>
+              </Grid>
+              <Grid size={{ xs: 3, sm: 3 }}>
+                <div className="h-full m-auto">
+                  <p className="font-bold text-lg">{inputs.favoriteCount}</p>{' '}
+                  favoris
+                </div>
+              </Grid>
+            </Grid>
+          </div>
           <Grid container spacing={2} columns={{ xs: 1, sm: 12 }}>
             <Grid size={8} className="p-6">
               <form className="space-y-4 md:space-y-6">

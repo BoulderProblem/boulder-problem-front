@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
-import usePlaces from "@/services/usePlaces";
-import Place from "@/components/places/Place";
-import Grid from "@mui/material/Grid2";
+import { useEffect, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import usePlaces from '@/services/usePlaces';
+import Place from '@/components/places/Place';
+import Grid from '@mui/material/Grid2';
 import {
   Dialog,
   DialogActions,
@@ -10,10 +10,10 @@ import {
   DialogContentText,
   DialogTitle,
   TextField,
-} from "@mui/material";
-import Way from "@/components/places/Way";
-import Wall from "@/components/places/Wall";
-import { Helmet } from "react-helmet-async";
+} from '@mui/material';
+import Way from '@/components/places/Way';
+import Wall from '@/components/places/Wall';
+import { Helmet } from 'react-helmet-async';
 
 const PlaceId = () => {
   const { id } = useParams();
@@ -28,10 +28,10 @@ const PlaceId = () => {
     getWalls,
     getWays,
   } = usePlaces();
-  const [plan, setPlan] = useState("");
-  const [wallId, setWallId] = useState("");
-  const [wallName, setWallName] = useState("");
-  const [zoneId, setZoneId] = useState("");
+  const [plan, setPlan] = useState('');
+  const [wallId, setWallId] = useState('');
+  const [wallName, setWallName] = useState('');
+  const [zoneId, setZoneId] = useState('');
 
   const wayRef = useRef();
   const wallRef = useRef();
@@ -39,7 +39,7 @@ const PlaceId = () => {
   useEffect(() => {
     getColors();
     getDifficulties();
-    getPlaceZones(parseInt(id || "0"));
+    getPlaceZones(parseInt(id || '0'));
   }, []);
 
   // set modal
@@ -59,7 +59,7 @@ const PlaceId = () => {
   }
   function handleAddPlan() {
     const formData = new FormData();
-    formData.append("image", file);
+    formData.append('image', file);
     updateZone(zoneId, formData);
   }
 
@@ -69,28 +69,28 @@ const PlaceId = () => {
     // create wall
     createWall(zoneId, wallName).then((response) => {
       // set new id
-      document.getElementById(wallId)?.setAttribute("fill", "#46768B");
-      document.getElementById(wallId)?.setAttribute("id", response.id);
+      document.getElementById(wallId)?.setAttribute('fill', '#46768B');
+      document.getElementById(wallId)?.setAttribute('id', response.id);
       setWallId(response.id);
       getWays(response.id);
       var paths = document.querySelectorAll('[id^="temp"]');
 
       paths.forEach((element) => {
-        element.removeAttribute("id");
+        element.removeAttribute('id');
       });
 
       // save svg
       var myBlob = new Blob(
         [
           document
-            .getElementsByClassName("displaysvg")[0]
+            .getElementsByClassName('displaysvg')[0]
             .children[0].outerHTML.toString(),
         ],
-        { type: "image/svg+xml" }
+        { type: 'image/svg+xml' }
       );
 
       const formData = new FormData();
-      formData.append("image", myBlob, "a.svg");
+      formData.append('image', myBlob, 'a.svg');
 
       updateZone(zoneId, formData).then(() => {
         getPlan(parseInt(zoneId)).then((response) => {
@@ -108,30 +108,30 @@ const PlaceId = () => {
       setPlan(addIdToSVG(response));
     });
     if (document.getElementById(wallId)) {
-      document.getElementById(wallId)?.setAttribute("fill", "#46768B");
+      document.getElementById(wallId)?.setAttribute('fill', '#46768B');
     }
-    setWallId("");
+    setWallId('');
     getWays(0);
     getWalls(id_zone);
   };
 
   // action when click in wall into plan
   const actionOnClick = (event: any) => {
-    let id = event.target.getAttribute("id");
+    let id = event.target.getAttribute('id');
 
     if (id) {
       if (document.getElementById(wallId)) {
-        document.getElementById(wallId)?.setAttribute("fill", "#46768B");
+        document.getElementById(wallId)?.setAttribute('fill', '#46768B');
       }
-      event.target.setAttribute("fill", "#ffffff");
-      event.target.setAttribute("stroke", "#46768B");
+      event.target.setAttribute('fill', '#ffffff');
+      event.target.setAttribute('stroke', '#46768B');
 
       setWallId(id);
 
       //   // create wall if not already set
-      if (id.slice(0, 4) === "temp") {
+      if (id.slice(0, 4) === 'temp') {
         setOpenWall(true);
-        setWallName("");
+        setWallName('');
         getWays(0);
       } else {
         getWays(id);
@@ -143,10 +143,10 @@ const PlaceId = () => {
   // action when click in wall list
   const selectWall = (id: string) => {
     if (document.getElementById(wallId)) {
-      document.getElementById(wallId)?.setAttribute("fill", "#46768B");
+      document.getElementById(wallId)?.setAttribute('fill', '#46768B');
     }
-    document.getElementById(id)?.setAttribute("fill", "#ffffff");
-    document.getElementById(id)?.setAttribute("stroke", "#46768B");
+    document.getElementById(id)?.setAttribute('fill', '#ffffff');
+    document.getElementById(id)?.setAttribute('stroke', '#46768B');
     setWallId(id.toString());
     getWays(id);
   };
@@ -154,24 +154,24 @@ const PlaceId = () => {
   function addPlan(id: string) {
     setZoneId(id);
     if (document.getElementById(wallId)) {
-      document.getElementById(wallId)?.setAttribute("fill", "#46768B");
+      document.getElementById(wallId)?.setAttribute('fill', '#46768B');
     }
-    setWallId("");
+    setWallId('');
     getWays(0);
     getWalls(id);
     setOpenAddPlan(true);
   }
 
   function addIdToSVG(response: string) {
-    let split = response.split("<path");
+    let split = response.split('<path');
 
     let result = split[0];
     for (let i = 1; i < split.length; i++) {
       if (
-        split[i].slice(1, 6).includes("id=") ||
-        !split[i].includes("#46768B")
+        split[i].slice(1, 6).includes('id=') ||
+        !split[i].includes('#46768B')
       ) {
-        result += "<path" + split[i];
+        result += '<path' + split[i];
       } else {
         result += "<path id='temp-" + i + "'" + split[i];
       }
@@ -214,7 +214,7 @@ const PlaceId = () => {
                   zones.map((zone: any) => (
                     <tr
                       key={zone.id}
-                      className={zone.id == zoneId ? "bg-base-200" : ""}
+                      className={zone.id == zoneId ? 'bg-base-200' : ''}
                     >
                       <th>
                         <input
@@ -230,7 +230,7 @@ const PlaceId = () => {
                       <th>{zone.floor}</th>
                       <th>
                         {zone.image ? (
-                          ""
+                          ''
                         ) : (
                           <button
                             className="btn"

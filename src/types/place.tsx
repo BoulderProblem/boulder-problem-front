@@ -9,4 +9,5 @@ export type PLACE = {
   coordinate: { x: number; y: number };
   ownerId: any;
   owner: any;
+  favoriteCount: number;
 };
