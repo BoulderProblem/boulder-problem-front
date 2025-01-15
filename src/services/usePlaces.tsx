@@ -18,6 +18,7 @@ interface PlacesContextType {
   colors: any;
   difficulties: any;
   places?: { data: PLACE[]; meta: any };
+  addresses: any[];
   myPlaces?: PLACE[];
   zones?: any;
   walls: any[];
@@ -28,6 +29,7 @@ interface PlacesContextType {
   getColors: () => void;
   getDifficulties: () => void;
   getPlaces: (search: string, page: number | string) => void;
+  getAddresses: (search: string) => void;
   getMyPlaces: () => void;
   getPlace: (id: number | string) => Promise<any>;
   getPlaceZones: (id: number | string) => Promise<any>;
@@ -54,6 +56,7 @@ export function PlacesProvider({
   const [colors, setColors] = useState<any>();
   const [difficulties, setDifficulties] = useState<any>();
   const [places, setPlaces] = useState<any>();
+  const [addresses, setAddresses] = useState<any>();
   const [myPlaces, setMyPlaces] = useState<any>();
   const [place, setPlace] = useState<any>();
   const [zones, setPlaceZones] = useState<any>();
@@ -131,6 +134,24 @@ export function PlacesProvider({
         setError(errors.response.data.errors[0].message);
       })
       .finally(() => setLoading(false));
+  }
+
+  function getAddresses(search: string) {
+    if (search === '') {
+      setAddresses([]);
+    } else {
+      axiosClient
+        .get(`${baseUrl}/places/addresses?search=${search}`)
+        .then((response) => {
+          console.log(response);
+
+          setAddresses(response.data.predictions);
+        })
+        .catch((errors) => {
+          setError(errors.response.data.errors[0].message);
+        })
+        .finally(() => setLoading(false));
+    }
   }
 
   function getMyPlaces() {
@@ -316,6 +337,7 @@ export function PlacesProvider({
       colors,
       difficulties,
       places,
+      addresses,
       myPlaces,
       place,
       zones,
@@ -326,6 +348,7 @@ export function PlacesProvider({
       getColors,
       getDifficulties,
       getPlaces,
+      getAddresses,
       getMyPlaces,
       getPlace,
       updatePlace,
@@ -344,6 +367,7 @@ export function PlacesProvider({
       colors,
       difficulties,
       places,
+      addresses,
       myPlaces,
       place,
       zones,

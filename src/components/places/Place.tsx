@@ -3,19 +3,32 @@ import Grid from '@mui/material/Grid2';
 import 'leaflet/dist/leaflet.css';
 import usePlaces from '@/services/usePlaces';
 import { TextField, Autocomplete } from '@mui/material';
+import { MobileTimePicker } from '@mui/x-date-pickers/MobileTimePicker';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import { PLACE } from '@/types/place';
 import useUsers from '@/services/useUsers';
+import AddressSearch from './AddressSearch';
+import dayjs, { Dayjs } from 'dayjs';
+import 'dayjs/locale/fr';
+import { format } from 'date-fns'; // Importation de la fonction de formatage de date
 
 const Place = (props: any) => {
-  const { getPlace, updatePlace, getPlaceZones, place } = usePlaces();
+  const { getPlace, getAddresses, updatePlace, getPlaceZones, addresses } =
+    usePlaces();
   const { getUsers, users, user } = useUsers();
 
   const [inputs, setInputs] = useState<PLACE | null>(null);
 
   useEffect(() => {
+    getAddresses('');
     getPlace(parseInt(props.id || '0')).then((response: PLACE) => {
       setInputs(response);
+      initHoraires(response.hours);
     });
     getPlaceZones(parseInt(props.id || '0'));
     getUsers('', 1);
@@ -28,8 +41,147 @@ const Place = (props: any) => {
     setInputs((values: any) => ({ ...values, [name]: value }));
   };
 
+  const joursOuverts = [
+    { jour: 'lundi', en: 'Mo' },
+    { jour: 'mardi', en: 'Tu' },
+    { jour: 'mercredi', en: 'We' },
+    { jour: 'jeudi', en: 'Th' },
+    { jour: 'vendredi', en: 'Fr' },
+    { jour: 'samedi', en: 'Sa' },
+    { jour: 'dimanche', en: 'Su' },
+  ];
+
+  type HorairesSemaine = {
+    [key: string]: {
+      ouvert: boolean;
+      debut: string;
+      fin: string;
+    };
+  };
+
+  const [horaires, setHoraires] = useState<HorairesSemaine>({
+    lundi: { ouvert: false, debut: '', fin: '' },
+    mardi: { ouvert: false, debut: '', fin: '' },
+    mercredi: { ouvert: false, debut: '', fin: '' },
+    jeudi: { ouvert: false, debut: '', fin: '' },
+    vendredi: { ouvert: false, debut: '', fin: '' },
+    samedi: { ouvert: false, debut: '', fin: '' },
+    dimanche: { ouvert: false, debut: '', fin: '' },
+  });
+
+  const initHoraires = (hours: string) => {
+    let plage = hours.split('; ');
+    console.log(plage);
+    let i = 0;
+    while (i < plage.length) {
+      let open = false;
+      console.log('i ' + i);
+
+      joursOuverts.forEach((jours) => {
+        if (plage[i].slice(0, 2) === jours.en || open) {
+          console.log('');
+
+          console.log(plage[i]);
+          console.log(jours.en);
+          let debut = plage[i].split(' ')[1].split('-')[0];
+          let fin = plage[i].split(' ')[1].split('-')[1];
+          console.log(debut);
+          console.log(fin);
+
+          setHoraires((values: any) => ({
+            ...values,
+            [jours.jour]: {
+              ouvert: true,
+              debut: debut,
+              fin: fin,
+            },
+          }));
+          if (!open && plage[i].slice(2, 3) === '-') {
+            open = true;
+          }
+          if (open && plage[i].slice(3, 5) === jours.en) {
+            open = false;
+          }
+        }
+      });
+      i++;
+    }
+  };
+
+  const handleChangeHoraires = (value: Date, jour: string, name: string) => {
+    console.log(format(value, 'HH:mm'));
+    console.log(jour);
+    console.log(name);
+
+    setHoraires((prevHoraires) => ({
+      ...prevHoraires,
+      [jour]: {
+        ...prevHoraires[jour],
+        [name]: format(value, 'HH:mm'),
+      },
+    }));
+
+    console.log(horaires);
+  };
+
+  const handleCheckboxChange = (jour: string, e: any) => {
+    const { checked } = e.target;
+    setHoraires((prevHoraires) => ({
+      ...prevHoraires,
+      [jour]: {
+        ...prevHoraires[jour],
+        ouvert: checked,
+      },
+    }));
+  };
+
+  const formatHoraires = () => {
+    let plage: Array<any> = [];
+
+    joursOuverts.forEach((jours: any) => {
+      if (
+        horaires[jours.jour].ouvert &&
+        horaires[jours.jour].debut !== '' &&
+        horaires[jours.jour].debut !== ''
+      ) {
+        plage.push(
+          jours.en +
+            ' ' +
+            horaires[jours.jour].debut +
+            '-' +
+            horaires[jours.jour].fin
+        );
+      } else {
+        plage.push(' ');
+      }
+    });
+
+    for (let i = plage.length - 1; i > 0; i--) {
+      let cut = 2;
+      if (plage[i].slice(2, 3) === '-') cut = 3;
+      if (
+        plage[i].slice(plage[i].slice(2, 3) === '-' ? 5 : 2) ===
+          plage[i - 1].slice(2) &&
+        plage[i].slice(plage[i].slice(2, 3) === '-' ? 5 : 2) !== ''
+      ) {
+        plage[i - 1] =
+          plage[i - 1].slice(0, 2) +
+          '-' +
+          plage[i].slice(plage[i].slice(2, 3) === '-' ? 3 : 0);
+        plage.splice(i, 1);
+      }
+      if (plage[i] === ' ') {
+        plage.splice(i, 1);
+      }
+    }
+
+    return plage.join('; ');
+  };
+
   const handleSubmit = (event: React.ChangeEvent<unknown>) => {
     event.preventDefault();
+    setInputs((values: any) => ({ ...values, hours: formatHoraires() }));
+    inputs.hours = formatHoraires();
     console.log(inputs);
     updatePlace(parseInt(props.id || '0'), inputs);
   };
@@ -42,6 +194,36 @@ const Place = (props: any) => {
       setInputs((values: any) => ({ ...values, ownerId: null }));
       setInputs((values: any) => ({ ...values, owner: null }));
     }
+  };
+
+  const setAddress = (address: string, address_components: Array<any>) => {
+    setInputs((values: any) => ({ ...values, address: address }));
+    address_components.forEach((component) => {
+      if (component.types.includes('street_number')) {
+        setInputs((values: any) => ({
+          ...values,
+          houseNumber: component.long_name,
+        }));
+      }
+      if (component.types.includes('route')) {
+        setInputs((values: any) => ({
+          ...values,
+          street: component.long_name,
+        }));
+      }
+      if (component.types.includes('locality')) {
+        setInputs((values: any) => ({
+          ...values,
+          city: component.long_name,
+        }));
+      }
+      if (component.types.includes('postal_code')) {
+        setInputs((values: any) => ({
+          ...values,
+          postalCode: component.long_name,
+        }));
+      }
+    });
   };
 
   // Fonction pour effectuer la recherche via l'API
@@ -80,26 +262,32 @@ const Place = (props: any) => {
                   onChange={handleChange}
                 />
                 <Grid container spacing={2}>
-                  <Grid size={{ xs: 12, sm: 5 }}>
+                  <AddressSearch
+                    onAddressSelect={(address, placeId, address_components) => {
+                      setAddress(address, address_components);
+                    }}
+                    address={inputs.address}
+                  />
+                  <Grid size={{ xs: 5, sm: 2 }}>
                     <TextField
                       id="standard-basic"
-                      label="Adresse"
+                      label="Numéro"
                       fullWidth
                       variant="standard"
-                      name="address"
-                      value={inputs.address || ''}
-                      onChange={handleChange}
+                      name="houseNumber"
+                      value={inputs.houseNumber || ''}
+                      disabled
                     />
                   </Grid>
                   <Grid size={{ xs: 7, sm: 4 }}>
                     <TextField
                       id="standard-basic"
-                      label="Ville"
+                      label="Rue"
                       fullWidth
                       variant="standard"
-                      name="city"
-                      value={inputs.city || ''}
-                      onChange={handleChange}
+                      name="street"
+                      value={inputs.street || ''}
+                      disabled
                     />
                   </Grid>
                   <Grid size={{ xs: 5, sm: 3 }}>
@@ -110,7 +298,18 @@ const Place = (props: any) => {
                       variant="standard"
                       name="postalCode"
                       value={inputs.postalCode || ''}
-                      onChange={handleChange}
+                      disabled
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 7, sm: 3 }}>
+                    <TextField
+                      id="standard-basic"
+                      label="Ville"
+                      fullWidth
+                      variant="standard"
+                      name="city"
+                      value={inputs.city || ''}
+                      disabled
                     />
                   </Grid>
                 </Grid>
@@ -163,6 +362,107 @@ const Place = (props: any) => {
                       )}
                     />
                   </Grid>
+                </Grid>
+                <Grid>
+                  {Object.entries(horaires).map(
+                    ([jour, { ouvert, debut, fin }]) => (
+                      <div key={jour}>
+                        <Grid container spacing={2}>
+                          <Grid size={4}>
+                            <FormControlLabel
+                              label={
+                                jour.charAt(0).toUpperCase() + jour.slice(1)
+                              }
+                              labelPlacement="start"
+                              control={
+                                <Checkbox
+                                  checked={ouvert}
+                                  onChange={(e) =>
+                                    handleCheckboxChange(jour, e)
+                                  }
+                                />
+                              }
+                            />
+                          </Grid>
+                          {ouvert && (
+                            <>
+                              <Grid size={4}>
+                                <LocalizationProvider
+                                  dateAdapter={AdapterDayjs}
+                                  adapterLocale="fr"
+                                >
+                                  <DemoContainer components={['DatePicker']}>
+                                    <MobileTimePicker
+                                      format="HH:mm"
+                                      label="Début"
+                                      slotProps={{
+                                        textField: {
+                                          variant: 'standard',
+                                        },
+                                      }}
+                                      defaultValue={dayjs()
+                                        .set(
+                                          'hour',
+                                          parseInt(debut.split(':')[0])
+                                        )
+                                        .set(
+                                          'minute',
+                                          parseInt(debut.split(':')[1])
+                                        )}
+                                      onChange={(newValue: any) =>
+                                        handleChangeHoraires(
+                                          newValue,
+                                          jour,
+                                          'debut'
+                                        )
+                                      }
+                                    />
+                                  </DemoContainer>
+                                </LocalizationProvider>
+                              </Grid>
+
+                              <Grid size={4}>
+                                <LocalizationProvider
+                                  dateAdapter={AdapterDayjs}
+                                  adapterLocale="fr"
+                                >
+                                  <DemoContainer
+                                    components={['MobileTimePicker']}
+                                  >
+                                    <MobileTimePicker
+                                      format="HH:mm"
+                                      label="fin"
+                                      slotProps={{
+                                        textField: {
+                                          variant: 'standard',
+                                        },
+                                      }}
+                                      defaultValue={dayjs()
+                                        .set(
+                                          'hour',
+                                          parseInt(fin.split(':')[0])
+                                        )
+                                        .set(
+                                          'minute',
+                                          parseInt(fin.split(':')[1])
+                                        )}
+                                      onChange={(newValue: any) =>
+                                        handleChangeHoraires(
+                                          newValue,
+                                          jour,
+                                          'fin'
+                                        )
+                                      }
+                                    />
+                                  </DemoContainer>
+                                </LocalizationProvider>
+                              </Grid>
+                            </>
+                          )}
+                        </Grid>
+                      </div>
+                    )
+                  )}
                 </Grid>
 
                 <div className="flex justify-evenly">
