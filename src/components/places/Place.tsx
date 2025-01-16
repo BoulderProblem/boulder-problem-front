@@ -2,7 +2,15 @@ import React, { useEffect, useState } from 'react';
 import Grid from '@mui/material/Grid2';
 import 'leaflet/dist/leaflet.css';
 import usePlaces from '@/services/usePlaces';
-import { TextField, Autocomplete } from '@mui/material';
+import {
+  TextField,
+  Autocomplete,
+  Dialog,
+  DialogActions,
+  DialogTitle,
+  DialogContent,
+  Box,
+} from '@mui/material';
 import { MobileTimePicker } from '@mui/x-date-pickers/MobileTimePicker';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -23,6 +31,7 @@ const Place = (props: any) => {
   const { getUsers, users, user } = useUsers();
 
   const [inputs, setInputs] = useState<PLACE | null>(null);
+  const [openHours, setOpenHours] = useState(false);
 
   useEffect(() => {
     getAddresses('');
@@ -33,6 +42,16 @@ const Place = (props: any) => {
     getPlaceZones(parseInt(props.id || '0'));
     getUsers('', 1);
   }, []);
+
+  // close modals
+  const handleClose = () => {
+    setOpenHours(false);
+  };
+
+  const openModal = (event: React.ChangeEvent<unknown>) => {
+    event.preventDefault();
+    setOpenHours(true);
+  };
 
   const handleChange = (event: any) => {
     const name = event.target.name;
@@ -69,24 +88,20 @@ const Place = (props: any) => {
     dimanche: { ouvert: false, debut: '', fin: '' },
   });
 
+  /**
+   * décompresse les horaires pour initialiser le state au dessus
+   * @param hours
+   */
   const initHoraires = (hours: string) => {
     let plage = hours.split('; ');
-    console.log(plage);
     let i = 0;
     while (i < plage.length) {
       let open = false;
-      console.log('i ' + i);
 
       joursOuverts.forEach((jours) => {
         if (plage[i].slice(0, 2) === jours.en || open) {
-          console.log('');
-
-          console.log(plage[i]);
-          console.log(jours.en);
           let debut = plage[i].split(' ')[1].split('-')[0];
           let fin = plage[i].split(' ')[1].split('-')[1];
-          console.log(debut);
-          console.log(fin);
 
           setHoraires((values: any) => ({
             ...values,
@@ -108,11 +123,13 @@ const Place = (props: any) => {
     }
   };
 
+  /**
+   * Enregistre le changement d'horaire
+   * @param value // nouvel horaire
+   * @param jour // jour sélectionnée
+   * @param name // début ou fin
+   */
   const handleChangeHoraires = (value: Date, jour: string, name: string) => {
-    console.log(format(value, 'HH:mm'));
-    console.log(jour);
-    console.log(name);
-
     setHoraires((prevHoraires) => ({
       ...prevHoraires,
       [jour]: {
@@ -120,10 +137,13 @@ const Place = (props: any) => {
         [name]: format(value, 'HH:mm'),
       },
     }));
-
-    console.log(horaires);
   };
 
+  /**
+   * enregistre si un jour à été coché ou non
+   * @param jour // jour sélectionné
+   * @param e // info sur la checkbox
+   */
   const handleCheckboxChange = (jour: string, e: any) => {
     const { checked } = e.target;
     setHoraires((prevHoraires) => ({
@@ -135,6 +155,10 @@ const Place = (props: any) => {
     }));
   };
 
+  /**
+   * format les horaire pour les enregistre au bon format
+   * @returns
+   */
   const formatHoraires = () => {
     let plage: Array<any> = [];
 
@@ -178,14 +202,22 @@ const Place = (props: any) => {
     return plage.join('; ');
   };
 
+  /**
+   * enregistre les info sur la salle
+   * @param event
+   */
   const handleSubmit = (event: React.ChangeEvent<unknown>) => {
     event.preventDefault();
-    setInputs((values: any) => ({ ...values, hours: formatHoraires() }));
+    // enregistre les horaires en les reformatants
     inputs.hours = formatHoraires();
     console.log(inputs);
     updatePlace(parseInt(props.id || '0'), inputs);
   };
 
+  /**
+   * Enregistre les info du gérant sélectionné
+   * @param user
+   */
   const setOwner = (user: any) => {
     if (user) {
       setInputs((values: any) => ({ ...values, ownerId: user.id }));
@@ -196,6 +228,11 @@ const Place = (props: any) => {
     }
   };
 
+  /**
+   * Enregistre l'adresse décomposée
+   * @param address
+   * @param address_components
+   */
   const setAddress = (address: string, address_components: Array<any>) => {
     setInputs((values: any) => ({ ...values, address: address }));
     address_components.forEach((component) => {
@@ -252,15 +289,32 @@ const Place = (props: any) => {
           <Grid container spacing={2} columns={{ xs: 1, sm: 12 }}>
             <Grid size={8} className="p-6">
               <form className="space-y-4 md:space-y-6">
-                <TextField
-                  id="standard-basic"
-                  label="Nom de la salle"
-                  fullWidth
-                  variant="standard"
-                  name="name"
-                  value={inputs.name || ''}
-                  onChange={handleChange}
-                />
+                <Grid container spacing={2}>
+                  <Grid size={8}>
+                    <TextField
+                      id="standard-basic"
+                      label="Nom de la salle"
+                      fullWidth
+                      variant="standard"
+                      name="name"
+                      value={inputs.name || ''}
+                      onChange={handleChange}
+                    />
+                  </Grid>
+
+                  <Grid size={4}>
+                    <div className="flex justify-evenly">
+                      <div>
+                        <button
+                          className="btn text-white bg-primary-600 hover:bg-primary-700"
+                          onClick={openModal}
+                        >
+                          Horaires
+                        </button>
+                      </div>
+                    </div>
+                  </Grid>
+                </Grid>
                 <Grid container spacing={2}>
                   <AddressSearch
                     onAddressSelect={(address, placeId, address_components) => {
@@ -363,107 +417,6 @@ const Place = (props: any) => {
                     />
                   </Grid>
                 </Grid>
-                <Grid>
-                  {Object.entries(horaires).map(
-                    ([jour, { ouvert, debut, fin }]) => (
-                      <div key={jour}>
-                        <Grid container spacing={2}>
-                          <Grid size={4}>
-                            <FormControlLabel
-                              label={
-                                jour.charAt(0).toUpperCase() + jour.slice(1)
-                              }
-                              labelPlacement="start"
-                              control={
-                                <Checkbox
-                                  checked={ouvert}
-                                  onChange={(e) =>
-                                    handleCheckboxChange(jour, e)
-                                  }
-                                />
-                              }
-                            />
-                          </Grid>
-                          {ouvert && (
-                            <>
-                              <Grid size={4}>
-                                <LocalizationProvider
-                                  dateAdapter={AdapterDayjs}
-                                  adapterLocale="fr"
-                                >
-                                  <DemoContainer components={['DatePicker']}>
-                                    <MobileTimePicker
-                                      format="HH:mm"
-                                      label="Début"
-                                      slotProps={{
-                                        textField: {
-                                          variant: 'standard',
-                                        },
-                                      }}
-                                      defaultValue={dayjs()
-                                        .set(
-                                          'hour',
-                                          parseInt(debut.split(':')[0])
-                                        )
-                                        .set(
-                                          'minute',
-                                          parseInt(debut.split(':')[1])
-                                        )}
-                                      onChange={(newValue: any) =>
-                                        handleChangeHoraires(
-                                          newValue,
-                                          jour,
-                                          'debut'
-                                        )
-                                      }
-                                    />
-                                  </DemoContainer>
-                                </LocalizationProvider>
-                              </Grid>
-
-                              <Grid size={4}>
-                                <LocalizationProvider
-                                  dateAdapter={AdapterDayjs}
-                                  adapterLocale="fr"
-                                >
-                                  <DemoContainer
-                                    components={['MobileTimePicker']}
-                                  >
-                                    <MobileTimePicker
-                                      format="HH:mm"
-                                      label="fin"
-                                      slotProps={{
-                                        textField: {
-                                          variant: 'standard',
-                                        },
-                                      }}
-                                      defaultValue={dayjs()
-                                        .set(
-                                          'hour',
-                                          parseInt(fin.split(':')[0])
-                                        )
-                                        .set(
-                                          'minute',
-                                          parseInt(fin.split(':')[1])
-                                        )}
-                                      onChange={(newValue: any) =>
-                                        handleChangeHoraires(
-                                          newValue,
-                                          jour,
-                                          'fin'
-                                        )
-                                      }
-                                    />
-                                  </DemoContainer>
-                                </LocalizationProvider>
-                              </Grid>
-                            </>
-                          )}
-                        </Grid>
-                      </div>
-                    )
-                  )}
-                </Grid>
 
                 <div className="flex justify-evenly">
                   <div>
@@ -496,6 +449,122 @@ const Place = (props: any) => {
               </div>
             </Grid>
           </Grid>
+          {/* horaire dialog */}
+          <Dialog
+            open={openHours}
+            onClose={handleClose}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle>Modifier les horaires</DialogTitle>
+            <DialogContent>
+              <Box
+                component="form"
+                sx={{ '& .MuiTextField-root': { m: 1 } }}
+                noValidate
+                autoComplete="off"
+              >
+                {Object.entries(horaires).map(
+                  ([jour, { ouvert, debut, fin }]) => (
+                    <div key={jour}>
+                      <Grid container spacing={2}>
+                        <Grid size={4}>
+                          <FormControlLabel
+                            label={jour.charAt(0).toUpperCase() + jour.slice(1)}
+                            labelPlacement="start"
+                            className="h-[4.9rem] w-full pr-4"
+                            control={
+                              <Checkbox
+                                checked={ouvert}
+                                onChange={(e) => handleCheckboxChange(jour, e)}
+                              />
+                            }
+                          />
+                        </Grid>
+                        {ouvert && (
+                          <>
+                            <Grid size={4}>
+                              <LocalizationProvider
+                                dateAdapter={AdapterDayjs}
+                                adapterLocale="fr"
+                              >
+                                <DemoContainer components={['DatePicker']}>
+                                  <MobileTimePicker
+                                    format="HH:mm"
+                                    label="Début"
+                                    slotProps={{
+                                      textField: {
+                                        variant: 'standard',
+                                      },
+                                    }}
+                                    defaultValue={dayjs()
+                                      .set(
+                                        'hour',
+                                        parseInt(debut.split(':')[0])
+                                      )
+                                      .set(
+                                        'minute',
+                                        parseInt(debut.split(':')[1])
+                                      )}
+                                    onChange={(newValue: any) =>
+                                      handleChangeHoraires(
+                                        newValue,
+                                        jour,
+                                        'debut'
+                                      )
+                                    }
+                                  />
+                                </DemoContainer>
+                              </LocalizationProvider>
+                            </Grid>
+
+                            <Grid size={4}>
+                              <LocalizationProvider
+                                dateAdapter={AdapterDayjs}
+                                adapterLocale="fr"
+                              >
+                                <DemoContainer
+                                  components={['MobileTimePicker']}
+                                >
+                                  <MobileTimePicker
+                                    format="HH:mm"
+                                    label="fin"
+                                    slotProps={{
+                                      textField: {
+                                        variant: 'standard',
+                                      },
+                                    }}
+                                    defaultValue={dayjs()
+                                      .set('hour', parseInt(fin.split(':')[0]))
+                                      .set(
+                                        'minute',
+                                        parseInt(fin.split(':')[1])
+                                      )}
+                                    onChange={(newValue: any) =>
+                                      handleChangeHoraires(
+                                        newValue,
+                                        jour,
+                                        'fin'
+                                      )
+                                    }
+                                  />
+                                </DemoContainer>
+                              </LocalizationProvider>
+                            </Grid>
+                          </>
+                        )}
+                      </Grid>
+                    </div>
+                  )
+                )}
+              </Box>
+            </DialogContent>
+            <DialogActions>
+              <button className="btn" onClick={() => setOpenHours(false)}>
+                Fermer
+              </button>
+            </DialogActions>
+          </Dialog>
         </div>
       ) : (
         ''
