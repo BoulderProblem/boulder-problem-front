@@ -48,9 +48,7 @@ function Conditions() {
           {/* Main content */}
           <main className="flex-grow py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto mb-10">
-              <h1 className="text-3xl font-bold">
-                Politique de Confidentialité
-              </h1>
+              <h1 className="text-3xl font-bold">Conditions d'utilisation</h1>
             </div>
             <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg">
               <h2 className="text-1xl font-semibold mb-6">

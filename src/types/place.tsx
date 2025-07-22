@@ -13,4 +13,8 @@ export type PLACE = {
   owner: any;
   hours: string;
   favoriteCount: number;
+  gradeMin: string;
+  gradeMax: string;
+  lengthMin: string;
+  lengthMax: string;
 };

@@ -18,9 +18,9 @@ interface PlacesContextType {
   colors: any;
   difficulties: any;
   places?: { data: PLACE[]; meta: any };
-  addresses: any[];
   myPlaces?: PLACE[];
-  zones?: any;
+  zone?: any;
+  zones?: any[];
   walls: any[];
   ways?: WAY[];
   place?: PLACE;
@@ -29,12 +29,13 @@ interface PlacesContextType {
   getColors: () => void;
   getDifficulties: () => void;
   getPlaces: (search: string, page: number | string) => void;
-  getAddresses: (search: string) => void;
   getMyPlaces: () => void;
   getPlace: (id: number | string) => Promise<any>;
+  getZone: (id: number | string) => Promise<any>;
   getPlaceZones: (id: number | string) => Promise<any>;
   updatePlace: (id: number | string, params: any) => Promise<any>;
   getPlan: (id: number | string) => Promise<any>;
+  createZone: (params: any) => Promise<any>;
   updateZone: (id: string, params: any) => Promise<any>;
   createWall: (zone_id: string, name: string) => Promise<any>;
   getWalls: (id: number | string) => void;
@@ -56,9 +57,9 @@ export function PlacesProvider({
   const [colors, setColors] = useState<any>();
   const [difficulties, setDifficulties] = useState<any>();
   const [places, setPlaces] = useState<any>();
-  const [addresses, setAddresses] = useState<any>();
   const [myPlaces, setMyPlaces] = useState<any>();
   const [place, setPlace] = useState<any>();
+  const [zone, setZone] = useState<any>();
   const [zones, setPlaceZones] = useState<any>();
   const [walls, setWalls] = useState<any>([]);
   const [ways, setWays] = useState<any>([]);
@@ -136,24 +137,6 @@ export function PlacesProvider({
       .finally(() => setLoading(false));
   }
 
-  function getAddresses(search: string) {
-    if (search === '') {
-      setAddresses([]);
-    } else {
-      axiosClient
-        .get(`${baseUrl}/places/addresses?search=${search}`)
-        .then((response) => {
-          console.log(response);
-
-          setAddresses(response.data.predictions);
-        })
-        .catch((errors) => {
-          setError(errors.response.data.errors[0].message);
-        })
-        .finally(() => setLoading(false));
-    }
-  }
-
   function getMyPlaces() {
     axiosClient
       .get(`${baseUrl}/places/mine`)
@@ -179,6 +162,21 @@ export function PlacesProvider({
       })
       .finally(() => setLoading(false));
     return place;
+  }
+
+  async function getZone(id: number | string) {
+    let zone;
+    await axiosClient
+      .get(`${baseUrl}/zones/${id}`)
+      .then((response) => {
+        setZone(response.data);
+        zone = response.data;
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+    return zone;
   }
 
   async function getPlaceZones(id: number | string) {
@@ -207,18 +205,28 @@ export function PlacesProvider({
     return place;
   }
 
+  async function createZone(params: any) {
+    return await axiosClient
+      .post(`${baseUrl}/zones`, params)
+      .then((response) => {})
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
   async function updateZone(id: string, params: any) {
-    let place;
+    let zone;
     await axiosClient
       .put(`${baseUrl}/zones/${id}`, params)
       .then((response) => {
-        place = response.data;
+        zone = response.data;
       })
       .catch((errors) => {
         setError(errors.response.data.errors[0].message);
       })
       .finally(() => setLoading(false));
-    return place;
+    return zone;
   }
 
   async function getPlan(id: number | string) {
@@ -337,9 +345,9 @@ export function PlacesProvider({
       colors,
       difficulties,
       places,
-      addresses,
       myPlaces,
       place,
+      zone,
       zones,
       walls,
       ways,
@@ -348,13 +356,14 @@ export function PlacesProvider({
       getColors,
       getDifficulties,
       getPlaces,
-      getAddresses,
       getMyPlaces,
       getPlace,
       updatePlace,
+      getZone,
       getPlaceZones,
       getPlan,
       createWall,
+      createZone,
       updateZone,
       getWalls,
       getWays,
@@ -367,9 +376,9 @@ export function PlacesProvider({
       colors,
       difficulties,
       places,
-      addresses,
       myPlaces,
       place,
+      zone,
       zones,
       walls,
       ways,

@@ -1,0 +1,38 @@
+name: Build & Deploy React App via SSH & Docker
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🔄 Checkout repository
+        uses: actions/checkout@v3
+
+      - name: 🐳 Build Docker image
+        run: docker build -t boulder-problem-front .
+
+      - name: 📦 Save image to tarball
+        run: docker save boulder-problem-front -o boulder-problem-front.tar
+
+      - name: 🗝️ Setup SSH
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: 📤 Copy Docker image to server
+        run: scp -o StrictHostKeyChecking=no boulder-problem-front.tar ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/boulder-problem-front.tar
+
+      - name: 🚀 Deploy Docker container on server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+            docker load -i /tmp/boulder-problem-front.tar &&
+            docker stop boulder-problem-front || true &&
+            docker rm boulder-problem-front || true &&
+            docker run -d --name boulder-problem-front -p 80:80 boulder-problem-front &&
+            rm /tmp/boulder-problem-front.tar
+          "

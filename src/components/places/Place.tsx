@@ -10,12 +10,16 @@ import {
   DialogTitle,
   DialogContent,
   Box,
+  MenuItem,
+  InputAdornment,
 } from '@mui/material';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { MobileTimePicker } from '@mui/x-date-pickers/MobileTimePicker';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import ImageWithToken from 'react-image-with-auth';
 import Checkbox from '@mui/material/Checkbox';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import { PLACE } from '@/types/place';
@@ -24,17 +28,17 @@ import AddressSearch from './AddressSearch';
 import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/fr';
 import { format } from 'date-fns'; // Importation de la fonction de formatage de date
+import useAuth from '@/services/useAuth';
 
 const Place = (props: any) => {
-  const { getPlace, getAddresses, updatePlace, getPlaceZones, addresses } =
-    usePlaces();
+  const { getPlace, updatePlace, getPlaceZones, difficulties } = usePlaces();
   const { getUsers, users, user } = useUsers();
+  const { token } = useAuth();
 
   const [inputs, setInputs] = useState<PLACE | null>(null);
   const [openHours, setOpenHours] = useState(false);
 
   useEffect(() => {
-    getAddresses('');
     getPlace(parseInt(props.id || '0')).then((response: PLACE) => {
       setInputs(response);
       initHoraires(response.hours);
@@ -274,7 +278,28 @@ const Place = (props: any) => {
         <div>
           <div className="mt-5">
             <Grid container spacing={2}>
-              <Grid size={{ xs: 3, sm: 3 }}></Grid>
+              <Grid size={{ xs: 3, sm: 3 }}>
+                <div className="h-full flex items-center justify-end">
+                  <div className="w-[6rem] h-[6rem] avatar">
+                    <div className="relative group overflow-hidden p-1">
+                      <ImageWithToken
+                        imageUrl={
+                          'https://boulder-problem.chabs.fr/api/places/' +
+                          inputs.id +
+                          '/logo/' +
+                          '?size=100'
+                        }
+                        token={token}
+                        alt="logo"
+                        className="w-full h-full rounded-full object-cover transition-all duration-300 group-hover:blur-sm group-hover:brightness-75"
+                      />
+                      <div className="absolute flex bottom-0 right-0 !w-10 !h-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <AddCircleOutlineIcon className="text-white !w-8 !h-8 drop-shadow-lg" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Grid>
               <Grid size={{ xs: 6, sm: 6 }}>
                 <h1 className="text-center my-5">{inputs.name || ''}</h1>
               </Grid>
@@ -367,17 +392,19 @@ const Place = (props: any) => {
                     />
                   </Grid>
                 </Grid>
-                <TextField
-                  id="standard-basic"
-                  label="Téléphone"
-                  fullWidth
-                  variant="standard"
-                  name="phone"
-                  value={inputs.phone || ''}
-                  onChange={handleChange}
-                />
                 <Grid container spacing={2}>
-                  <Grid size={{ xs: 12, sm: 6 }}>
+                  <Grid size={{ xs: 5, sm: 5 }}>
+                    <TextField
+                      id="standard-basic"
+                      label="Téléphone"
+                      fullWidth
+                      variant="standard"
+                      name="phone"
+                      value={inputs.phone || ''}
+                      onChange={handleChange}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 7, sm: 7 }}>
                     <TextField
                       id="standard-basic"
                       label="Site web"
@@ -388,7 +415,89 @@ const Place = (props: any) => {
                       onChange={handleChange}
                     />
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
+                </Grid>
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 6, sm: 2 }}>
+                    <TextField
+                      id="standard-basic"
+                      label="Difficultée min"
+                      select
+                      fullWidth
+                      variant="standard"
+                      name="gradeMin"
+                      value={inputs.gradeMin || ''}
+                      onChange={handleChange}
+                    >
+                      {difficulties &&
+                        difficulties.map((difficulty: any) => (
+                          <MenuItem
+                            key={difficulty.label}
+                            value={difficulty.label}
+                          >
+                            {difficulty.label}
+                          </MenuItem>
+                        ))}
+                    </TextField>
+                  </Grid>
+                  <Grid size={{ xs: 6, sm: 2 }}>
+                    <TextField
+                      id="standard-basic"
+                      label="Difficultée max"
+                      select
+                      fullWidth
+                      variant="standard"
+                      name="gradeMax"
+                      value={inputs.gradeMax || ''}
+                      onChange={handleChange}
+                    >
+                      {difficulties &&
+                        difficulties.map((difficulty: any) => (
+                          <MenuItem
+                            key={difficulty.label}
+                            value={difficulty.label}
+                          >
+                            {difficulty.label}
+                          </MenuItem>
+                        ))}
+                    </TextField>
+                  </Grid>
+                  <Grid size={{ xs: 6, sm: 2 }}>
+                    <TextField
+                      id="standard-basic"
+                      label="Hauteur min"
+                      fullWidth
+                      variant="standard"
+                      name="lengthMin"
+                      value={inputs.lengthMin || ''}
+                      onChange={handleChange}
+                      slotProps={{
+                        input: {
+                          startAdornment: (
+                            <InputAdornment position="start">m</InputAdornment>
+                          ),
+                        },
+                      }}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 6, sm: 2 }}>
+                    <TextField
+                      id="standard-basic"
+                      label="Hauteur max"
+                      fullWidth
+                      variant="standard"
+                      name="lengthMax"
+                      value={inputs.lengthMax || ''}
+                      onChange={handleChange}
+                      slotProps={{
+                        input: {
+                          startAdornment: (
+                            <InputAdornment position="start">m</InputAdornment>
+                          ),
+                        },
+                      }}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 4 }}>
                     <Autocomplete
                       fullWidth
                       value={inputs.owner}
@@ -405,7 +514,6 @@ const Place = (props: any) => {
                           fetchPersons(newInputValue);
                       }}
                       disabled={user && user.roleId === 2}
-                      sx={{ width: 300 }}
                       renderInput={(params) => (
                         <TextField
                           {...params}

@@ -84,20 +84,12 @@ const Main = () => {
       ),
     },
     {
-      path: '/politique_de_confidentialité',
-      element: (
-        <UnProtectedRoute>
-          <Confidentialité />
-        </UnProtectedRoute>
-      ),
+      path: '/privacy_policy',
+      element: <Confidentialité />,
     },
     {
-      path: '/conditions_d_utilisation',
-      element: (
-        <UnProtectedRoute>
-          <Conditions />
-        </UnProtectedRoute>
-      ),
+      path: '/terms_of_service',
+      element: <Conditions />,
     },
   ];
 

@@ -161,14 +161,14 @@ function Index() {
                 <h4 className="text-white text-lg font-semibold mb-4">Légal</h4>
                 <ul className="space-y-2">
                   <li>
-                    <Link to={'/conditions_d_utilisation'}>
+                    <Link to={'/terms_of_service'}>
                       <p className="hover:text-white transition-colors">
                         Conditions d'utilisation
                       </p>
                     </Link>
                   </li>
                   <li>
-                    <Link to={'/politique_de_confidentialité'}>
+                    <Link to={'/privacy_policy'}>
                       <p className="hover:text-white transition-colors">
                         Politique de confidentialité
                       </p>

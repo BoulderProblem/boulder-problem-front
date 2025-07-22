@@ -1,6 +1,6 @@
-import React, { useEffect, useImperativeHandle, useState } from "react";
-import "leaflet/dist/leaflet.css";
-import usePlaces from "@/services/usePlaces";
+import React, { useEffect, useImperativeHandle, useState } from 'react';
+import 'leaflet/dist/leaflet.css';
+import usePlaces from '@/services/usePlaces';
 import {
   Dialog,
   DialogActions,
@@ -9,20 +9,46 @@ import {
   TextField,
   MenuItem,
   Box,
-} from "@mui/material";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import { WAY } from "@/types/way";
+} from '@mui/material';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
+import { WAY } from '@/types/way';
 
 const Way = React.forwardRef((props: { wallId: string }, ref) => {
   const { ways, colors, difficulties, getWay, updateWay, addWay, deleteWay } =
     usePlaces();
   const [openDeleteWay, setOpenDeleteWay] = useState(false);
   const [openAddWay, setOpenAddWay] = useState(false);
-  const [wayId, setWayId] = useState("");
+  const [wayId, setWayId] = useState('');
 
   useEffect(() => {}, []);
   // close modals
+
+  const formikWay = useFormik({
+    initialValues: {
+      id: '',
+      name: '',
+      colorId: '',
+      difficultyId: '',
+      routeSetter: '',
+      style: '',
+      wallId: null,
+    },
+    validationSchema: Yup.object({
+      name: Yup.string().required('Un nom de voie est requis'),
+      colorId: Yup.string().required('Une couleur est requise'),
+      difficultyId: Yup.string().required('Une difficultée est requise'),
+      routeSetter: Yup.string().required('Un ouvreur est requis'),
+      style: Yup.string().required('Entrez un style de voie'),
+    }),
+    onSubmit: (values) => {
+      console.log('Formulaire soumis avec succès', values);
+      // Traitez l'envoi du formulaire ici (ex. appel API)
+      handleAddWay(values); // Ferme le modal après soumission
+    },
+  });
 
   useImperativeHandle(ref, () => ({
     openModalWay() {
@@ -47,57 +73,48 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
     handleClose();
   }
 
-  const [orderWay, setOrderWay] = useState("asc");
-  const [orderWayBy, setOrderWayBy] = useState("id");
+  const [orderWay, setOrderWay] = useState('asc');
+  const [orderWayBy, setOrderWayBy] = useState('id');
 
   const handleRequestSortWay = (property: string) => {
-    const isAsc = orderWayBy === property && orderWay === "asc";
-    setOrderWay(isAsc ? "desc" : "asc");
+    const isAsc = orderWayBy === property && orderWay === 'asc';
+    setOrderWay(isAsc ? 'desc' : 'asc');
     setOrderWayBy(property);
   };
   let sortedWays: WAY[] = [];
   if (ways) {
     sortedWays = [...ways].sort((a, b) => {
-      if (a[orderWayBy] < b[orderWayBy]) return orderWay === "asc" ? -1 : 1;
-      if (a[orderWayBy] > b[orderWayBy]) return orderWay === "asc" ? 1 : -1;
+      if (a[orderWayBy] < b[orderWayBy]) return orderWay === 'asc' ? -1 : 1;
+      if (a[orderWayBy] > b[orderWayBy]) return orderWay === 'asc' ? 1 : -1;
       return 0;
     });
   }
-  // way form
-  const [wayInputs, setWayInputs] = useState<WAY | null>(null);
-
-  const handleWayChange = (event: any) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    setWayInputs((values: any) => ({ ...values, [name]: value }));
-  };
 
   const openModalWay = (id?: number) => {
     if (id) {
       getWay(id).then((response) => {
         console.log(response);
-        setWayInputs(response);
+        setWayId(response.id);
         setOpenAddWay(true);
-
-        // setWayInputs((values: any) => ({ ...values, [name]: value }));
+        formikWay.setValues(response);
       });
     } else {
-      setWayInputs(null);
       setOpenAddWay(true);
+      formikWay.resetForm();
     }
   };
 
   // add way
-  function handleAddWay() {
-    let params: any = wayInputs;
-    if (params.wallId) {
+  function handleAddWay(values: any) {
+    console.log(values);
+    if (values.id) {
       // update Way
-      updateWay(params.id, params);
+      updateWay(values.id, values);
       handleClose();
     } else {
       //  crate way
-      params.wallId = props.wallId;
-      addWay(wayInputs);
+      values.wallId = props.wallId;
+      addWay(values);
       handleClose();
     }
   }
@@ -110,11 +127,11 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
           <tr>
             <th
               className="cursor-pointer"
-              onClick={() => handleRequestSortWay("name")}
+              onClick={() => handleRequestSortWay('name')}
             >
               Nom / style
-              {orderWayBy === "name" &&
-                (orderWay === "asc" ? (
+              {orderWayBy === 'name' &&
+                (orderWay === 'asc' ? (
                   <ArrowUpwardIcon />
                 ) : (
                   <ArrowDownwardIcon />
@@ -122,11 +139,11 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
             </th>
             <th
               className="cursor-pointer"
-              onClick={() => handleRequestSortWay("difficultyId")}
+              onClick={() => handleRequestSortWay('difficultyId')}
             >
               Difficulté
-              {orderWayBy === "difficultyId" &&
-                (orderWay === "asc" ? (
+              {orderWayBy === 'difficultyId' &&
+                (orderWay === 'asc' ? (
                   <ArrowUpwardIcon />
                 ) : (
                   <ArrowDownwardIcon />
@@ -134,11 +151,11 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
             </th>
             <th
               className="cursor-pointer"
-              onClick={() => handleRequestSortWay("routeSetter")}
+              onClick={() => handleRequestSortWay('routeSetter')}
             >
               Ouvreur
-              {orderWayBy === "routeSetter" &&
-                (orderWay === "asc" ? (
+              {orderWayBy === 'routeSetter' &&
+                (orderWay === 'asc' ? (
                   <ArrowUpwardIcon />
                 ) : (
                   <ArrowDownwardIcon />
@@ -152,7 +169,7 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
             sortedWays.map((way: any) => (
               <tr
                 key={way.id}
-                className={way.id == props.wallId ? "bg-base-200" : ""}
+                className={way.id == props.wallId ? 'bg-base-200' : ''}
               >
                 <th>
                   {way.name}
@@ -207,22 +224,20 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
       <Dialog
         open={openAddWay}
         onClose={handleClose}
-        maxWidth={"xs"}
+        maxWidth={'xs'}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
         PaperProps={{
-          className: "dark:bg-zinc-700",
+          className: 'dark:bg-zinc-700',
         }}
       >
         <DialogTitle>
-          {wayInputs && wayInputs.name
-            ? "Modifier une voie"
-            : "Ajouter la voie"}
+          {formikWay.values.id !== '' ? 'Modifier une voie' : 'Ajouter la voie'}
         </DialogTitle>
         <DialogContent>
           <Box
             component="form"
-            sx={{ "& .MuiTextField-root": { m: 1 } }}
+            sx={{ '& .MuiTextField-root': { m: 1 } }}
             noValidate
             autoComplete="off"
           >
@@ -232,10 +247,13 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
               fullWidth
               variant="standard"
               name="name"
-              value={(wayInputs && wayInputs.name) || ""}
-              onChange={handleWayChange}
+              value={formikWay.values.name}
+              onChange={formikWay.handleChange}
               className="p-2.5"
             />
+            {formikWay.errors.name && formikWay.touched.name && (
+              <p style={{ color: '#ff4444' }}>{formikWay.errors.name}</p>
+            )}
             <TextField
               id="standard-select-currency"
               select
@@ -243,8 +261,8 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
               label="Couleur"
               variant="standard"
               name="colorId"
-              value={(wayInputs && wayInputs.colorId) || "0"}
-              onChange={handleWayChange}
+              value={formikWay.values.colorId}
+              onChange={formikWay.handleChange}
             >
               {colors &&
                 colors.map((color: any) => (
@@ -253,6 +271,9 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
                   </MenuItem>
                 ))}
             </TextField>
+            {formikWay.errors.colorId && formikWay.touched.colorId && (
+              <p style={{ color: '#ff4444' }}>{formikWay.errors.colorId}</p>
+            )}
             <TextField
               id="standard-select-currency"
               select
@@ -260,8 +281,8 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
               label="Difficultée"
               variant="standard"
               name="difficultyId"
-              value={(wayInputs && wayInputs.difficultyId) || "0"}
-              onChange={handleWayChange}
+              value={formikWay.values.difficultyId}
+              onChange={formikWay.handleChange}
             >
               {difficulties &&
                 difficulties.map((difficulty: any) => (
@@ -270,36 +291,52 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
                   </MenuItem>
                 ))}
             </TextField>
+            {formikWay.errors.difficultyId &&
+              formikWay.touched.difficultyId && (
+                <p style={{ color: '#ff4444' }}>
+                  {formikWay.errors.difficultyId}
+                </p>
+              )}
             <TextField
               id="standard-basic"
               label="Ouvreur"
               fullWidth
               variant="standard"
               name="routeSetter"
-              value={(wayInputs && wayInputs.routeSetter) || ""}
-              onChange={handleWayChange}
+              value={formikWay.values.routeSetter}
+              onChange={formikWay.handleChange}
               className="p-2.5"
             />
+            {formikWay.errors.routeSetter && formikWay.touched.routeSetter && (
+              <p style={{ color: '#ff4444' }}>{formikWay.errors.routeSetter}</p>
+            )}
             <TextField
               id="standard-basic"
               label="Style"
               fullWidth
               variant="standard"
               name="style"
-              value={(wayInputs && wayInputs.style) || ""}
-              onChange={handleWayChange}
+              value={formikWay.values.style}
+              onChange={formikWay.handleChange}
               className="p-2.5"
             />
+            {formikWay.errors.style && formikWay.touched.style && (
+              <p style={{ color: '#ff4444' }}>{formikWay.errors.style}</p>
+            )}
           </Box>
         </DialogContent>
         <DialogActions>
           <button className="btn" onClick={handleClose}>
             Fermer
           </button>
-          <button className="btn" onClick={handleAddWay}>
-            {wayInputs && wayInputs.name
-              ? "Modifier une voie"
-              : "Ajouter la voie"}
+          <button
+            className="btn"
+            type="submit"
+            onClick={() => formikWay.handleSubmit()}
+          >
+            {formikWay.values.id !== ''
+              ? 'Modifier une voie'
+              : 'Ajouter la voie'}
           </button>
         </DialogActions>
       </Dialog>

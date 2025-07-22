@@ -7,10 +7,11 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
+  Box,
   DialogTitle,
   TextField,
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import Way from '@/components/places/Way';
 import Wall from '@/components/places/Wall';
 import { Helmet } from 'react-helmet-async';
@@ -23,7 +24,9 @@ const PlaceId = () => {
     getDifficulties,
     getPlaceZones,
     getPlan,
+    getZone,
     createWall,
+    createZone,
     updateZone,
     getWalls,
     getWays,
@@ -40,27 +43,57 @@ const PlaceId = () => {
     getColors();
     getDifficulties();
     getPlaceZones(parseInt(id || '0'));
+    getWalls(0);
+    getWays(0);
   }, []);
 
   // set modal
   const [openWall, setOpenWall] = useState(false);
-  const [openAddPlan, setOpenAddPlan] = useState(false);
+  const [openAddZone, setOpenAddZone] = useState(false);
+  const [inputs, setInputs] = useState<any | null>(null);
 
   // close modals
   const handleClose = () => {
     setOpenWall(false);
-    setOpenAddPlan(false);
+    setOpenAddZone(false);
   };
 
   // set plan form
   const [file, setFile] = useState<any>();
   function handleChangeFile(event: any) {
     setFile(event.target.files[0]);
+    // setInputs((values: any) => ({
+    //   ...values,
+    //   image: event.target.files[0],
+    // }));
   }
-  function handleAddPlan() {
+
+  const handleChange = (event: any) => {
+    const name = event.target.name;
+    const value = event.target.value;
+
+    console.log(name);
+    console.log(value);
+
+    setInputs((values: any) => ({ ...values, [name]: value }));
+  };
+
+  function handleAddZone() {
     const formData = new FormData();
-    formData.append('image', file);
-    updateZone(zoneId, formData);
+    formData.append('name', inputs.name);
+    formData.append('floor', inputs.floor);
+    if (file) {
+      formData.append('image', file);
+    }
+    if (inputs.id) {
+      updateZone(zoneId, formData).then(() =>
+        getPlaceZones(parseInt(id || '0'))
+      );
+    } else {
+      formData.append('placeId', String(id));
+      createZone(formData).then(() => getPlaceZones(parseInt(id || '0')));
+    }
+    handleClose();
   }
 
   // create wall
@@ -115,7 +148,10 @@ const PlaceId = () => {
     getWalls(id_zone);
   };
 
-  // action when click in wall into plan
+  /**
+   * action when click in wall into plan
+   * @param event
+   */
   const actionOnClick = (event: any) => {
     let id = event.target.getAttribute('id');
 
@@ -151,15 +187,23 @@ const PlaceId = () => {
     getWays(id);
   };
 
-  function addPlan(id: string) {
-    setZoneId(id);
-    if (document.getElementById(wallId)) {
-      document.getElementById(wallId)?.setAttribute('fill', '#46768B');
+  function addZoneModal(id?: string) {
+    if (id) {
+      setZoneId(id);
+      if (document.getElementById(wallId)) {
+        document.getElementById(wallId)?.setAttribute('fill', '#46768B');
+      }
+      getWalls(id);
+      getZone(id).then((response) => {
+        setInputs(response);
+      });
+    } else {
+      setInputs(null);
     }
     setWallId('');
     getWays(0);
-    getWalls(id);
-    setOpenAddPlan(true);
+    setOpenAddZone(true);
+    setFile(null);
   }
 
   function addIdToSVG(response: string) {
@@ -196,7 +240,18 @@ const PlaceId = () => {
       </Helmet>
       <Place id={id} />
       <div>
-        <h1 className="text-center mt-20 mb-5 mx-5">Zones</h1>
+        <h1 className="text-center mt-20 mb-5 mx-5">
+          Zones
+          <button
+            className="btn absolute right-8 text-white bg-primary-600 hover:bg-primary-700"
+            onClick={() => {
+              addZoneModal();
+            }}
+          >
+            Ajouter une Zone
+            <AddIcon />
+          </button>
+        </h1>
         <Grid container spacing={2} columns={{ xs: 1, sm: 12 }}>
           <Grid size={8} className="p-3">
             <table className="table table-fixed">
@@ -234,7 +289,7 @@ const PlaceId = () => {
                         ) : (
                           <button
                             className="btn"
-                            onClick={() => addPlan(zone.id)}
+                            onClick={() => addZoneModal(zone.id)}
                           >
                             Ajouter un plan
                           </button>
@@ -307,42 +362,54 @@ const PlaceId = () => {
       </Dialog>
 
       <Dialog
-        open={openAddPlan}
+        open={openAddZone}
         onClose={handleClose}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle>Ajouter un plan</DialogTitle>
+        <DialogTitle>Ajouter une zone</DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            <label className="form-control w-full">
-              <input
-                id="idPlan"
-                type="hidden"
-                value={zoneId}
-                className="bg-gray-200 border border-gray-400 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-              />
-            </label>
-
-            <label className="form-control w-full">
-              <div className="label">
-                <span className="label-text">Plan</span>
-              </div>
-
-              <input
-                type="file"
-                onChange={handleChangeFile}
-                className="bg-gray-200 border border-gray-400 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-              />
-            </label>
-          </DialogContentText>
+          <Box
+            component="form"
+            sx={{ '& .MuiTextField-root': { m: 1 } }}
+            noValidate
+            autoComplete="off"
+          >
+            <TextField
+              id="standard-basic"
+              label="Nom de la zone"
+              fullWidth
+              variant="standard"
+              name="name"
+              value={(inputs && inputs.name) || ''}
+              onChange={handleChange}
+            />
+            <TextField
+              id="standard-basic"
+              label="Etage"
+              fullWidth
+              variant="standard"
+              name="floor"
+              value={(inputs && inputs.floor) || ''}
+              onChange={handleChange}
+            />
+            <TextField
+              id="standard-basic"
+              label="Plan de la zone"
+              fullWidth
+              type="file"
+              variant="standard"
+              value={(inputs && inputs.image) || ''}
+              onChange={handleChangeFile}
+            />
+          </Box>
         </DialogContent>
         <DialogActions>
           <button className="btn" onClick={handleClose}>
             Fermer
           </button>
-          <button className="btn" onClick={handleAddPlan}>
-            Ajouter le plan
+          <button className="btn" onClick={handleAddZone}>
+            Ajouter la zone
           </button>
         </DialogActions>
       </Dialog>
