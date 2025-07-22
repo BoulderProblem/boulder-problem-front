@@ -33,6 +33,6 @@ jobs:
             docker load -i /tmp/boulder-problem-front.tar &&
             docker stop boulder-problem-front || true &&
             docker rm boulder-problem-front || true &&
-            docker run -d --name boulder-problem-front -p 80:80 boulder-problem-front &&
+            docker run -d --name boulder-problem-front -p 8080:80 boulder-problem-front &&
             rm /tmp/boulder-problem-front.tar
           "
