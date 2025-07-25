@@ -30,6 +30,11 @@ import 'dayjs/locale/fr';
 import { format } from 'date-fns'; // Importation de la fonction de formatage de date
 import useAuth from '@/services/useAuth';
 
+let baseUrl = `https://boulder-problem.chabs.fr/api`;
+if (process.env.NODE_ENV !== 'production') {
+  baseUrl = `http://localhost:3333`;
+}
+
 const Place = (props: any) => {
   const { getPlace, updatePlace, getPlaceZones, difficulties } = usePlaces();
   const { getUsers, users, user } = useUsers();
@@ -237,34 +242,23 @@ const Place = (props: any) => {
    * @param address
    * @param address_components
    */
-  const setAddress = (address: string, address_components: Array<any>) => {
-    setInputs((values: any) => ({ ...values, address: address }));
-    address_components.forEach((component) => {
-      if (component.types.includes('street_number')) {
-        setInputs((values: any) => ({
-          ...values,
-          houseNumber: component.long_name,
-        }));
-      }
-      if (component.types.includes('route')) {
-        setInputs((values: any) => ({
-          ...values,
-          street: component.long_name,
-        }));
-      }
-      if (component.types.includes('locality')) {
-        setInputs((values: any) => ({
-          ...values,
-          city: component.long_name,
-        }));
-      }
-      if (component.types.includes('postal_code')) {
-        setInputs((values: any) => ({
-          ...values,
-          postalCode: component.long_name,
-        }));
-      }
-    });
+  const setAddress = (
+    address: string,
+    housenumber: string,
+    street: string,
+    city: string,
+    postcode: string,
+    coordinate: { x: number; y: number }
+  ) => {
+    setInputs((values: any) => ({
+      ...values,
+      address: address,
+      houseNumber: housenumber,
+      street: street,
+      city: city,
+      postalCode: postcode,
+      coordinate: coordinate,
+    }));
   };
 
   // Fonction pour effectuer la recherche via l'API
@@ -284,7 +278,8 @@ const Place = (props: any) => {
                     <div className="relative group overflow-hidden p-1">
                       <ImageWithToken
                         imageUrl={
-                          'https://boulder-problem.chabs.fr/api/places/' +
+                          baseUrl +
+                          '/places/' +
                           inputs.id +
                           '/logo/' +
                           '?size=100'
@@ -342,8 +337,22 @@ const Place = (props: any) => {
                 </Grid>
                 <Grid container spacing={2}>
                   <AddressSearch
-                    onAddressSelect={(address, placeId, address_components) => {
-                      setAddress(address, address_components);
+                    onAddressSelect={(
+                      address,
+                      housenumber,
+                      street,
+                      city,
+                      postcode,
+                      coordinates
+                    ) => {
+                      setAddress(
+                        address,
+                        housenumber,
+                        street,
+                        city,
+                        postcode,
+                        coordinates
+                      );
                     }}
                     address={inputs.address}
                   />

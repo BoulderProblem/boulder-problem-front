@@ -5,11 +5,14 @@ import {
   useEffect,
   useMemo,
   useState,
-} from "react";
-import axiosClient from "../axios-client";
-import { USER } from "@/types/user";
+} from 'react';
+import axiosClient from '../axios-client';
+import { USER } from '@/types/user';
 
-const baseUrl = `https://boulder-problem.chabs.fr/api`;
+let baseUrl = `https://boulder-problem.chabs.fr/api`;
+if (process.env.NODE_ENV !== 'production') {
+  baseUrl = `http://localhost:3333`;
+}
 
 interface AuthContextType {
   // We defined the user type in `index.d.ts`, but it's
@@ -35,7 +38,7 @@ export function AuthProvider({
 }): JSX.Element {
   const [user, setUser] = useState<USER>();
   const [stats, setStats] = useState<any>();
-  const [token, setToken] = useState<string>("");
+  const [token, setToken] = useState<string>('');
   const [error, setError] = useState<any>();
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingInitial, setLoadingInitial] = useState<boolean>(true);
@@ -57,16 +60,16 @@ export function AuthProvider({
   // Finally, just signal the component that the initial load
   // is over.
   useEffect(() => {
-    let token = localStorage.getItem("ACCESS_TOKEN");
+    let token = localStorage.getItem('ACCESS_TOKEN');
     if (token) {
       axiosClient
         .get(`${baseUrl}/user`)
         .then((user) => {
           setUser(user.data);
-          setToken(token ? token : "");
+          setToken(token ? token : '');
         })
         .catch((_error) => {
-          console.log("error");
+          console.log('error');
         })
         .finally(() => setLoadingInitial(false));
     } else {
@@ -89,7 +92,7 @@ export function AuthProvider({
     axiosClient
       .post(`${baseUrl}/login`, { email, password })
       .then((loginData) => {
-        localStorage.setItem("ACCESS_TOKEN", loginData.data.token);
+        localStorage.setItem('ACCESS_TOKEN', loginData.data.token);
 
         setToken(loginData.data.token);
         axiosClient.get(`${baseUrl}/user`).then((user) => {
@@ -123,7 +126,7 @@ export function AuthProvider({
   // from the state.
   function logout() {
     axiosClient.get(`${baseUrl}/logout`).then(() => {
-      localStorage.removeItem("ACCESS_TOKEN");
+      localStorage.removeItem('ACCESS_TOKEN');
       setUser(undefined);
     });
   }
@@ -132,7 +135,7 @@ export function AuthProvider({
     axiosClient
       .get(`${baseUrl}/stats`)
       .then((stats) => {
-        console.log("stats");
+        console.log('stats');
         console.log(stats.data);
 
         setStats(stats.data);

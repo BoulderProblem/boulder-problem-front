@@ -7,6 +7,12 @@ import { Link } from 'react-router-dom';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 
+let baseUrl = `https://boulder-problem.chabs.fr/api`;
+if (process.env.NODE_ENV !== 'production') {
+  baseUrl = `http://localhost:3333`;
+}
+console.log(process.env.NODE_ENV);
+
 const Users = () => {
   const { token } = useAuth();
   const { users, loading, getUsers } = useUsers();
@@ -74,7 +80,8 @@ const Users = () => {
                               {user.avatar ? (
                                 <ImageWithToken
                                   imageUrl={
-                                    'https://boulder-problem.chabs.fr/api/users/' +
+                                    baseUrl +
+                                    '/users/' +
                                     user.id +
                                     '/avatar/' +
                                     user.avatar +

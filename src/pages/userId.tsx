@@ -9,6 +9,11 @@ import { TextField, MenuItem } from '@mui/material';
 import Genders from '@/enums/gender';
 import { USER } from '@/types/user';
 
+let baseUrl = `https://boulder-problem.chabs.fr/api`;
+if (process.env.NODE_ENV !== 'production') {
+  baseUrl = `http://localhost:3333`;
+}
+
 const UserId = () => {
   const { id } = useParams();
   const { token, user } = useAuth();
@@ -71,7 +76,8 @@ const UserId = () => {
                     {inputs.avatar ? (
                       <ImageWithToken
                         imageUrl={
-                          'https://boulder-problem.chabs.fr/api/users/' +
+                          baseUrl +
+                          '/users/' +
                           inputs.id +
                           '/avatar/' +
                           inputs.avatar +

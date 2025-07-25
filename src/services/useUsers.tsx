@@ -8,7 +8,10 @@ import {
 } from 'react';
 import axiosClient from '../axios-client';
 
-const baseUrl = `https://boulder-problem.chabs.fr/api`;
+let baseUrl = `https://boulder-problem.chabs.fr/api`;
+if (process.env.NODE_ENV !== 'production') {
+  baseUrl = `http://localhost:3333`;
+}
 
 interface UsersContextType {
   // We defined the user type in `index.d.ts`, but it's

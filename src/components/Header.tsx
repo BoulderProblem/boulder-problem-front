@@ -10,6 +10,11 @@ import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
+let baseUrl = `https://boulder-problem.chabs.fr/api`;
+if (process.env.NODE_ENV !== 'production') {
+  baseUrl = `http://localhost:3333`;
+}
+
 function Header({ stateChanger }: any) {
   const { user, token, logout } = useAuth();
   const [isBlack, setIsBlack] = React.useState(
@@ -123,7 +128,8 @@ function Header({ stateChanger }: any) {
                 <div className="w-10 rounded-full">
                   <ImageWithToken
                     imageUrl={
-                      'https://boulder-problem.chabs.fr/api/users/' +
+                      baseUrl +
+                      '/users/' +
                       user.id +
                       '/avatar/' +
                       user.avatar +
