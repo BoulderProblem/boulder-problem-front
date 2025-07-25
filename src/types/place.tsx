@@ -1,7 +1,7 @@
 export type PLACE = {
   id: number;
   name: string;
-  address: string;
+  logo: string;
   city: string;
   street: string;
   houseNumber: string;

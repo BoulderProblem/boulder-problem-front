@@ -25,6 +25,7 @@ import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import { PLACE } from '@/types/place';
 import useUsers from '@/services/useUsers';
 import AddressSearch from './AddressSearch';
+import ImageCropUpload from './ImageCropUpload';
 import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/fr';
 import { format } from 'date-fns'; // Importation de la fonction de formatage de date
@@ -102,33 +103,35 @@ const Place = (props: any) => {
    * @param hours
    */
   const initHoraires = (hours: string) => {
-    let plage = hours.split('; ');
-    let i = 0;
-    while (i < plage.length) {
-      let open = false;
+    if (hours) {
+      let plage = hours.split('; ');
+      let i = 0;
+      while (i < plage.length) {
+        let open = false;
 
-      joursOuverts.forEach((jours) => {
-        if (plage[i].slice(0, 2) === jours.en || open) {
-          let debut = plage[i].split(' ')[1].split('-')[0];
-          let fin = plage[i].split(' ')[1].split('-')[1];
+        joursOuverts.forEach((jours) => {
+          if (plage[i].slice(0, 2) === jours.en || open) {
+            let debut = plage[i].split(' ')[1].split('-')[0];
+            let fin = plage[i].split(' ')[1].split('-')[1];
 
-          setHoraires((values: any) => ({
-            ...values,
-            [jours.jour]: {
-              ouvert: true,
-              debut: debut,
-              fin: fin,
-            },
-          }));
-          if (!open && plage[i].slice(2, 3) === '-') {
-            open = true;
+            setHoraires((values: any) => ({
+              ...values,
+              [jours.jour]: {
+                ouvert: true,
+                debut: debut,
+                fin: fin,
+              },
+            }));
+            if (!open && plage[i].slice(2, 3) === '-') {
+              open = true;
+            }
+            if (open && plage[i].slice(3, 5) === jours.en) {
+              open = false;
+            }
           }
-          if (open && plage[i].slice(3, 5) === jours.en) {
-            open = false;
-          }
-        }
-      });
-      i++;
+        });
+        i++;
+      }
     }
   };
 
@@ -218,8 +221,14 @@ const Place = (props: any) => {
   const handleSubmit = (event: React.ChangeEvent<unknown>) => {
     event.preventDefault();
     // enregistre les horaires en les reformatants
-    inputs.hours = formatHoraires();
-    console.log(inputs);
+    const formData = new FormData();
+    Object.entries(inputs).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        formData.append(key, JSON.stringify(value));
+        console.log(value);
+      }
+    });
+    formData.append('hours', formatHoraires());
     updatePlace(parseInt(props.id || '0'), inputs);
   };
 
@@ -234,6 +243,29 @@ const Place = (props: any) => {
     } else {
       setInputs((values: any) => ({ ...values, ownerId: null }));
       setInputs((values: any) => ({ ...values, owner: null }));
+    }
+  };
+
+  /**
+   * Enregistre le logo recadré
+   * @param croppedBlob
+   */
+  const saveLogo = (croppedBlob: Blob | null) => {
+    if (croppedBlob) {
+      // Convert Blob to File
+
+      const formData = new FormData();
+      Object.entries(inputs).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formData.append(key, JSON.stringify(value));
+          console.log(value);
+        }
+      });
+      formData.append('image', croppedBlob);
+
+      updatePlace(parseInt(props.id || '0'), formData).then(() => {
+        window.location.reload();
+      });
     }
   };
 
@@ -275,23 +307,42 @@ const Place = (props: any) => {
               <Grid size={{ xs: 3, sm: 3 }}>
                 <div className="h-full flex items-center justify-end">
                   <div className="w-[6rem] h-[6rem] avatar">
-                    <div className="relative group overflow-hidden p-1">
-                      <ImageWithToken
-                        imageUrl={
-                          baseUrl +
-                          '/places/' +
-                          inputs.id +
-                          '/logo/' +
-                          '?size=100'
-                        }
-                        token={token}
-                        alt="logo"
-                        className="w-full h-full rounded-full object-cover transition-all duration-300 group-hover:blur-sm group-hover:brightness-75"
-                      />
-                      <div className="absolute flex bottom-0 right-0 !w-10 !h-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <AddCircleOutlineIcon className="text-white !w-8 !h-8 drop-shadow-lg" />
+                    {inputs && inputs.logo ? (
+                      <div className="relative group overflow-hidden p-1">
+                        <ImageWithToken
+                          imageUrl={
+                            baseUrl +
+                            '/places/' +
+                            inputs.id +
+                            '/logo/' +
+                            '?size=100'
+                          }
+                          token={token}
+                          alt="logo"
+                          className="w-full h-full rounded-full object-cover transition-all duration-300 group-hover:blur-sm group-hover:brightness-75"
+                        />
+                        <div className="absolute flex bottom-0 right-0 !w-10 !h-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <ImageCropUpload
+                            onImageCropped={(croppedBlob) => {
+                              console.log('Image recadrée :', croppedBlob);
+                              //save image
+                              saveLogo(croppedBlob);
+                              // Tu peux l'envoyer à un serveur ou le prévisualiser
+                            }}
+                          />
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <ImageCropUpload
+                        onImageCropped={(croppedBlob) => {
+                          console.log('Image recadrée :', croppedBlob);
+                          //save image
+                          saveLogo(croppedBlob);
+                          // Tu peux l'envoyer à un serveur ou le prévisualiser
+                        }}
+                        className="w-full"
+                      />
+                    )}
                   </div>
                 </div>
               </Grid>
@@ -573,7 +624,7 @@ const Place = (props: any) => {
             aria-labelledby="alert-dialog-title"
             aria-describedby="alert-dialog-description"
           >
-            <DialogTitle>Modifier les horaires</DialogTitle>
+            <DialogTitle>Modifier les horaires de la salle</DialogTitle>
             <DialogContent>
               <Box
                 component="form"
@@ -589,7 +640,7 @@ const Place = (props: any) => {
                           <FormControlLabel
                             label={jour.charAt(0).toUpperCase() + jour.slice(1)}
                             labelPlacement="start"
-                            className="h-[4.9rem] w-full pr-4"
+                            className="h-[4.9rem] w-full pr-4 min-w-28"
                             control={
                               <Checkbox
                                 checked={ouvert}
