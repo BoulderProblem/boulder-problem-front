@@ -22,11 +22,7 @@ const UserId = () => {
   const [inputs, setInputs] = useState<USER | null>(null);
 
   useEffect(() => {
-    console.log(id);
-
     getUser(id || '0').then((response: USER) => {
-      console.log(response);
-
       setInputs(response);
     });
   }, []);
@@ -40,7 +36,6 @@ const UserId = () => {
 
   const handleSubmit = (event: React.ChangeEvent<unknown>) => {
     event.preventDefault();
-    console.log(inputs);
     let update = Object.assign({}, inputs);
     delete update.avatar;
     updateUser(id || '0', update).then((response) => {

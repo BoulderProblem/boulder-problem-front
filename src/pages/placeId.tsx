@@ -72,9 +72,6 @@ const PlaceId = () => {
     const name = event.target.name;
     const value = event.target.value;
 
-    console.log(name);
-    console.log(value);
-
     setInputs((values: any) => ({ ...values, [name]: value }));
   };
 

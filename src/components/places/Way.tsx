@@ -44,8 +44,6 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
       style: Yup.string().required('Entrez un style de voie'),
     }),
     onSubmit: (values) => {
-      console.log('Formulaire soumis avec succès', values);
-      // Traitez l'envoi du formulaire ici (ex. appel API)
       handleAddWay(values); // Ferme le modal après soumission
     },
   });
@@ -93,7 +91,6 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
   const openModalWay = (id?: number) => {
     if (id) {
       getWay(id).then((response) => {
-        console.log(response);
         setWayId(response.id);
         setOpenAddWay(true);
         formikWay.setValues(response);
@@ -106,7 +103,6 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
 
   // add way
   function handleAddWay(values: any) {
-    console.log(values);
     if (values.id) {
       // update Way
       updateWay(values.id, values);

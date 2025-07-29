@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from 'react';
+import React, { FormEvent, useEffect, useState } from 'react';
 import useAuth from '../../services/useAuth.tsx';
 import {
   InputLabel,
@@ -16,7 +16,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const Login = () => {
-  const { login, loading, error } = useAuth();
+  const { login, loginGoogle, loading, error } = useAuth();
 
   const [email, setEmail] = useState(localStorage.getItem('login-email') || '');
   const [password, setPassword] = useState(
@@ -25,6 +25,14 @@ const Login = () => {
   const [showPassword, setShowPassword] = React.useState(false);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = JSON.parse(params.get('token') || '{}');
+    if (token.token) {
+      loginGoogle(token.token);
+    }
+  }, []);
 
   const handleMouseDownPassword = (
     event: React.MouseEvent<HTMLButtonElement>
@@ -112,7 +120,7 @@ const Login = () => {
               <button
                 type="button"
                 onClick={() =>
-                  (window.location.href = baseUrl + '/auth/google')
+                  (window.location.href = baseUrl + '/auth/google/redirect')
                 }
                 className="w-full border border-gray-300 hover:border-gray-400 text-gray-800 bg-white hover:bg-gray-50 focus:ring-2 focus:ring-primary-500 font-medium rounded-lg text-sm px-5 py-2.5 text-center flex items-center justify-center gap-2"
               >

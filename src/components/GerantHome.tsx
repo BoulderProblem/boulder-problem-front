@@ -43,8 +43,6 @@ export function GerantHome() {
       end: Yup.date().required('Une date de fin est requise'),
     }),
     onSubmit: (values) => {
-      console.log('Formulaire soumis avec succès', values);
-      // Traitez l'envoi du formulaire ici (ex. appel API)
       handleClose(); // Ferme le modal après soumission
     },
   });

@@ -23,6 +23,7 @@ interface AuthContextType {
   loading: boolean;
   error?: any;
   login: (email: string, password: string) => void;
+  loginGoogle: (token: string) => void;
   signUp: (email: string, name: string, password: string) => void;
   logout: () => void;
   getStats: () => void;
@@ -107,6 +108,16 @@ export function AuthProvider({
       .finally(() => setLoading(false));
   }
 
+  function loginGoogle(token: string) {
+    localStorage.setItem('ACCESS_TOKEN', token);
+    setToken(token);
+    axiosClient.get(`${baseUrl}/user`).then((user) => {
+      setTimeout(() => {
+        setUser(user.data);
+      }, 300);
+    });
+  }
+
   // Sends sign up details to the server. On success we just apply
   // the created user to the state.
   function signUp(email: string, name: string, password: string) {
@@ -135,9 +146,6 @@ export function AuthProvider({
     axiosClient
       .get(`${baseUrl}/stats`)
       .then((stats) => {
-        console.log('stats');
-        console.log(stats.data);
-
         setStats(stats.data);
       })
       .catch((errors) => {
@@ -163,6 +171,7 @@ export function AuthProvider({
       loading,
       error,
       login,
+      loginGoogle,
       signUp,
       logout,
       getStats,

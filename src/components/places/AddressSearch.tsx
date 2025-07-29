@@ -55,7 +55,6 @@ const AddressSearch: React.FC<AddressSearchProps> = ({
               y: feature.geometry.coordinates[1],
             },
           }));
-          console.log(results);
 
           setOptions(results);
         })

@@ -225,7 +225,6 @@ const Place = (props: any) => {
     Object.entries(inputs).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         formData.append(key, JSON.stringify(value));
-        console.log(value);
       }
     });
     formData.append('hours', formatHoraires());
@@ -258,7 +257,6 @@ const Place = (props: any) => {
       Object.entries(inputs).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           formData.append(key, JSON.stringify(value));
-          console.log(value);
         }
       });
       formData.append('image', croppedBlob);
@@ -324,7 +322,6 @@ const Place = (props: any) => {
                         <div className="absolute flex bottom-0 right-0 !w-10 !h-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                           <ImageCropUpload
                             onImageCropped={(croppedBlob) => {
-                              console.log('Image recadrée :', croppedBlob);
                               //save image
                               saveLogo(croppedBlob);
                               // Tu peux l'envoyer à un serveur ou le prévisualiser
@@ -335,7 +332,6 @@ const Place = (props: any) => {
                     ) : (
                       <ImageCropUpload
                         onImageCropped={(croppedBlob) => {
-                          console.log('Image recadrée :', croppedBlob);
                           //save image
                           saveLogo(croppedBlob);
                           // Tu peux l'envoyer à un serveur ou le prévisualiser
@@ -569,6 +565,7 @@ const Place = (props: any) => {
                       getOptionLabel={(option: any) =>
                         option.firstname + ' ' + option.lastname || ''
                       }
+                      getOptionKey={(option: any) => option.id}
                       onInputChange={(event, newInputValue) => {
                         if (event && !event.cancelable)
                           fetchPersons(newInputValue);

@@ -11,7 +11,6 @@ let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
   baseUrl = `http://localhost:3333`;
 }
-console.log(process.env.NODE_ENV);
 
 const Users = () => {
   const { token } = useAuth();
