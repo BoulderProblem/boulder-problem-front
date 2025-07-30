@@ -168,7 +168,7 @@ function Index() {
                     </Link>
                   </li>
                   <li>
-                    <Link to={'/privacy_policy'}>
+                    <Link to={'/privacy'}>
                       <p className="hover:text-white transition-colors">
                         Politique de confidentialité
                       </p>

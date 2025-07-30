@@ -84,7 +84,7 @@ const Main = () => {
       ),
     },
     {
-      path: '/privacy_policy',
+      path: '/privacy',
       element: <Confidentialité />,
     },
     {
