@@ -164,7 +164,7 @@ function Header({ stateChanger }: any) {
               >
                 Paramètres
               </MenuItem>
-              <MenuItem component={Link} to="/places" onClick={logout}>
+              <MenuItem component={Link} to="/" onClick={logout}>
                 Déconnexion
               </MenuItem>
             </Menu>

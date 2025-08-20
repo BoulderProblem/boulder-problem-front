@@ -41,6 +41,7 @@ interface PlacesContextType {
   createZone: (params: any) => Promise<any>;
   updateZone: (id: string, params: any) => Promise<any>;
   createWall: (zone_id: string, name: string) => Promise<any>;
+  updateWall: (wall_id: string, params: any) => Promise<any>;
   getWalls: (id: number | string) => void;
   getWays: (id: number | string) => void;
   getWay: (id: number | string) => Promise<any>;
@@ -260,6 +261,17 @@ export function PlacesProvider({
     return wall;
   }
 
+  function updateWall(id: number | string, params: any) {
+    axiosClient
+      .put(`${baseUrl}/walls/${id}`, params)
+      .then(() => {
+        getWalls(params.zone_id);
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
   function getWalls(id: number | string) {
     axiosClient
       .get(`${baseUrl}/zones/${id}/walls`)
@@ -366,6 +378,7 @@ export function PlacesProvider({
       getPlaceZones,
       getPlan,
       createWall,
+      updateWall,
       createZone,
       updateZone,
       getWalls,

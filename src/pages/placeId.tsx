@@ -141,6 +141,7 @@ const PlaceId = () => {
       document.getElementById(wallId)?.setAttribute('fill', '#46768B');
     }
     setWallId('');
+    getZone(id_zone);
     getWays(0);
     getWalls(id_zone);
   };
@@ -255,7 +256,7 @@ const PlaceId = () => {
               {/* head */}
               <thead>
                 <tr>
-                  <th>Mur sélectionnée</th>
+                  <th>Zone sélectionnée</th>
                   <th>Nom</th>
                   <th>Étage</th>
                   <th>Image</th>
