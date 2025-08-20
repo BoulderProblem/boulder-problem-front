@@ -136,10 +136,16 @@ export function AuthProvider({
   // Call the logout endpoint and then remove the user
   // from the state.
   function logout() {
-    axiosClient.get(`${baseUrl}/logout`).then(() => {
-      localStorage.removeItem('ACCESS_TOKEN');
-      setUser(undefined);
-    });
+    axiosClient
+      .get(`${baseUrl}/logout`)
+      .then(() => {})
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => {
+        localStorage.removeItem('ACCESS_TOKEN');
+        setUser(undefined);
+      });
   }
 
   function getStats() {
