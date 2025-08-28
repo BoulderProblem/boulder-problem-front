@@ -1,11 +1,11 @@
 import Roles from '@/enums/role';
-import useAuth from '@/services/useAuth';
-import useUsers from '@/services/useUsers';
+import { useAuth } from '@/services/useAuth';
+import { useUsers } from '@/services/useUsers';
 import { useEffect, useState } from 'react';
 import ImageWithToken from 'react-image-with-auth';
 import { Link } from 'react-router-dom';
 import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
+import { Stack, Container } from '@mui/material';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -58,7 +58,7 @@ const Users = () => {
       {loading ? (
         <div>Loading...</div>
       ) : (
-        <div>
+        <Container maxWidth="lg">
           <table className="table">
             {/* head */}
             <thead>
@@ -144,7 +144,7 @@ const Users = () => {
           ) : (
             ''
           )}
-        </div>
+        </Container>
       )}
     </div>
   );

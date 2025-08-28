@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import usePlaces from '@/services/usePlaces';
+import { usePlaces } from '@/services/usePlaces';
 import Place from '@/components/places/Place';
 import Grid from '@mui/material/Grid2';
 import {

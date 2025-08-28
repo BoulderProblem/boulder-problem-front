@@ -414,6 +414,6 @@ export function PlacesProvider({
 
 // Let's only export the `usePlaces` hook instead of the context.
 // We only want to use the hook directly and never the context component.
-export default function usePlaces() {
+export function usePlaces() {
   return useContext(PlacesContext);
 }

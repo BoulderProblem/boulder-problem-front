@@ -1,6 +1,6 @@
 import React, { useEffect, useImperativeHandle, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
-import usePlaces from '@/services/usePlaces';
+import { usePlaces } from '@/services/usePlaces';
 import {
   Dialog,
   DialogActions,

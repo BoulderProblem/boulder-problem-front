@@ -1,6 +1,7 @@
 'use client';
 
-import usePlaces from '@/services/usePlaces';
+import { usePlaces } from '@/services/usePlaces';
+import { useContests } from '@/services/useContests';
 import Grid from '@mui/material/Grid2';
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -20,30 +21,42 @@ import { useFormik } from 'formik';
 import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/fr';
 import * as Yup from 'yup';
+import { useAuth } from '@/services/useAuth';
+import Status from '@/enums/status';
 
 export function GerantHome() {
   const { getMyPlaces, myPlaces } = usePlaces();
+  const { user } = useAuth();
+  const { getMyContests, addContest, myContests } = useContests();
   useEffect(() => {
     getMyPlaces();
+    getMyContests();
   }, []);
 
   const [openAddContest, setOpenAddContest] = useState(false);
 
   const formik = useFormik({
     initialValues: {
-      title: '',
+      name: '',
+      user_id: user?.id,
       description: '',
-      start: null,
-      end: null,
+      start_date: '',
+      end_date: '',
     },
     validationSchema: Yup.object({
-      title: Yup.string().required('Un titre est requis'),
+      name: Yup.string().required('Un nom est requis'),
       description: Yup.string().required('Une description est requise'),
-      start: Yup.date().required('Une date de début est requise'),
-      end: Yup.date().required('Une date de fin est requise'),
+      start_date: Yup.date().required('Une date de début est requise'),
+      end_date: Yup.date().required('Une date de fin est requise'),
     }),
     onSubmit: (values) => {
-      handleClose(); // Ferme le modal après soumission
+      values.start_date = dayjs(values.start_date).format('YYYY/MM/DD');
+      values.end_date = dayjs(values.end_date).format('YYYY/MM/DD');
+
+      addContest(values).then(() => {
+        getMyContests();
+        handleClose();
+      });
     },
   });
 
@@ -73,10 +86,18 @@ export function GerantHome() {
                       className="rounded-3xl hover:bg-base-100"
                     >
                       <td>
-                        <Link to={'/places/' + place.id}>{place.name}</Link>
+                        <Link
+                          to={'/places/' + place.id}
+                          className="block w-full h-full"
+                        >
+                          {place.name}
+                        </Link>
                       </td>
                       <td>
-                        <Link to={'/places/' + place.id}>
+                        <Link
+                          to={'/places/' + place.id}
+                          className="block w-full h-full"
+                        >
                           {place.favoriteCount} favoris
                         </Link>
                       </td>
@@ -93,6 +114,7 @@ export function GerantHome() {
               <thead>
                 <tr>
                   <th className="text-lg text-primary-600">Mes contests</th>
+                  <th></th>
                   <th
                     className="flex justify-end cursor-pointer"
                     onClick={() => {
@@ -105,10 +127,35 @@ export function GerantHome() {
                 </tr>
               </thead>
               <tbody>
-                <tr key="1">
-                  <td>plop plop</td>
-                  <td>12 participants</td>
-                </tr>
+                {myContests &&
+                  myContests.map((contest: any) => (
+                    <tr key={contest.id}>
+                      <td>
+                        <Link
+                          to={`/contests/${contest.id}`}
+                          className="block w-full h-full"
+                        >
+                          {contest.name}
+                        </Link>
+                      </td>
+                      <td>
+                        <Link
+                          to={`/contests/${contest.id}`}
+                          className="block w-full h-full"
+                        >
+                          {Status[contest.status as keyof typeof Status]}
+                        </Link>
+                      </td>
+                      <td>
+                        <Link
+                          to={`/contests/${contest.id}`}
+                          className="block w-full h-full"
+                        >
+                          {contest.followCount} participants
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -150,13 +197,13 @@ export function GerantHome() {
               fullWidth
               variant="standard"
               id="title"
-              name="title"
-              value={formik.values.title}
+              name="name"
+              value={formik.values.name}
               onChange={formik.handleChange}
               className="p-2.5"
             />
-            {formik.errors.title && formik.touched.title && (
-              <p style={{ color: '#ff4444' }}>{formik.errors.title}</p>
+            {formik.errors.name && formik.touched.name && (
+              <p style={{ color: '#ff4444' }}>{formik.errors.name}</p>
             )}
 
             <TextField
@@ -182,20 +229,23 @@ export function GerantHome() {
                   <DemoContainer components={['DatePicker']}>
                     <MobileDatePicker
                       label="Date de début"
-                      name="start"
+                      name="start_date"
                       value={
-                        formik.values.start ? dayjs(formik.values.start) : null
+                        formik.values.start_date
+                          ? dayjs(formik.values.start_date)
+                          : null
                       } // Assurez-vous que c'est un objet Dayjs
-                      onChange={(value) => formik.setFieldValue('start', value)} // Lorsque la date est sélectionnée, mettre à jour la valeur avec Dayjs
-                      onBlur={() => formik.setFieldTouched('start', true)} // Marquer le champ comme "touché"
+                      onChange={(value) =>
+                        formik.setFieldValue('start_date', value)
+                      } // Lorsque la date est sélectionnée, mettre à jour la valeur avec Dayjs
                       slotProps={{
                         textField: { variant: 'standard' },
                       }}
                     />
                   </DemoContainer>
                 </LocalizationProvider>
-                {formik.errors.start && formik.touched.start && (
-                  <p style={{ color: '#ff4444' }}>{formik.errors.start}</p>
+                {formik.errors.start_date && formik.touched.start_date && (
+                  <p style={{ color: '#ff4444' }}>{formik.errors.start_date}</p>
                 )}
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
@@ -206,20 +256,24 @@ export function GerantHome() {
                   <DemoContainer components={['DatePicker']}>
                     <MobileDatePicker
                       label="Date de fin"
-                      name="end"
+                      name="end_date"
                       value={
-                        formik.values.end ? dayjs(formik.values.end) : null
+                        formik.values.end_date
+                          ? dayjs(formik.values.end_date)
+                          : null
                       } // Assurez-vous que c'est un objet Dayjs
-                      onChange={(value) => formik.setFieldValue('end', value)} // Lorsque la date est sélectionnée, mettre à jour la valeur avec Dayjs
-                      onBlur={() => formik.setFieldTouched('end', true)} // Marquer le champ comme "touché"
+                      onChange={(value) =>
+                        formik.setFieldValue('end_date', value)
+                      } // Lorsque la date est sélectionnée, mettre à jour la valeur avec Dayjs
+                      onBlur={() => formik.setFieldTouched('end_date', true)} // Marquer le champ comme "touché"
                       slotProps={{
                         textField: { variant: 'standard' },
                       }}
                     />
                   </DemoContainer>
                 </LocalizationProvider>
-                {formik.errors.end && formik.touched.end && (
-                  <p style={{ color: '#ff4444' }}>{formik.errors.end}</p>
+                {formik.errors.end_date && formik.touched.end_date && (
+                  <p style={{ color: '#ff4444' }}>{formik.errors.end_date}</p>
                 )}
               </Grid>
             </Grid>

@@ -1,8 +1,8 @@
-import usePlaces from '@/services/usePlaces';
+import { usePlaces } from '@/services/usePlaces';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
+import { Stack, Container } from '@mui/material';
 
 const Places = () => {
   const { places, loading, getPlaces } = usePlaces();
@@ -50,7 +50,7 @@ const Places = () => {
       {loading ? (
         <div>Loading...</div>
       ) : (
-        <div>
+        <Container maxWidth="lg">
           <table className="table table-fixed">
             {/* head */}
             <thead>
@@ -96,7 +96,7 @@ const Places = () => {
           ) : (
             ''
           )}
-        </div>
+        </Container>
       )}
     </div>
   );

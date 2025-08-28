@@ -165,6 +165,6 @@ export function UsersProvider({
 
 // Let's only export the `usePlaces` hook instead of the context.
 // We only want to use the hook directly and never the context component.
-export default function useUsers() {
+export function useUsers() {
   return useContext(UsersContext);
 }

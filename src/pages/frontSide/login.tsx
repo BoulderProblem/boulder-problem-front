@@ -1,5 +1,5 @@
 import React, { FormEvent, useEffect, useState } from 'react';
-import useAuth from '../../services/useAuth.tsx';
+import { useAuth } from '../../services/useAuth.tsx';
 import {
   InputLabel,
   Input,

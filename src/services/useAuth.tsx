@@ -196,6 +196,6 @@ export function AuthProvider({
 
 // Let's only export the `useAuth` hook instead of the context.
 // We only want to use the hook directly and never the context component.
-export default function useAuth() {
+export function useAuth() {
   return useContext(AuthContext);
 }

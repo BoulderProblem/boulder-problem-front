@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { getFromLS, setToLS } from '@/utils/storage';
-import useAuth from '@/services/useAuth';
+import { useAuth } from '@/services/useAuth';
 import ImageWithToken from 'react-image-with-auth';
 
 import Button from '@mui/material/Button';
@@ -87,6 +87,9 @@ function Header({ stateChanger }: any) {
             <MenuItem component={Link} to="/places" onClick={handleClose}>
               Salles d'escalade
             </MenuItem>
+            <MenuItem component={Link} to="/contests" onClick={handleClose}>
+              Contests
+            </MenuItem>
           </Menu>
         </div>
         <ul className="menu menu-horizontal px-1">
@@ -107,6 +110,11 @@ function Header({ stateChanger }: any) {
           <li>
             <Link className="text-lg" to="/places">
               Salles d'escalade
+            </Link>
+          </li>
+          <li>
+            <Link className="text-lg" to="/contests">
+              Contests
             </Link>
           </li>
         </ul>

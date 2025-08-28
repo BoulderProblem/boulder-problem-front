@@ -1,5 +1,5 @@
-import { Navigate } from "react-router-dom";
-import useAuth from "../services/useAuth";
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../services/useAuth';
 
 export const UnProtectedRoute = ({ children }: any) => {
   const { user } = useAuth();

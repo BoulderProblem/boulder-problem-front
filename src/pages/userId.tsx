@@ -1,6 +1,6 @@
 import Roles from '@/enums/role';
-import useAuth from '@/services/useAuth';
-import useUsers from '@/services/useUsers';
+import { useAuth } from '@/services/useAuth';
+import { useUsers } from '@/services/useUsers';
 import { useEffect, useState } from 'react';
 import Grid from '@mui/material/Grid2';
 import ImageWithToken from 'react-image-with-auth';
@@ -61,7 +61,7 @@ const UserId = () => {
             <Grid container spacing={2}>
               <Grid size={{ xs: 4, sm: 4 }}>
                 <div className="text-right">
-                  <p className="font-bold text-lg">{inputs.follower}</p>
+                  <p className="font-bold text-lg">{inputs.follower || '0'}</p>
                   Abonnés
                 </div>
               </Grid>
@@ -98,7 +98,8 @@ const UserId = () => {
                 </div>
               </Grid>
               <Grid size={{ xs: 4, sm: 4 }}>
-                <p className="font-bold text-lg">{inputs.following}</p>Suivis
+                <p className="font-bold text-lg">{inputs.following || '0'}</p>
+                Suivis
               </Grid>
             </Grid>
             <Grid container spacing={2} columns={12}>

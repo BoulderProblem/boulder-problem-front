@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Grid from '@mui/material/Grid2';
 import 'leaflet/dist/leaflet.css';
-import usePlaces from '@/services/usePlaces';
+import { usePlaces } from '@/services/usePlaces';
 import {
   TextField,
   Autocomplete,
@@ -23,13 +23,13 @@ import ImageWithToken from 'react-image-with-auth';
 import Checkbox from '@mui/material/Checkbox';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import { PLACE } from '@/types/place';
-import useUsers from '@/services/useUsers';
+import { useUsers } from '@/services/useUsers';
 import AddressSearch from './AddressSearch';
 import ImageCropUpload from './ImageCropUpload';
 import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/fr';
 import { format } from 'date-fns'; // Importation de la fonction de formatage de date
-import useAuth from '@/services/useAuth';
+import { useAuth } from '@/services/useAuth';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {

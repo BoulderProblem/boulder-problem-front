@@ -16,9 +16,12 @@ import Places from './pages/places.tsx';
 import PlaceId from './pages/placeId.tsx';
 import UserId from './pages/userId.tsx';
 import { UsersProvider } from './services/useUsers.tsx';
-import useAuth from './services/useAuth.tsx';
+import { useAuth } from './services/useAuth.tsx';
 import Confidentialité from './pages/frontSide/confidentialite.tsx';
 import Conditions from './pages/frontSide/conditions.tsx';
+import { ContestsProvider } from './services/useContests.tsx';
+import ContestId from './pages/contestId.tsx';
+import Contests from './pages/contests.tsx';
 
 const Main = () => {
   const { user } = useAuth();
@@ -68,6 +71,22 @@ const Main = () => {
             </ProtectedRoute>
           ),
         },
+        {
+          path: '/contests/',
+          element: (
+            <ProtectedRoute>
+              <Contests />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: '/contests/:id',
+          element: (
+            <ProtectedRoute>
+              <ContestId />
+            </ProtectedRoute>
+          ),
+        },
 
         {
           path: '*',
@@ -103,7 +122,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <AuthProvider>
       <UsersProvider>
         <PlacesProvider>
-          <Main />
+          <ContestsProvider>
+            <Main />
+          </ContestsProvider>
         </PlacesProvider>
       </UsersProvider>
     </AuthProvider>

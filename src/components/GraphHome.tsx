@@ -16,7 +16,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart.tsx';
-import useAuth from '@/services/useAuth.tsx';
+import { useAuth } from '@/services/useAuth';
 
 const chartConfig = {
   users: {

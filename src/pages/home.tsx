@@ -1,5 +1,5 @@
 import { GraphHome } from '@/components/GraphHome.tsx';
-import useAuth from '@/services/useAuth';
+import { useAuth } from '@/services/useAuth';
 import { useEffect } from 'react';
 import { GerantHome } from '@/components/GerantHome';
 
