@@ -6,7 +6,6 @@ import {
   IconButton,
   MenuItem,
   SpeedDialAction,
-  SpeedDialIcon,
   Dialog,
   DialogActions,
   DialogContent,
@@ -17,8 +16,10 @@ import {
 import SpeedDial from '@mui/material/SpeedDial';
 import CreateIcon from '@mui/icons-material/Create';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import ImageWithToken from 'react-image-with-auth';
 import AddIcon from '@mui/icons-material/Add';
+import SettingsIcon from '@mui/icons-material/Settings';
+import RemoveIcon from '@mui/icons-material/Remove';
+import ImageWithToken from 'react-image-with-auth';
 import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/fr';
 import { useContests } from '@/services/useContests';
@@ -34,6 +35,7 @@ import { useFormik } from 'formik';
 import { LocalizationProvider, MobileDatePicker } from '@mui/x-date-pickers';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { get } from 'http';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -49,6 +51,7 @@ const Contest = (props: any) => {
     updateContest,
     deleteContest,
     getContestUsers,
+    followContest,
     contest,
     contestWays,
     contestUsers,
@@ -106,6 +109,13 @@ const Contest = (props: any) => {
 
   const openModalDelete = () => {
     setOpenDeleteContest(true);
+  };
+
+  const follow = () => {
+    followContest(id).then(() => {
+      getContest(id);
+      getContestUsers(id);
+    });
   };
 
   const validDelete = () => {
@@ -173,46 +183,91 @@ const Contest = (props: any) => {
             </Grid>
           </Grid>
           <div className="text-right absolute w-16 right-0 top-0">
-            <Box sx={{ mt: 0, height: 50 }}>
-              <StyledSpeedDial
-                key={'down'}
-                ariaLabel="SpeedDial playground example"
-                icon={<SpeedDialIcon />}
-                direction="down"
-                sx={{
-                  '& .MuiFab-primary': {
-                    width: 40,
-                    height: 40,
-                  },
-                }}
-                style={{
-                  top: 0,
-                  right: 0,
-                }}
+            {user?.id === contest.userId ? (
+              <Box sx={{ mt: 0, height: 50 }}>
+                <StyledSpeedDial
+                  key={'down'}
+                  ariaLabel="SpeedDial playground example"
+                  icon={<SettingsIcon />}
+                  direction="down"
+                  sx={{
+                    '& .MuiFab-primary': {
+                      width: 40,
+                      height: 40,
+                    },
+                  }}
+                  style={{
+                    top: 0,
+                    right: 0,
+                  }}
+                >
+                  <SpeedDialAction
+                    key="update"
+                    icon={<CreateIcon />}
+                    onClick={() => openModal()}
+                    slotProps={{
+                      tooltip: {
+                        title: 'update',
+                      },
+                    }}
+                  />
+                  {contestUsers &&
+                  contestUsers.filter((users: any) => users.id === user?.id)
+                    .length > 0 ? (
+                    <SpeedDialAction
+                      key="delete"
+                      icon={<RemoveIcon />}
+                      onClick={() => follow()}
+                      slotProps={{
+                        tooltip: {
+                          title: 'delete',
+                        },
+                      }}
+                    />
+                  ) : (
+                    <SpeedDialAction
+                      key="delete"
+                      icon={<AddIcon />}
+                      onClick={() => follow()}
+                      slotProps={{
+                        tooltip: {
+                          title: 'delete',
+                        },
+                      }}
+                    />
+                  )}
+                  <SpeedDialAction
+                    key="delete"
+                    icon={<DeleteOutlineIcon />}
+                    onClick={() => openModalDelete()}
+                    disabled={contest.status !== 'waiting'}
+                    slotProps={{
+                      tooltip: {
+                        title: 'delete',
+                      },
+                    }}
+                  />
+                </StyledSpeedDial>
+              </Box>
+            ) : contestUsers &&
+              contestUsers.filter((users: any) => users.id === user?.id)
+                .length > 0 ? (
+              <IconButton
+                onClick={() => follow()}
+                color="primary"
+                component="span"
               >
-                <SpeedDialAction
-                  key="update"
-                  icon={<CreateIcon />}
-                  onClick={() => openModal()}
-                  slotProps={{
-                    tooltip: {
-                      title: 'update',
-                    },
-                  }}
-                />
-                <SpeedDialAction
-                  key="delete"
-                  icon={<DeleteOutlineIcon />}
-                  onClick={() => openModalDelete()}
-                  disabled={contest.status !== 'waiting'}
-                  slotProps={{
-                    tooltip: {
-                      title: 'delete',
-                    },
-                  }}
-                />
-              </StyledSpeedDial>
-            </Box>
+                <RemoveIcon />
+              </IconButton>
+            ) : (
+              <IconButton
+                onClick={() => follow()}
+                color="primary"
+                component="span"
+              >
+                <AddIcon />
+              </IconButton>
+            )}
           </div>
 
           <Grid container spacing={2}>

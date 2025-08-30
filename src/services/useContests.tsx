@@ -31,6 +31,7 @@ interface ContestsContextType {
   deleteContest: (id: string) => void;
   getContestWays: (id: string) => void;
   getContestUsers: (id: string) => void;
+  followContest: (id: string) => Promise<any>;
 }
 
 const ContestsContext = createContext<ContestsContextType>(
@@ -199,6 +200,20 @@ export function ContestsProvider({
       .finally(() => setLoading(false));
   }
 
+  async function followContest(id: string) {
+    setLoading(true);
+    await axiosClient
+      .post(`${baseUrl}/contests/${id}/follow`)
+      .then(() => {
+        // Optionally, you can update the local state to reflect the follow action
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+    return;
+  }
+
   // Make the provider update only when it should.
   // We only want to force re-renders if the Contest,
   // loading or error states change.
@@ -225,6 +240,7 @@ export function ContestsProvider({
       getContestWays,
       deleteContest,
       getContestUsers,
+      followContest,
     }),
     [myContests, contests, contest, contestWays, contestUsers, loading, error]
   );
