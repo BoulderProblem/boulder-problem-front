@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { usePlaces } from '@/services/usePlaces';
 import Place from '@/components/places/Place';
-import Grid from '@mui/material/Grid2';
 import {
   Dialog,
   DialogActions,
@@ -10,6 +9,7 @@ import {
   Box,
   DialogTitle,
   TextField,
+  Grid,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import Way from '@/components/places/Way';

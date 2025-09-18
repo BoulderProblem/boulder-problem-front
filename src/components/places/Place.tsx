@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import Grid from '@mui/material/Grid2';
 import 'leaflet/dist/leaflet.css';
 import { usePlaces } from '@/services/usePlaces';
 import {
@@ -12,6 +11,7 @@ import {
   Box,
   MenuItem,
   InputAdornment,
+  Grid,
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { MobileTimePicker } from '@mui/x-date-pickers/MobileTimePicker';

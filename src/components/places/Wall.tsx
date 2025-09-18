@@ -11,8 +11,8 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  Grid,
 } from '@mui/material';
-import Grid from '@mui/material/Grid2';
 
 const Wall = React.forwardRef(
   (props: { wallId: string; openModalWay: any; setWall: any }, ref) => {

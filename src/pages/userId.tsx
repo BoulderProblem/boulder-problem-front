@@ -2,10 +2,9 @@ import Roles from '@/enums/role';
 import { useAuth } from '@/services/useAuth';
 import { useUsers } from '@/services/useUsers';
 import { useEffect, useState } from 'react';
-import Grid from '@mui/material/Grid2';
 import ImageWithToken from 'react-image-with-auth';
 import { useParams } from 'react-router-dom';
-import { TextField, MenuItem } from '@mui/material';
+import { TextField, MenuItem, Grid } from '@mui/material';
 import Genders from '@/enums/gender';
 import { USER } from '@/types/user';
 

@@ -28,6 +28,8 @@ interface ContestsContextType {
   getContest: (id: string) => Promise<any>;
   addContest: (params: any) => Promise<any>;
   updateContest: (id: string, params: any) => Promise<any>;
+  addWayContest: (id: string, way_id: number) => Promise<any>;
+  deleteWayContest: (id: string, way_id: number) => Promise<any>;
   deleteContest: (id: string) => void;
   getContestWays: (id: string) => void;
   getContestUsers: (id: string) => void;
@@ -161,6 +163,32 @@ export function ContestsProvider({
     return contest;
   }
 
+  async function addWayContest(id: string, way_id: number) {
+    setLoading(true);
+    await axiosClient
+      .post(`${baseUrl}/contests/${id}/ways/${way_id}`)
+      .then((response) => {
+        getContestWays(id);
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
+  async function deleteWayContest(id: string, way_id: number) {
+    setLoading(true);
+    await axiosClient
+      .delete(`${baseUrl}/contests/${id}/ways/${way_id}`)
+      .then((response) => {
+        getContestWays(id);
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
   function getContestWays(id: string) {
     setLoading(true);
     axiosClient
@@ -237,6 +265,8 @@ export function ContestsProvider({
       getContest,
       addContest,
       updateContest,
+      addWayContest,
+      deleteWayContest,
       getContestWays,
       deleteContest,
       getContestUsers,

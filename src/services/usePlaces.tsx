@@ -9,6 +9,7 @@ import {
 import axiosClient from '../axios-client';
 import { WAY } from '@/types/way';
 import { PLACE } from '@/types/place';
+import { ZONE } from '@/types/zone';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -26,6 +27,7 @@ interface PlacesContextType {
   zones?: any[];
   walls: any[];
   ways?: WAY[];
+  allWays?: ZONE[];
   place?: PLACE;
   loading: boolean;
   error?: any;
@@ -44,6 +46,7 @@ interface PlacesContextType {
   updateWall: (wall_id: string, params: any) => Promise<any>;
   getWalls: (id: number | string) => void;
   getWays: (id: number | string) => void;
+  getAllWays: (id: number | string) => void;
   getWay: (id: number | string) => Promise<any>;
   addWay: (params: any) => void;
   updateWay: (id: number | string, params: any) => void;
@@ -67,6 +70,7 @@ export function PlacesProvider({
   const [zones, setPlaceZones] = useState<any>();
   const [walls, setWalls] = useState<any>([]);
   const [ways, setWays] = useState<any>([]);
+  const [allWays, setAllWays] = useState<any>([]);
   const [error, setError] = useState<any>();
   const [loading, setLoading] = useState<boolean>(false);
   // We are using `react-router` for this example,
@@ -296,6 +300,18 @@ export function PlacesProvider({
       .finally(() => setLoading(false));
   }
 
+  function getAllWays(id: number | string) {
+    axiosClient
+      .get(`${baseUrl}/places/${id}/allways`)
+      .then((response) => {
+        setAllWays(response.data);
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
   async function getWay(id: number | string) {
     let way;
     await axiosClient
@@ -366,6 +382,7 @@ export function PlacesProvider({
       zones,
       walls,
       ways,
+      allWays,
       loading,
       error,
       getColors,
@@ -383,6 +400,7 @@ export function PlacesProvider({
       updateZone,
       getWalls,
       getWays,
+      getAllWays,
       getWay,
       addWay,
       updateWay,
@@ -398,6 +416,7 @@ export function PlacesProvider({
       zones,
       walls,
       ways,
+      allWays,
       loading,
       error,
     ]

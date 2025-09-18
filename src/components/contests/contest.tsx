@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import Grid from '@mui/material/Grid2';
 import 'leaflet/dist/leaflet.css';
 import { styled } from '@mui/material/styles';
 import {
@@ -12,7 +11,11 @@ import {
   DialogTitle,
   TextField,
   Box,
+  Autocomplete,
+  Grid,
+  Checkbox,
 } from '@mui/material';
+import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import SpeedDial from '@mui/material/SpeedDial';
 import CreateIcon from '@mui/icons-material/Create';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -35,7 +38,8 @@ import { useFormik } from 'formik';
 import { LocalizationProvider, MobileDatePicker } from '@mui/x-date-pickers';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { get } from 'http';
+import { usePlaces } from '@/services/usePlaces';
+import WayTreeView from './WayTreeView';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -45,6 +49,7 @@ if (process.env.NODE_ENV !== 'production') {
 const Contest = (props: any) => {
   const { id } = useParams() as { id: string };
   const { user, token } = useAuth();
+  const { places, allWays, getPlaces, getAllWays } = usePlaces();
   const {
     getContest,
     getContestWays,
@@ -59,6 +64,8 @@ const Contest = (props: any) => {
 
   const navigate = useNavigate();
 
+  const [openPlace, setOpenPlace] = useState(false);
+  const [openWay, setOpenWay] = useState(false);
   const [openUpdateContest, setOpenUpdateContest] = useState(false);
   const [openDeleteContest, setOpenDeleteContest] = useState(false);
 
@@ -107,6 +114,22 @@ const Contest = (props: any) => {
     setOpenUpdateContest(true);
   };
 
+  const openModalPlace = () => {
+    fetchPlaces('');
+    setOpenPlace(true);
+  };
+
+  // Fonction pour effectuer la recherche via l'API
+  const fetchPlaces = async (query: string) => {
+    getPlaces(query, 1);
+  };
+
+  const selectPlace = (place: any) => {
+    handleClose();
+    getAllWays(place.id);
+    setOpenWay(true);
+  };
+
   const openModalDelete = () => {
     setOpenDeleteContest(true);
   };
@@ -128,6 +151,8 @@ const Contest = (props: any) => {
   const handleClose = () => {
     setOpenUpdateContest(false);
     setOpenDeleteContest(false);
+    setOpenPlace(false);
+    setOpenWay(false);
   };
 
   const enumToArray = (data: any): any =>
@@ -147,6 +172,17 @@ const Contest = (props: any) => {
     '&.MuiSpeedDial-directionDown, &.MuiSpeedDial-directionRight': {
       top: theme.spacing(2),
       left: theme.spacing(2),
+    },
+  }));
+
+  const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: theme.palette.common.white,
+      color: 'rgba(0, 0, 0, 0.87)',
+      boxShadow: theme.shadows[1],
+      fontSize: 11,
     },
   }));
 
@@ -207,7 +243,7 @@ const Contest = (props: any) => {
                     onClick={() => openModal()}
                     slotProps={{
                       tooltip: {
-                        title: 'update',
+                        title: 'Modifier',
                       },
                     }}
                   />
@@ -220,30 +256,30 @@ const Contest = (props: any) => {
                       onClick={() => follow()}
                       slotProps={{
                         tooltip: {
-                          title: 'delete',
+                          title: 'Se désinscrire',
                         },
                       }}
                     />
                   ) : (
                     <SpeedDialAction
-                      key="delete"
+                      key="add"
                       icon={<AddIcon />}
                       onClick={() => follow()}
                       slotProps={{
                         tooltip: {
-                          title: 'delete',
+                          title: "S'inscrire",
                         },
                       }}
                     />
                   )}
                   <SpeedDialAction
-                    key="delete"
+                    key="deleteOutline"
                     icon={<DeleteOutlineIcon />}
                     onClick={() => openModalDelete()}
                     disabled={contest.status !== 'waiting'}
                     slotProps={{
                       tooltip: {
-                        title: 'delete',
+                        title: 'Supprimer',
                       },
                     }}
                   />
@@ -252,21 +288,25 @@ const Contest = (props: any) => {
             ) : contestUsers &&
               contestUsers.filter((users: any) => users.id === user?.id)
                 .length > 0 ? (
-              <IconButton
-                onClick={() => follow()}
-                color="primary"
-                component="span"
-              >
-                <RemoveIcon />
-              </IconButton>
+              <LightTooltip title="Se désinscrire">
+                <IconButton
+                  onClick={() => follow()}
+                  color="primary"
+                  component="span"
+                >
+                  <RemoveIcon />
+                </IconButton>
+              </LightTooltip>
             ) : (
-              <IconButton
-                onClick={() => follow()}
-                color="primary"
-                component="span"
-              >
-                <AddIcon />
-              </IconButton>
+              <LightTooltip title="S'inscrire">
+                <IconButton
+                  onClick={() => follow()}
+                  color="primary"
+                  component="span"
+                >
+                  <AddIcon />
+                </IconButton>
+              </LightTooltip>
             )}
           </div>
 
@@ -282,13 +322,17 @@ const Contest = (props: any) => {
                 <h1 className="mb-10 relative">
                   Liste des voies
                   <div className="text-right absolute right-0 top-0">
-                    <IconButton
-                      onClick={() => openModal()}
-                      color="primary"
-                      component="span"
-                    >
-                      <AddIcon />
-                    </IconButton>
+                    {user?.id === contest.userId ? (
+                      <LightTooltip title="Ajouter une voie">
+                        <IconButton
+                          onClick={() => openModalPlace()}
+                          color="primary"
+                          component="span"
+                        >
+                          <AddIcon />
+                        </IconButton>
+                      </LightTooltip>
+                    ) : null}
                   </div>
                 </h1>
                 <Box
@@ -301,11 +345,11 @@ const Contest = (props: any) => {
                   }}
                 >
                   {contestWays &&
-                    contestWays.map((contest: any) => (
+                    contestWays.map((way: any) => (
                       <Card
-                        key={contest.id}
+                        key={way.id}
                         style={{
-                          borderColor: contest.color.color,
+                          borderColor: way.color.color,
                           borderWidth: 4,
                         }}
                       >
@@ -324,20 +368,20 @@ const Contest = (props: any) => {
                         >
                           <CardContent sx={{ height: '100%' }}>
                             <Typography variant="h5" component="div">
-                              {contest.name}
+                              {way.name}
                             </Typography>
                             <Typography variant="h6" color="text.secondary">
-                              mur : {contest.wall.name}
+                              mur : {way.wall.name}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                              salle : {contest.wall.zone.place.name}
+                              salle : {way.wall.zone.place.name}
                             </Typography>
                             <Typography
                               variant="body2"
                               color="text.secondary"
                               className="pt-3"
                             >
-                              difficultée : {contest.difficulty.label}
+                              difficultée : {way.difficulty.label}
                             </Typography>
                           </CardContent>
                         </CardActionArea>
@@ -360,7 +404,7 @@ const Contest = (props: any) => {
                 >
                   {contestUsers &&
                     contestUsers.map((user: any) => (
-                      <Card key={contest.id}>
+                      <Card key={user.id}>
                         <CardActionArea
                           // onClick={() => setSelectedCard(index)}
                           // data-active={selectedCard === index ? '' : undefined}
@@ -570,6 +614,86 @@ const Contest = (props: any) => {
           </button>
           <button className="btn" type="submit" onClick={validDelete}>
             Supprimer
+          </button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={openPlace}
+        onClose={handleClose}
+        maxWidth={'lg'}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        PaperProps={{
+          sx: {
+            width: '500px',
+            maxWidth: '90%',
+          },
+          className: 'dark:bg-zinc-700',
+        }}
+      >
+        <DialogTitle>Choisissez une salle</DialogTitle>
+        <DialogContent>
+          <Autocomplete
+            fullWidth
+            // value={inputs.owner}
+            onChange={(event: any, newValue: any) => {
+              selectPlace(newValue);
+            }}
+            id="controllable-states-demo"
+            options={places ? places.data : []}
+            getOptionLabel={(option: any) =>
+              option.name + ' ' + option.address || ''
+            }
+            getOptionKey={(option: any) => option.id}
+            onInputChange={(event, newInputValue) => {
+              if (event && !event.cancelable) fetchPlaces(newInputValue);
+            }}
+            disabled={user && user.roleId === 2}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Gérant"
+                variant="standard"
+                className="p-2.5"
+              />
+            )}
+          />
+        </DialogContent>
+        <DialogActions>
+          <button className="btn" onClick={handleClose}>
+            Fermer
+          </button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={openWay}
+        onClose={handleClose}
+        maxWidth={'lg'}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        PaperProps={{
+          sx: {
+            width: '500px',
+            maxWidth: '90%',
+          },
+          className: 'dark:bg-zinc-700',
+        }}
+      >
+        <DialogTitle>Choisissez les voies</DialogTitle>
+        <DialogContent>
+          {allWays && contestWays && (
+            <WayTreeView
+              id={id}
+              data={allWays}
+              selectedId={contestWays.map((way: any) => way.id)}
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <button className="btn" onClick={handleClose}>
+            Fermer
           </button>
         </DialogActions>
       </Dialog>

@@ -2,7 +2,6 @@
 
 import { usePlaces } from '@/services/usePlaces';
 import { useContests } from '@/services/useContests';
-import Grid from '@mui/material/Grid2';
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Add } from '@mui/icons-material';
@@ -13,6 +12,7 @@ import {
   DialogTitle,
   TextField,
   Box,
+  Grid,
 } from '@mui/material';
 import { MobileDatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';

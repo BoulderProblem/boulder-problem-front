@@ -6,4 +6,9 @@ export type WAY = {
   name: string;
   routeSetter: string;
   style: string;
+  color: {
+    id: number;
+    color: string;
+    label: string;
+  };
 };
