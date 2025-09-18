@@ -27,9 +27,6 @@ const WayTreeView: React.FC<WayTreeViewProps> = ({ data, selectedId, id }) => {
 
     data.forEach((zone) => {
       expanded.push(`zone${zone.id}`);
-      zone.walls.forEach((wall) => {
-        expanded.push(`wall${wall.id}`);
-      });
     });
 
     return expanded;
