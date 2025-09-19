@@ -7,6 +7,7 @@ import {
   useState,
 } from 'react';
 import axiosClient from '../axios-client';
+import { POST } from '@/types/post';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -18,10 +19,12 @@ interface UsersContextType {
   // a simple object with email, name and password.
   users: any;
   user: any;
+  posts: POST[];
   loading: boolean;
   error?: any;
   getUsers: (search: string, page: number | string) => Promise<any>;
   getUser: (id: string) => Promise<any>;
+  getUserPosts: (id: string) => Promise<any>;
   updateUser: (id: string, params: any) => Promise<any>;
   deleteUser: (id: string) => void;
 }
@@ -35,6 +38,7 @@ export function UsersProvider({
   children: ReactNode;
 }): JSX.Element {
   const [users, setUsers] = useState<any>();
+  const [posts, setPosts] = useState<any>();
   const [user, setUser] = useState<any>();
   const [error, setError] = useState<any>();
   const [loading, setLoading] = useState<boolean>(false);
@@ -104,6 +108,19 @@ export function UsersProvider({
     return user;
   }
 
+  async function getUserPosts(id: number | string) {
+    setLoading(true);
+    await axiosClient
+      .get(`${baseUrl}/users/${id}/posts`)
+      .then((response) => {
+        setPosts(response.data);
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
   async function updateUser(id: string, params: any) {
     let user;
     setLoading(true);
@@ -144,10 +161,12 @@ export function UsersProvider({
     () => ({
       users,
       user,
+      posts,
       loading,
       error,
       getUsers,
       getUser,
+      getUserPosts,
       updateUser,
       deleteUser,
     }),
