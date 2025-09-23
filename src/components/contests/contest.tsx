@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import {
   IconButton,
   MenuItem,
@@ -13,7 +13,11 @@ import {
   Box,
   Autocomplete,
   Grid,
-  Checkbox,
+  Tabs,
+  Tab,
+  useMediaQuery,
+  Divider,
+  Button,
 } from '@mui/material';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import SpeedDial from '@mui/material/SpeedDial';
@@ -40,6 +44,7 @@ import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { usePlaces } from '@/services/usePlaces';
 import WayTreeView from './WayTreeView';
+import { classNames } from 'node_modules/react-easy-crop/helpers';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -49,7 +54,8 @@ if (process.env.NODE_ENV !== 'production') {
 const Contest = (props: any) => {
   const { id } = useParams() as { id: string };
   const { user, token } = useAuth();
-  const { places, allWays, getPlaces, getAllWays } = usePlaces();
+  const { place, places, allWays, getPlace, getPlaces, getAllWays } =
+    usePlaces();
   const {
     getContest,
     getContestWays,
@@ -68,6 +74,15 @@ const Contest = (props: any) => {
   const [openWay, setOpenWay] = useState(false);
   const [openUpdateContest, setOpenUpdateContest] = useState(false);
   const [openDeleteContest, setOpenDeleteContest] = useState(false);
+
+  const [tabIndex, setTabIndex] = useState(0);
+  const theme = useTheme();
+  const isMdUp = useMediaQuery(theme.breakpoints.down('md')); // mobile = <960px
+  const isSmUp = useMediaQuery(theme.breakpoints.up('sm')); // small = >=600px
+
+  const handleChange = (event, newValue) => {
+    setTabIndex(newValue);
+  };
 
   dayjs.locale('fr');
   useEffect(() => {
@@ -114,8 +129,18 @@ const Contest = (props: any) => {
     setOpenUpdateContest(true);
   };
 
+  /**
+   * get ways and open modal for add ways
+   */
+  const openModalWay = () => {
+    getPlace(contest.placeId);
+    getAllWays(contest.placeId);
+    setOpenWay(true);
+  };
+
   const openModalPlace = () => {
     fetchPlaces('');
+    setOpenWay(false);
     setOpenPlace(true);
   };
 
@@ -126,6 +151,7 @@ const Contest = (props: any) => {
 
   const selectPlace = (place: any) => {
     handleClose();
+    getPlace(place.id);
     getAllWays(place.id);
     setOpenWay(true);
   };
@@ -186,272 +212,316 @@ const Contest = (props: any) => {
     },
   }));
 
-  return (
-    <div>
-      {!contest ? (
-        <div>Loading...</div>
-      ) : (
-        <div className="m-5 relative">
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 4, sm: 4 }}>
-              <div className="text-right">
-                <p className="font-bold my-3">
-                  {Status[contest.status as keyof typeof Status]}
-                </p>
-                <p className="font-bold my-2">
-                  Début : {dayjs(contest.startDate).format('dddd D MMMM YYYY')}
-                </p>
-                <p className="font-bold my-2">
-                  Fin : {dayjs(contest.endDate).format('dddd D MMMM YYYY')}
-                </p>
-              </div>
-            </Grid>
-            <Grid size={{ xs: 4, sm: 4 }}>
-              <div className="flex justify-center text-lg my-10">
-                {contest.name}
-              </div>
-            </Grid>
-            <Grid size={{ xs: 4, sm: 4 }}>
-              <p className="font-bold text-lg mt-10">
-                {contest.followCount || '0'}
-              </p>
-              Inscrits
-            </Grid>
-          </Grid>
-          <div className="text-right absolute w-16 right-0 top-0">
-            {user?.id === contest.userId ? (
-              <Box sx={{ mt: 0, height: 50 }}>
-                <StyledSpeedDial
-                  key={'down'}
-                  ariaLabel="SpeedDial playground example"
-                  icon={<SettingsIcon />}
-                  direction="down"
-                  sx={{
-                    '& .MuiFab-primary': {
-                      width: 40,
-                      height: 40,
-                    },
-                  }}
-                  style={{
-                    top: 0,
-                    right: 0,
-                  }}
-                >
-                  <SpeedDialAction
-                    key="update"
-                    icon={<CreateIcon />}
-                    onClick={() => openModal()}
-                    slotProps={{
-                      tooltip: {
-                        title: 'Modifier',
-                      },
-                    }}
-                  />
-                  {contestUsers &&
-                  contestUsers.filter((users: any) => users.id === user?.id)
-                    .length > 0 ? (
-                    <SpeedDialAction
-                      key="delete"
-                      icon={<RemoveIcon />}
-                      onClick={() => follow()}
-                      slotProps={{
-                        tooltip: {
-                          title: 'Se désinscrire',
-                        },
-                      }}
-                    />
-                  ) : (
-                    <SpeedDialAction
-                      key="add"
-                      icon={<AddIcon />}
-                      onClick={() => follow()}
-                      slotProps={{
-                        tooltip: {
-                          title: "S'inscrire",
-                        },
-                      }}
-                    />
-                  )}
-                  <SpeedDialAction
-                    key="deleteOutline"
-                    icon={<DeleteOutlineIcon />}
-                    onClick={() => openModalDelete()}
-                    disabled={contest.status !== 'waiting'}
-                    slotProps={{
-                      tooltip: {
-                        title: 'Supprimer',
-                      },
-                    }}
-                  />
-                </StyledSpeedDial>
-              </Box>
-            ) : contestUsers &&
-              contestUsers.filter((users: any) => users.id === user?.id)
-                .length > 0 ? (
-              <LightTooltip title="Se désinscrire">
+  // Contenus des onglets
+  const tabContents = [
+    {
+      label: <div>Description</div>,
+      content: (
+        <div className="text-base whitespace-pre-line">
+          {contest && contest.description}
+        </div>
+      ),
+    },
+    {
+      label: <div>Participants</div>,
+      content: (
+        <Box
+          sx={{
+            width: '100%',
+            display: 'grid',
+            gridTemplateColumns:
+              'repeat(auto-fill, minmax(min(200px, 100%), 1fr))',
+            gap: 2,
+          }}
+        >
+          {contestUsers &&
+            contestUsers.map((user: any) => (
+              <Card
+                key={user.id}
+                sx={{
+                  borderRadius: 3,
+                  boxShadow: 3,
+                }}
+              >
+                <CardActionArea>
+                  <CardContent sx={{ display: 'flex', width: '100%' }}>
+                    <div className="avatar m-3">
+                      <div className="rounded-full">
+                        <ImageWithToken
+                          imageUrl={
+                            baseUrl +
+                            '/users/' +
+                            user.id +
+                            '/avatar/' +
+                            user.avatar +
+                            '?size=50'
+                          }
+                          token={token}
+                          alt="avatar"
+                        />
+                      </div>
+                    </div>
+                    <div className="my-auto ms-3">
+                      <Typography variant="h5" component="div">
+                        {user.firstname}
+                      </Typography>
+                      <Typography variant="h6" color="text.secondary">
+                        {user.lastname}
+                      </Typography>
+                    </div>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            ))}
+        </Box>
+      ),
+    },
+    {
+      label: (
+        <div className="relative">
+          voies
+          <div className="text-right absolute -right-6 md:-right-9 lg:right-0 -top-6 md:-top-7 lg:top-0">
+            {contest && user?.id === contest.userId ? (
+              <LightTooltip title="Ajouter une voie">
                 <IconButton
-                  onClick={() => follow()}
-                  color="primary"
-                  component="span"
-                >
-                  <RemoveIcon />
-                </IconButton>
-              </LightTooltip>
-            ) : (
-              <LightTooltip title="S'inscrire">
-                <IconButton
-                  onClick={() => follow()}
+                  onClick={() => openModalWay()}
                   color="primary"
                   component="span"
                 >
                   <AddIcon />
                 </IconButton>
               </LightTooltip>
-            )}
+            ) : null}
           </div>
+        </div>
+      ),
+      content: (
+        <Box
+          sx={{
+            width: '100%',
+            display: 'grid',
+            gridTemplateColumns:
+              'repeat(auto-fill, minmax(min(200px, 100%), 1fr))',
+            gap: 2,
+          }}
+        >
+          {contestWays &&
+            contestWays.map((way: any) => (
+              <Card
+                key={way.id}
+                sx={{
+                  borderLeft: `6px solid ${way.color.color}`,
+                  borderRadius: 3,
+                  boxShadow: 3,
+                }}
+              >
+                <CardActionArea>
+                  <CardContent sx={{ height: '100%' }}>
+                    <Typography variant="h5" component="div">
+                      {way.name}
+                    </Typography>
+                    <Typography variant="h6" color="text.secondary">
+                      mur : {way.wall.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      salle : {way.wall.zone.place.name}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      className="pt-3"
+                    >
+                      difficultée : {way.difficulty.label}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            ))}
+        </Box>
+      ),
+    },
+    {
+      label: <div>Classement</div>,
+      content: <Typography>Contenu de l’onglet Classement</Typography>,
+    },
+  ];
 
-          <Grid container spacing={2}>
-            <Grid size={{ md: 12, lg: 4 }}>
-              <div className="max-w-3xl m-1 sm:m-20 whitespace-pre-line">
-                <h1 className="mb-10">Description</h1>
-                {contest.description}
+  return (
+    <div>
+      {!contest ? (
+        <div>Loading...</div>
+      ) : (
+        <div>
+          <div className="m-5 relative">
+            {!isSmUp ? (
+              <div className="flex justify-center text-3xl my-10">
+                {contest.name}
               </div>
-            </Grid>
-            <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-              <div className="max-w-3xl m-1 sm:m-20 whitespace-pre-line">
-                <h1 className="mb-10 relative">
-                  Liste des voies
-                  <div className="text-right absolute right-0 top-0">
-                    {user?.id === contest.userId ? (
-                      <LightTooltip title="Ajouter une voie">
-                        <IconButton
-                          onClick={() => openModalPlace()}
-                          color="primary"
-                          component="span"
-                        >
-                          <AddIcon />
-                        </IconButton>
-                      </LightTooltip>
-                    ) : null}
+            ) : (
+              ''
+            )}
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 6, sm: 4 }}>
+                <div className="text-right mr-3 md:mr-0">
+                  <p className="font-bold my-3">
+                    Statut : {Status[contest.status as keyof typeof Status]}
+                  </p>
+                  <p className="font-bold my-2">
+                    Début :{' '}
+                    {dayjs(contest.startDate).format('dddd D MMMM YYYY')}
+                  </p>
+                  <p className="font-bold my-2">
+                    Fin : {dayjs(contest.endDate).format('dddd D MMMM YYYY')}
+                  </p>
+                </div>
+              </Grid>
+              {isSmUp ? (
+                <Grid size={{ xs: 0, sm: 4 }}>
+                  <div className="flex justify-center text-3xl my-10">
+                    {contest.name}
                   </div>
-                </h1>
-                <Box
-                  sx={{
-                    width: '100%',
-                    display: 'grid',
-                    gridTemplateColumns:
-                      'repeat(auto-fill, minmax(min(200px, 100%), 1fr))',
-                    gap: 2,
-                  }}
-                >
-                  {contestWays &&
-                    contestWays.map((way: any) => (
-                      <Card
-                        key={way.id}
-                        style={{
-                          borderColor: way.color.color,
-                          borderWidth: 4,
+                </Grid>
+              ) : (
+                ''
+              )}
+              <Grid size={{ xs: 6, sm: 4 }}>
+                <div className=" ml-3 md:ml-0">
+                  <p className="font-bold text-lg mt-10">
+                    {contest.followCount || '0'}
+                  </p>
+                  Inscrits
+                </div>
+              </Grid>
+            </Grid>
+            <div className="text-right absolute w-16 right-0 top-0">
+              {user?.id === contest.userId ? (
+                <Box sx={{ mt: 0, height: 50 }}>
+                  <StyledSpeedDial
+                    key={'down'}
+                    ariaLabel="SpeedDial playground example"
+                    icon={<SettingsIcon />}
+                    direction="down"
+                    sx={{
+                      '& .MuiFab-primary': {
+                        width: 40,
+                        height: 40,
+                      },
+                    }}
+                    style={{
+                      top: 0,
+                      right: 0,
+                    }}
+                  >
+                    <SpeedDialAction
+                      key="update"
+                      icon={<CreateIcon />}
+                      onClick={() => openModal()}
+                      slotProps={{
+                        tooltip: {
+                          title: 'Modifier',
+                        },
+                      }}
+                    />
+                    {contestUsers &&
+                    contestUsers.filter((users: any) => users.id === user?.id)
+                      .length > 0 ? (
+                      <SpeedDialAction
+                        key="delete"
+                        icon={<RemoveIcon />}
+                        onClick={() => follow()}
+                        slotProps={{
+                          tooltip: {
+                            title: 'Se désinscrire',
+                          },
                         }}
-                      >
-                        <CardActionArea
-                          // onClick={() => setSelectedCard(index)}
-                          // data-active={selectedCard === index ? '' : undefined}
-                          sx={{
-                            height: '100%',
-                            '&[data-active]': {
-                              backgroundColor: 'action.selected',
-                              '&:hover': {
-                                backgroundColor: 'action.selectedHover',
-                              },
-                            },
-                          }}
-                        >
-                          <CardContent sx={{ height: '100%' }}>
-                            <Typography variant="h5" component="div">
-                              {way.name}
-                            </Typography>
-                            <Typography variant="h6" color="text.secondary">
-                              mur : {way.wall.name}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              salle : {way.wall.zone.place.name}
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              className="pt-3"
-                            >
-                              difficultée : {way.difficulty.label}
-                            </Typography>
-                          </CardContent>
-                        </CardActionArea>
-                      </Card>
-                    ))}
+                      />
+                    ) : (
+                      <SpeedDialAction
+                        key="add"
+                        icon={<AddIcon />}
+                        onClick={() => follow()}
+                        slotProps={{
+                          tooltip: {
+                            title: "S'inscrire",
+                          },
+                        }}
+                      />
+                    )}
+                    <SpeedDialAction
+                      key="deleteOutline"
+                      icon={<DeleteOutlineIcon />}
+                      onClick={() => openModalDelete()}
+                      disabled={contest.status !== 'waiting'}
+                      slotProps={{
+                        tooltip: {
+                          title: 'Supprimer',
+                        },
+                      }}
+                    />
+                  </StyledSpeedDial>
                 </Box>
-              </div>
-            </Grid>
-            <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-              <div className="max-w-3xl m-1 sm:m-20 whitespace-pre-line">
-                <h1 className="mb-10">Liste des participants</h1>
-                <Box
+              ) : contestUsers &&
+                contestUsers.filter((users: any) => users.id === user?.id)
+                  .length > 0 ? (
+                <LightTooltip title="Se désinscrire">
+                  <IconButton
+                    onClick={() => follow()}
+                    color="primary"
+                    component="span"
+                  >
+                    <RemoveIcon />
+                  </IconButton>
+                </LightTooltip>
+              ) : (
+                <LightTooltip title="S'inscrire">
+                  <IconButton
+                    onClick={() => follow()}
+                    color="primary"
+                    component="span"
+                  >
+                    <AddIcon />
+                  </IconButton>
+                </LightTooltip>
+              )}
+            </div>
+          </div>
+          <Divider />
+          <Box sx={{ p: 2, marginTop: 5 }}>
+            {isMdUp ? (
+              // ✅ MOBILE VIEW - Tabs classiques
+              <>
+                <Tabs
+                  value={tabIndex}
+                  onChange={handleChange}
+                  variant={isSmUp ? 'fullWidth' : 'standard'}
                   sx={{
-                    width: '100%',
-                    display: 'grid',
-                    gridTemplateColumns:
-                      'repeat(auto-fill, minmax(min(200px, 100%), 1fr))',
-                    gap: 2,
+                    '& .MuiTab-root': {
+                      minWidth: 0,
+                      padding: '6px 8px',
+                      fontSize: '0.8rem', // plus petit texte
+                    },
                   }}
+                  aria-label="Onglets mobile"
                 >
-                  {contestUsers &&
-                    contestUsers.map((user: any) => (
-                      <Card key={user.id}>
-                        <CardActionArea
-                          // onClick={() => setSelectedCard(index)}
-                          // data-active={selectedCard === index ? '' : undefined}
-                          sx={{
-                            padding: 1,
-                            height: '100%',
-                            '&[data-active]': {
-                              backgroundColor: 'action.selected',
-                              '&:hover': {
-                                backgroundColor: 'action.selectedHover',
-                              },
-                            },
-                          }}
-                        >
-                          <CardContent sx={{ display: 'flex', width: '100%' }}>
-                            <div className="avatar m-3">
-                              <div className="rounded-full">
-                                <ImageWithToken
-                                  imageUrl={
-                                    baseUrl +
-                                    '/users/' +
-                                    user.id +
-                                    '/avatar/' +
-                                    user.avatar +
-                                    '?size=50'
-                                  }
-                                  token={token}
-                                  alt="avatar"
-                                />
-                              </div>
-                            </div>
-                            <div className="my-auto ms-3">
-                              <Typography variant="h5" component="div">
-                                {user.firstname}
-                              </Typography>
-                              <Typography variant="h6" color="text.secondary">
-                                {user.lastname}
-                              </Typography>
-                            </div>
-                          </CardContent>
-                        </CardActionArea>
-                      </Card>
-                    ))}
-                </Box>
-              </div>
-            </Grid>
-          </Grid>
+                  {tabContents.map((tab, index) => (
+                    <Tab key={index} label={tab.label} />
+                  ))}
+                </Tabs>
+
+                <Box sx={{ mt: 2 }}>{tabContents[tabIndex].content}</Box>
+              </>
+            ) : (
+              // ✅ DESKTOP VIEW - Tous les onglets visibles en colonne
+              <Grid container spacing={2}>
+                {tabContents.map((tab, index) => (
+                  <Grid key={index} size={{ sm: 6, md: 6, lg: 3 }}>
+                    <Typography>{tab.label}</Typography>
+                    <Box className="mt-10">{tab.content}</Box>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+          </Box>
         </div>
       )}
       <Dialog
@@ -653,7 +723,7 @@ const Contest = (props: any) => {
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Gérant"
+                label="Salle"
                 variant="standard"
                 className="p-2.5"
               />
@@ -670,17 +740,26 @@ const Contest = (props: any) => {
       <Dialog
         open={openWay}
         onClose={handleClose}
-        maxWidth={'lg'}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
         PaperProps={{
           sx: {
-            width: '500px',
+            width: '600px',
             maxWidth: '90%',
           },
-          className: 'dark:bg-zinc-700',
+          className: 'dark:bg-zinc-700 relative',
         }}
       >
+        <button
+          onClick={openModalPlace}
+          className="md:absolute top-0 right-0 text-sm text-end mt-5 mr-5"
+        >
+          changer de salle
+        </button>
+        <DialogTitle className="mt-10 md:mt-0">
+          {place && place.name}{' '}
+        </DialogTitle>
+
         <DialogTitle>Choisissez les voies</DialogTitle>
         <DialogContent>
           {allWays && contestWays && (

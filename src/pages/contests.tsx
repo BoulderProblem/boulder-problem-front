@@ -50,7 +50,7 @@ const Contests = () => {
             <tbody>
               {contests &&
                 contests.data.map((contest: any) => (
-                  <tr key={contests.id} className="hover:bg-base-200">
+                  <tr key={contest.id} className="hover:bg-base-200">
                     <td>
                       <Link
                         to={'/contests/' + contest.id}

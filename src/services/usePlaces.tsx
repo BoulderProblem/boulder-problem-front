@@ -10,6 +10,7 @@ import axiosClient from '../axios-client';
 import { WAY } from '@/types/way';
 import { PLACE } from '@/types/place';
 import { ZONE } from '@/types/zone';
+import { Favorite } from '@mui/icons-material';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -36,6 +37,7 @@ interface PlacesContextType {
   getPlaces: (search: string, page: number | string) => void;
   getMyPlaces: () => void;
   getPlace: (id: number | string) => Promise<any>;
+  favoritePlace: (id: number | string, favorite: boolean) => Promise<any>;
   getZone: (id: number | string) => Promise<any>;
   getPlaceZones: (id: number | string) => Promise<any>;
   updatePlace: (id: number | string, params: any) => Promise<any>;
@@ -143,6 +145,20 @@ export function PlacesProvider({
         setError(errors.response.data.errors[0].message);
       })
       .finally(() => setLoading(false));
+  }
+
+  async function favoritePlace(id: number | string, favorite: boolean) {
+    await axiosClient
+      .post(`${baseUrl}/places/${id}/favorite`, { favorite: favorite })
+      .then((response) => {
+        // Optionally, you can update the local state to reflect the change
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+
+    return;
   }
 
   function getMyPlaces() {
@@ -391,6 +407,7 @@ export function PlacesProvider({
       getMyPlaces,
       getPlace,
       updatePlace,
+      favoritePlace,
       getZone,
       getPlaceZones,
       getPlan,

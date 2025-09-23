@@ -25,6 +25,7 @@ interface UsersContextType {
   getUsers: (search: string, page: number | string) => Promise<any>;
   getUser: (id: string) => Promise<any>;
   getUserPosts: (id: string) => Promise<any>;
+  likePost: (id: number, like: boolean) => Promise<any>;
   updateUser: (id: string, params: any) => Promise<any>;
   deleteUser: (id: string) => void;
 }
@@ -121,6 +122,16 @@ export function UsersProvider({
       .finally(() => setLoading(false));
   }
 
+  async function likePost(id: number, like: boolean) {
+    await axiosClient
+      .post(`${baseUrl}/posts/${id}/like`, { favorite: like })
+      .then((response) => {})
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
   async function updateUser(id: string, params: any) {
     let user;
     setLoading(true);
@@ -167,6 +178,7 @@ export function UsersProvider({
       getUsers,
       getUser,
       getUserPosts,
+      likePost,
       updateUser,
       deleteUser,
     }),

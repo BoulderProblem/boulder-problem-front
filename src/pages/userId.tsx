@@ -28,12 +28,19 @@ if (process.env.NODE_ENV !== 'production') {
 const UserId = () => {
   const { id } = useParams();
   const { token } = useAuth();
-  const { user, posts, getUserPosts } = useUsers();
+  const { user, posts, getUserPosts, likePost } = useUsers();
 
   dayjs.locale('fr');
   useEffect(() => {
     getUserPosts(id || '0');
   }, []);
+
+  const handleLike = (postId: number, like: boolean) => {
+    // Call the API to like/unlike the post
+    likePost(postId, like).then(() => {
+      getUserPosts(id || '0');
+    });
+  };
 
   return (
     <div className="overflow-x-auto">
@@ -118,8 +125,16 @@ const UserId = () => {
                       </Typography>
                     </CardContent>
                     <CardActions disableSpacing>
-                      <IconButton aria-label="Like">
-                        <FavoriteIcon className="mr-3" />
+                      <IconButton
+                        aria-label="Like"
+                        onClick={() => {
+                          handleLike(post.id, !post.isLike);
+                        }}
+                      >
+                        <FavoriteIcon
+                          className="mr-3"
+                          color={post.isLike ? 'error' : 'inherit'}
+                        />
                         {post.likesCount}
                       </IconButton>
                       <IconButton aria-label="Commenter">

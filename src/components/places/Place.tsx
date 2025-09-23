@@ -12,8 +12,12 @@ import {
   MenuItem,
   InputAdornment,
   Grid,
+  IconButton,
 } from '@mui/material';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import { styled } from '@mui/material/styles';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
+import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import { MobileTimePicker } from '@mui/x-date-pickers/MobileTimePicker';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -37,7 +41,14 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const Place = (props: any) => {
-  const { getPlace, updatePlace, getPlaceZones, difficulties } = usePlaces();
+  const {
+    place,
+    getPlace,
+    updatePlace,
+    getPlaceZones,
+    favoritePlace,
+    difficulties,
+  } = usePlaces();
   const { getUsers, users, user } = useUsers();
   const { token } = useAuth();
 
@@ -296,6 +307,23 @@ const Place = (props: any) => {
     getUsers(query, 1);
   };
 
+  const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: theme.palette.common.white,
+      color: 'rgba(0, 0, 0, 0.87)',
+      boxShadow: theme.shadows[1],
+      fontSize: 11,
+    },
+  }));
+
+  const follow = (follow: boolean) => {
+    favoritePlace(parseInt(props.id || '0'), follow).then(() => {
+      getPlace(parseInt(props.id || '0'));
+    });
+  };
+
   return (
     <div>
       {inputs ? (
@@ -345,10 +373,35 @@ const Place = (props: any) => {
               <Grid size={{ xs: 6, sm: 6 }}>
                 <h1 className="text-center my-5">{inputs.name || ''}</h1>
               </Grid>
-              <Grid size={{ xs: 3, sm: 3 }}>
-                <div className="h-full m-auto">
-                  <p className="font-bold text-lg">{inputs.favoriteCount}</p>{' '}
+              <Grid size={{ xs: 3, sm: 3 }} className="relative">
+                <div className="h-full m-auto ">
+                  <p className="font-bold text-lg">
+                    {place ? place.favoriteCount : 0}
+                  </p>{' '}
                   favoris
+                </div>
+                <div className="text-right absolute w-16 right-5 top-0">
+                  {place && place.isFavorite ? (
+                    <LightTooltip title="Ne plus suivre">
+                      <IconButton
+                        onClick={() => follow(false)}
+                        color="primary"
+                        component="span"
+                      >
+                        <RemoveIcon />
+                      </IconButton>
+                    </LightTooltip>
+                  ) : (
+                    <LightTooltip title="Suivre">
+                      <IconButton
+                        onClick={() => follow(true)}
+                        color="primary"
+                        component="span"
+                      >
+                        <AddIcon />
+                      </IconButton>
+                    </LightTooltip>
+                  )}
                 </div>
               </Grid>
             </Grid>
