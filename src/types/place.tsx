@@ -6,6 +6,7 @@ export type PLACE = {
   street: string;
   houseNumber: string;
   postalCode: string;
+  address: string;
   phone: string;
   website: string;
   coordinate: { x: number; y: number };

@@ -17,8 +17,15 @@ import {
   Tab,
   useMediaQuery,
   Divider,
-  Button,
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Paper,
 } from '@mui/material';
+import { Link } from 'react-router-dom';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import SpeedDial from '@mui/material/SpeedDial';
 import CreateIcon from '@mui/icons-material/Create';
@@ -44,7 +51,7 @@ import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { usePlaces } from '@/services/usePlaces';
 import WayTreeView from './WayTreeView';
-import { classNames } from 'node_modules/react-easy-crop/helpers';
+import { RANKING } from '@/types/ranking';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -62,10 +69,12 @@ const Contest = (props: any) => {
     updateContest,
     deleteContest,
     getContestUsers,
+    getContestRanking,
     followContest,
     contest,
     contestWays,
     contestUsers,
+    contestRanking,
   } = useContests();
 
   const navigate = useNavigate();
@@ -80,7 +89,7 @@ const Contest = (props: any) => {
   const isMdUp = useMediaQuery(theme.breakpoints.down('md')); // mobile = <960px
   const isSmUp = useMediaQuery(theme.breakpoints.up('sm')); // small = >=600px
 
-  const handleChange = (event, newValue) => {
+  const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
   };
 
@@ -89,6 +98,7 @@ const Contest = (props: any) => {
     getContest(id);
     getContestWays(id);
     getContestUsers(id);
+    getContestRanking(id);
   }, []);
 
   const formik = useFormik({
@@ -243,34 +253,36 @@ const Contest = (props: any) => {
                   boxShadow: 3,
                 }}
               >
-                <CardActionArea>
-                  <CardContent sx={{ display: 'flex', width: '100%' }}>
-                    <div className="avatar m-3">
-                      <div className="rounded-full">
-                        <ImageWithToken
-                          imageUrl={
-                            baseUrl +
-                            '/users/' +
-                            user.id +
-                            '/avatar/' +
-                            user.avatar +
-                            '?size=50'
-                          }
-                          token={token}
-                          alt="avatar"
-                        />
+                <Link to={'/users/' + user.id}>
+                  <CardActionArea>
+                    <CardContent sx={{ display: 'flex', width: '100%' }}>
+                      <div className="avatar m-3">
+                        <div className="rounded-full">
+                          <ImageWithToken
+                            imageUrl={
+                              baseUrl +
+                              '/users/' +
+                              user.id +
+                              '/avatar/' +
+                              user.avatar +
+                              '?size=50'
+                            }
+                            token={token}
+                            alt="avatar"
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div className="my-auto ms-3">
-                      <Typography variant="h5" component="div">
-                        {user.firstname}
-                      </Typography>
-                      <Typography variant="h6" color="text.secondary">
-                        {user.lastname}
-                      </Typography>
-                    </div>
-                  </CardContent>
-                </CardActionArea>
+                      <div className="my-auto ms-3">
+                        <Typography component="div">
+                          {user.firstname}
+                        </Typography>
+                        <Typography color="text.secondary">
+                          {user.lastname}
+                        </Typography>
+                      </div>
+                    </CardContent>
+                  </CardActionArea>
+                </Link>
               </Card>
             ))}
         </Box>
@@ -342,7 +354,54 @@ const Contest = (props: any) => {
     },
     {
       label: <div>Classement</div>,
-      content: <Typography>Contenu de l’onglet Classement</Typography>,
+      content: (
+        <TableContainer component={Paper}>
+          <Table aria-label="simple table">
+            <TableHead>
+              <TableRow>
+                <TableCell>Place</TableCell>
+                <TableCell>Nom</TableCell>
+                <TableCell align="right">Points</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {contestRanking &&
+                contestRanking.map((ranking: RANKING, index: number) => (
+                  <TableRow
+                    key={ranking.id}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  >
+                    <TableCell component="th" scope="row">
+                      {index + 1}
+                    </TableCell>
+                    <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
+                      <div className="avatar">
+                        <div className="rounded-full">
+                          <ImageWithToken
+                            imageUrl={
+                              baseUrl +
+                              '/users/' +
+                              ranking.user_id +
+                              '/avatar/' +
+                              ranking.avatar +
+                              '?size=40'
+                            }
+                            token={token}
+                            alt="avatar"
+                          />
+                        </div>
+                      </div>
+                      <div className="my-auto ms-3">
+                        {ranking.firstname} {ranking.lastname}
+                      </div>
+                    </TableCell>
+                    <TableCell align="right">{ranking.score}</TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      ),
     },
   ];
 
@@ -451,8 +510,10 @@ const Contest = (props: any) => {
                       key="deleteOutline"
                       icon={<DeleteOutlineIcon />}
                       onClick={() => openModalDelete()}
-                      disabled={contest.status !== 'waiting'}
                       slotProps={{
+                        fab: {
+                          disabled: contest.status !== 'waiting', // ✅ désactiver le bouton
+                        },
                         tooltip: {
                           title: 'Supprimer',
                         },
@@ -611,9 +672,12 @@ const Contest = (props: any) => {
                       onChange={(value) =>
                         formik.setFieldValue('start_date', value)
                       } // Lorsque la date est sélectionnée, mettre à jour la valeur avec Dayjs
-                      onBlur={() => formik.setFieldTouched('start_date', true)} // Marquer le champ comme "touché"
                       slotProps={{
-                        textField: { variant: 'standard' },
+                        textField: {
+                          variant: 'standard',
+                          onBlur: () =>
+                            formik.setFieldTouched('start_date', true), // Marquer le champ comme "touché"
+                        },
                       }}
                     />
                   </DemoContainer>
@@ -639,9 +703,12 @@ const Contest = (props: any) => {
                       onChange={(value) =>
                         formik.setFieldValue('end_date', value)
                       } // Lorsque la date est sélectionnée, mettre à jour la valeur avec Dayjs
-                      onBlur={() => formik.setFieldTouched('end_date', true)} // Marquer le champ comme "touché"
                       slotProps={{
-                        textField: { variant: 'standard' },
+                        textField: {
+                          variant: 'standard',
+                          onBlur: () =>
+                            formik.setFieldTouched('end_date', true), // Marquer le champ comme "touché"
+                        },
                       }}
                     />
                   </DemoContainer>
@@ -707,7 +774,7 @@ const Contest = (props: any) => {
           <Autocomplete
             fullWidth
             // value={inputs.owner}
-            onChange={(event: any, newValue: any) => {
+            onChange={(_event: any, newValue: any) => {
               selectPlace(newValue);
             }}
             id="controllable-states-demo"

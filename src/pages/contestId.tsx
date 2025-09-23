@@ -1,9 +1,7 @@
-import Grid from '@mui/material/Grid2';
-import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { useContests } from '@/services/useContests';
-import Status from '@/enums/status';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import Contest from '@/components/contests/contest';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
@@ -13,9 +11,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 const ContestId = () => {
   const { id } = useParams();
-  const { getContest, contest } = useContests();
-
-  const [OpenModal, setOpenModal] = useState(false);
+  const { getContest } = useContests();
 
   dayjs.locale('fr');
   useEffect(() => {

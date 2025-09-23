@@ -22,7 +22,7 @@ const Users = () => {
     getUsers(search, 1);
   }, []);
 
-  const changePage = (event: any, value: number) => {
+  const changePage = (_event: any, value: number) => {
     setPage(value);
     getUsers(search, value);
   };

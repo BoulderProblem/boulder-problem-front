@@ -65,8 +65,16 @@ const AddressSearch: React.FC<AddressSearchProps> = ({
     return () => clearTimeout(timeoutId);
   }, [inputValue]);
 
-  const handleChange = (_: any, newValue: AddressOption | null) => {
-    if (newValue) {
+  const handleChange = (
+    _event: React.SyntheticEvent<Element, Event>,
+    newValue: AddressOption | string | null
+  ) => {
+    if (typeof newValue === 'string') {
+      // Valeur saisie manuellement
+      setInputValue(newValue);
+      // Optionnel : appeler onAddressSelect si tu veux gérer les strings libres
+    } else if (newValue) {
+      // Valeur sélectionnée dans la liste
       setInputValue(newValue.address);
       onAddressSelect(
         newValue.address,
@@ -76,6 +84,9 @@ const AddressSearch: React.FC<AddressSearchProps> = ({
         newValue.postcode,
         newValue.coordinates
       );
+    } else {
+      // Valeur effacée
+      setInputValue('');
     }
   };
 

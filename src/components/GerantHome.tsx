@@ -18,7 +18,7 @@ import { MobileDatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useFormik } from 'formik';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
 import * as Yup from 'yup';
 import { useAuth } from '@/services/useAuth';
@@ -239,7 +239,11 @@ export function GerantHome() {
                         formik.setFieldValue('start_date', value)
                       } // Lorsque la date est sélectionnée, mettre à jour la valeur avec Dayjs
                       slotProps={{
-                        textField: { variant: 'standard' },
+                        textField: {
+                          variant: 'standard',
+                          onBlur: () =>
+                            formik.setFieldTouched('start_date', true), // Marquer le champ comme "touché"
+                        },
                       }}
                     />
                   </DemoContainer>
@@ -265,9 +269,12 @@ export function GerantHome() {
                       onChange={(value) =>
                         formik.setFieldValue('end_date', value)
                       } // Lorsque la date est sélectionnée, mettre à jour la valeur avec Dayjs
-                      onBlur={() => formik.setFieldTouched('end_date', true)} // Marquer le champ comme "touché"
                       slotProps={{
-                        textField: { variant: 'standard' },
+                        textField: {
+                          variant: 'standard',
+                          onBlur: () =>
+                            formik.setFieldTouched('end_date', true), // Marquer le champ comme "touché"
+                        },
                       }}
                     />
                   </DemoContainer>

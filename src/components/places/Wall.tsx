@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 
 const Wall = React.forwardRef(
-  (props: { wallId: string; openModalWay: any; setWall: any }, ref) => {
+  (props: { wallId: string; openModalWay: any; setWall: any }) => {
     const { walls, updateWall, getWalls, zone } = usePlaces();
 
     useEffect(() => {}, []);

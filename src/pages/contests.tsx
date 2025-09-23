@@ -5,7 +5,7 @@ import Stack from '@mui/material/Stack';
 import Status from '@/enums/status';
 import { useContests } from '@/services/useContests';
 import { Chip, Container } from '@mui/material';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -23,7 +23,7 @@ const Contests = () => {
     getContests(1);
   }, []);
 
-  const changePage = (event: any, value: number) => {
+  const changePage = (_event: any, value: number) => {
     setPage(value);
     getContests(value);
   };

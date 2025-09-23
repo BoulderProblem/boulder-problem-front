@@ -36,7 +36,12 @@ const PlaceId = () => {
   const [wallName, setWallName] = useState('');
   const [zoneId, setZoneId] = useState('');
 
-  const wayRef = useRef();
+  type WayModalHandle = {
+    openModalWay: () => void;
+  };
+
+  const wayRef = useRef<WayModalHandle>(null);
+
   const wallRef = useRef();
 
   useEffect(() => {
@@ -223,7 +228,7 @@ const PlaceId = () => {
   }
 
   const openModalWay = () => {
-    wayRef.current.openModalWay();
+    wayRef.current?.openModalWay();
   };
 
   const setWall = (value: string) => {

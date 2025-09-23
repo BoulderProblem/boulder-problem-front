@@ -72,16 +72,16 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
   }
 
   const [orderWay, setOrderWay] = useState('asc');
-  const [orderWayBy, setOrderWayBy] = useState('id');
+  const [orderWayBy, setOrderWayBy] = useState('id' as keyof WAY);
 
-  const handleRequestSortWay = (property: string) => {
+  const handleRequestSortWay = (property: keyof WAY) => {
     const isAsc = orderWayBy === property && orderWay === 'asc';
     setOrderWay(isAsc ? 'desc' : 'asc');
     setOrderWayBy(property);
   };
   let sortedWays: WAY[] = [];
   if (ways) {
-    sortedWays = [...ways].sort((a, b) => {
+    sortedWays = [...ways].sort((a: WAY, b: WAY) => {
       if (a[orderWayBy] < b[orderWayBy]) return orderWay === 'asc' ? -1 : 1;
       if (a[orderWayBy] > b[orderWayBy]) return orderWay === 'asc' ? 1 : -1;
       return 0;

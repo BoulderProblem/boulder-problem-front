@@ -7,6 +7,7 @@ import {
   useState,
 } from 'react';
 import axiosClient from '../axios-client';
+import { RANKING } from '@/types/ranking';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -21,6 +22,7 @@ interface ContestsContextType {
   contest: any;
   contestWays: any;
   contestUsers: any;
+  contestRanking: RANKING[];
   loading: boolean;
   error?: any;
   getMyContests: () => void;
@@ -33,6 +35,7 @@ interface ContestsContextType {
   deleteContest: (id: string) => void;
   getContestWays: (id: string) => void;
   getContestUsers: (id: string) => void;
+  getContestRanking: (id: string) => void;
   followContest: (id: string) => Promise<any>;
 }
 
@@ -51,6 +54,7 @@ export function ContestsProvider({
   const [contest, setContest] = useState<any>();
   const [contestWays, setContestWays] = useState<any>();
   const [contestUsers, setContestUsers] = useState<any>();
+  const [contestRanking, setContestRanking] = useState<RANKING[]>();
   const [error, setError] = useState<any>();
   const [loading, setLoading] = useState<boolean>(false);
   // We are using `react-router` for this example,
@@ -228,6 +232,21 @@ export function ContestsProvider({
       .finally(() => setLoading(false));
   }
 
+  async function getContestRanking(id: string) {
+    setLoading(true);
+    await axiosClient
+      .get(`${baseUrl}/contests/${id}/ranking`)
+      .then((response) => {
+        setContestRanking(response.data);
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+
+    return;
+  }
+
   async function followContest(id: string) {
     setLoading(true);
     await axiosClient
@@ -258,6 +277,7 @@ export function ContestsProvider({
       contest,
       contestWays,
       contestUsers,
+      contestRanking,
       loading,
       error,
       getMyContests,
@@ -270,9 +290,19 @@ export function ContestsProvider({
       getContestWays,
       deleteContest,
       getContestUsers,
+      getContestRanking,
       followContest,
     }),
-    [myContests, contests, contest, contestWays, contestUsers, loading, error]
+    [
+      myContests,
+      contests,
+      contest,
+      contestWays,
+      contestUsers,
+      loading,
+      error,
+      contestRanking,
+    ]
   );
 
   // We only want to render the underlying app after we

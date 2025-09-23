@@ -18,7 +18,7 @@ const Places = () => {
     getPlaces(value, page);
   }
 
-  const changePage = (event: React.ChangeEvent<unknown>, value: number) => {
+  const changePage = (_event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
     getPlaces(search, value);
   };
@@ -57,21 +57,25 @@ const Places = () => {
               <tr>
                 <th>Nom</th>
                 <th>Adresse</th>
-                <th></th>
               </tr>
             </thead>
             <tbody>
               {places &&
                 places.data.map((place: any) => (
-                  <tr key={place.id}>
-                    <td>{place.name}</td>
+                  <tr key={place.id} className="hover:bg-base-200">
                     <td>
-                      {place.address} {place.city}
+                      <Link to={'/places/' + place.id}>
+                        <div className="flex items-center gap-3">
+                          {place.name}
+                        </div>
+                      </Link>
                     </td>
                     <td>
-                      <button className="btn btn-xs bg-primary-300 text-white">
-                        <Link to={'/places/' + place.id}>Détails</Link>
-                      </button>
+                      <Link to={'/places/' + place.id}>
+                        <div className="flex items-center gap-3">
+                          {place.address} {place.city}
+                        </div>
+                      </Link>
                     </td>
                   </tr>
                 ))}
@@ -81,7 +85,6 @@ const Places = () => {
               <tr>
                 <th>Nom</th>
                 <th>Adresse</th>
-                <th></th>
               </tr>
             </tfoot>
           </table>

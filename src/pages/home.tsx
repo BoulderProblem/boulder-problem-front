@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { GerantHome } from '@/components/GerantHome';
 
 const Home = () => {
-  const { getStats, user } = useAuth();
+  const { getStats } = useAuth();
   useEffect(() => {
     getStats();
   }, []);

@@ -7,7 +7,6 @@ import {
   Card,
   Typography,
   CardHeader,
-  CardMedia,
   CardContent,
   CardActions,
   IconButton,
@@ -18,7 +17,7 @@ import CommentIcon from '@mui/icons-material/Comment';
 import { useUsers } from '@/services/useUsers';
 import { useEffect } from 'react';
 import ImageWithToken from 'react-image-with-auth';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -28,7 +27,7 @@ if (process.env.NODE_ENV !== 'production') {
 const UserId = () => {
   const { id } = useParams();
   const { token } = useAuth();
-  const { user, posts, getUserPosts, likePost } = useUsers();
+  const { posts, getUserPosts, likePost } = useUsers();
 
   dayjs.locale('fr');
   useEffect(() => {
@@ -73,9 +72,9 @@ const UserId = () => {
                             imageUrl={
                               baseUrl +
                               '/users/' +
-                              user.id +
+                              post.user!.id +
                               '/avatar/' +
-                              user.avatar +
+                              post.user!.avatar +
                               '?size=200'
                             }
                             token={token}

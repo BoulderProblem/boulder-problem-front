@@ -30,7 +30,7 @@ import { PLACE } from '@/types/place';
 import { useUsers } from '@/services/useUsers';
 import AddressSearch from './AddressSearch';
 import ImageCropUpload from './ImageCropUpload';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
 import { format } from 'date-fns'; // Importation de la fonction de formatage de date
 import { useAuth } from '@/services/useAuth';
@@ -233,7 +233,7 @@ const Place = (props: any) => {
     event.preventDefault();
     // enregistre les horaires en les reformatants
     const formData = new FormData();
-    Object.entries(inputs).forEach(([key, value]) => {
+    Object.entries(inputs ?? {}).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         formData.append(key, JSON.stringify(value));
       }
@@ -265,7 +265,7 @@ const Place = (props: any) => {
       // Convert Blob to File
 
       const formData = new FormData();
-      Object.entries(inputs).forEach(([key, value]) => {
+      Object.entries(inputs ?? {}).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           formData.append(key, JSON.stringify(value));
         }
@@ -610,7 +610,7 @@ const Place = (props: any) => {
                     <Autocomplete
                       fullWidth
                       value={inputs.owner}
-                      onChange={(event: any, newValue: any) => {
+                      onChange={(_event: any, newValue: any) => {
                         setOwner(newValue);
                       }}
                       id="controllable-states-demo"

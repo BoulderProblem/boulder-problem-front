@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { styled, alpha } from '@mui/material/styles';
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem, treeItemClasses } from '@mui/x-tree-view/TreeItem';
@@ -76,7 +76,7 @@ const WayTreeView: React.FC<WayTreeViewProps> = ({ data, selectedId, id }) => {
     <Box sx={{ minHeight: 352, minWidth: 250 }}>
       <SimpleTreeView
         expandedItems={expandedIds}
-        onExpandedItemsChange={(e, itemIds) => setExpandedIds(itemIds ?? [])}
+        onExpandedItemsChange={(_e, itemIds) => setExpandedIds(itemIds ?? [])}
       >
         {data.map((zone: ZONE) => (
           <CustomTreeItem
