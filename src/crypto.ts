@@ -64,8 +64,6 @@ export async function decryptPrivateKey(encrypted: any, password: string) {
   return sodium.to_base64(priv);
 }
 
-await sodium.ready; // ensure sumo is ready
-
 const SALT = 'chat-v1'; // optional context for HKDF/generichash
 
 // If keys are Ed25519 (signing keys), convert them to Curve25519 keys for ECDH
