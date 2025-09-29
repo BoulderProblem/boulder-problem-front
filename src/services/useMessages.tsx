@@ -67,7 +67,12 @@ export function MessagesProvider({
   // Reset the error state if we change page
   useEffect(() => {
     if (!user?.id) return;
-    const socket = io(baseUrl, { transports: ['websocket'] });
+    const socket = io(
+      process.env.NODE_ENV === 'production'
+        ? 'https://boulder-problem.chabs.fr' // pas /api ici
+        : 'http://localhost:3333',
+      { transports: ['websocket'], path: '/api/socket.io' }
+    );
     socketRef.current = socket;
 
     // rejoindre room perso
