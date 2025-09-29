@@ -1,5 +1,5 @@
 export type USER = {
-  id: number;
+  id: string;
   roleId: number;
   follower: string;
   following: string;
@@ -10,4 +10,5 @@ export type USER = {
   bio: string;
   birthDate: string;
   avatar?: any;
+  publicKey?: string;
 };

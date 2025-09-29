@@ -1,26 +1,26 @@
-import "./App.css";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import { Helmet, HelmetProvider } from "react-helmet-async";
-import Footer from "./components/Footer.tsx";
-import { Outlet } from "react-router-dom";
-import { getFromLS } from "./utils/storage.ts";
-import { useState } from "react";
-import Header from "./components/Header.tsx";
+import './App.css';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
+import Footer from './components/Footer.tsx';
+import { Outlet } from 'react-router-dom';
+import { getFromLS } from './utils/storage.ts';
+import { useState } from 'react';
+import Header from './components/Header.tsx';
 
 function App() {
   const [isBlack, setIsBlack] = useState(
-    JSON.parse(getFromLS("theme") ? getFromLS("theme") : false)
+    JSON.parse(getFromLS('theme') ? getFromLS('theme') : false)
   );
   const darkTheme = createTheme({
     palette: {
-      mode: isBlack ? "dark" : "light",
+      mode: isBlack ? 'dark' : 'light',
     },
     components: {
       MuiTextField: {
         styleOverrides: {
           root: {
-            "& label.Mui-focused": {
-              color: "var(--primary-400)",
+            '& label.Mui-focused': {
+              color: 'var(--primary-400)',
             },
           },
         },
@@ -28,14 +28,14 @@ function App() {
       MuiInput: {
         styleOverrides: {
           root: {
-            "&::before": {
-              borderBottom: "2px solid var(--primary-300)",
+            '&::before': {
+              borderBottom: '2px solid var(--primary-300)',
             },
-            "&:hover:not(.Mui-disabled, .Mui-error):before": {
-              borderBottom: "2px solid var(--primary-400)",
+            '&:hover:not(.Mui-disabled, .Mui-error):before': {
+              borderBottom: '2px solid var(--primary-400)',
             },
-            "&.Mui-focused:after": {
-              borderBottom: "2px solid var(--primary-400)",
+            '&.Mui-focused:after': {
+              borderBottom: '2px solid var(--primary-400)',
             },
           },
         },
@@ -50,7 +50,7 @@ function App() {
           <title>Boulder problem</title>
           <meta name="description" content="page de la salle d'escalade" />
         </Helmet>
-        <div className={"layout " + (isBlack ? "dark" : "")}>
+        <div className={'h-screen layout ' + (isBlack ? 'dark' : '')}>
           <Header stateChanger={setIsBlack} />
           <main>
             <Outlet />

@@ -773,7 +773,6 @@ const Contest = (props: any) => {
         <DialogContent>
           <Autocomplete
             fullWidth
-            // value={inputs.owner}
             onChange={(_event: any, newValue: any) => {
               selectPlace(newValue);
             }}

@@ -8,6 +8,7 @@ import {
 } from 'react';
 import axiosClient from '../axios-client';
 import { USER } from '@/types/user';
+import { decryptPrivateKey, encryptPrivateKey, generateKeys } from '@/crypto';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -20,6 +21,7 @@ interface AuthContextType {
   user?: USER;
   stats?: any;
   token: string;
+  priv: string;
   loading: boolean;
   error?: any;
   login: (email: string, password: string) => void;
@@ -43,6 +45,47 @@ export function AuthProvider({
   const [error, setError] = useState<any>();
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingInitial, setLoadingInitial] = useState<boolean>(true);
+  const [priv, setPriv] = useState<string>('');
+
+  function generateOrGetKeys(password: string, publicKey: string) {
+    console.log('publicKey');
+    console.log(publicKey);
+
+    if (publicKey) {
+      restore(password);
+    } else {
+      setup(password);
+    }
+  }
+
+  // generate keys
+  const setup = async (password: string) => {
+    const k = await generateKeys();
+    console.log(k);
+
+    setPriv(k.priv);
+    localStorage.setItem('PRIV', k.priv);
+    backup(k, password);
+  };
+
+  // save keys on server
+  const backup = async (k: { pub: string; priv: string }, password: string) => {
+    const encrypted = await encryptPrivateKey(k.priv, password);
+    await axiosClient.post(`${baseUrl}/backup-key`, {
+      priv: encrypted,
+      pub: k.pub,
+    });
+  };
+
+  // give back private key from server
+  const restore = async (password: string) => {
+    const { data } = await axiosClient.get(`${baseUrl}/backup-key`);
+    const privRestored = await decryptPrivateKey(data, password);
+
+    setPriv(privRestored);
+    localStorage.setItem('PRIV', privRestored);
+  };
+
   // We are using `react-router` for this example,
   // but feel free to omit this or use the
   // router of your choice.
@@ -62,6 +105,8 @@ export function AuthProvider({
   // is over.
   useEffect(() => {
     let token = localStorage.getItem('ACCESS_TOKEN');
+    let priv = localStorage.getItem('PRIV');
+    setPriv(priv ? priv : '');
     if (token) {
       axiosClient
         .get(`${baseUrl}/user`)
@@ -96,24 +141,27 @@ export function AuthProvider({
         localStorage.setItem('ACCESS_TOKEN', loginData.data.token);
 
         setToken(loginData.data.token);
+
         axiosClient.get(`${baseUrl}/user`).then((user) => {
           setTimeout(() => {
             setUser(user.data);
+            generateOrGetKeys(password, user.data.publicKey);
           }, 300);
         });
       })
       .catch((errors) => {
         setError(errors.response.data.errors[0].message);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {});
   }
 
-  function loginGoogle(token: string) {
+  function loginGoogle(token: string, id: string) {
     localStorage.setItem('ACCESS_TOKEN', token);
     setToken(token);
     axiosClient.get(`${baseUrl}/user`).then((user) => {
       setTimeout(() => {
         setUser(user.data);
+        generateOrGetKeys(id.toString(), user.data.publicKey);
       }, 300);
     });
   }
@@ -144,6 +192,7 @@ export function AuthProvider({
       })
       .finally(() => {
         localStorage.removeItem('ACCESS_TOKEN');
+        localStorage.removeItem('PRIV');
         setUser(undefined);
       });
   }
@@ -174,6 +223,7 @@ export function AuthProvider({
       user,
       stats,
       token,
+      priv,
       loading,
       error,
       login,
@@ -182,7 +232,7 @@ export function AuthProvider({
       logout,
       getStats,
     }),
-    [user, stats, token, loading, error]
+    [user, stats, token, priv, loading, error]
   );
 
   // We only want to render the underlying app after we

@@ -22,6 +22,8 @@ import Conditions from './pages/frontSide/conditions.tsx';
 import { ContestsProvider } from './services/useContests.tsx';
 import ContestId from './pages/contestId.tsx';
 import Contests from './pages/contests.tsx';
+import Messages from './pages/message.tsx';
+import { MessagesProvider } from './services/useMessages.tsx';
 
 const Main = () => {
   const { user } = useAuth();
@@ -87,7 +89,14 @@ const Main = () => {
             </ProtectedRoute>
           ),
         },
-
+        {
+          path: '/messages/',
+          element: (
+            <ProtectedRoute>
+              <Messages />
+            </ProtectedRoute>
+          ),
+        },
         {
           path: '*',
           element: <Page_404 />,
@@ -118,15 +127,17 @@ const Main = () => {
 };
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <AuthProvider>
-      <UsersProvider>
-        <PlacesProvider>
-          <ContestsProvider>
+  // <React.StrictMode>
+  <AuthProvider>
+    <UsersProvider>
+      <PlacesProvider>
+        <ContestsProvider>
+          <MessagesProvider>
             <Main />
-          </ContestsProvider>
-        </PlacesProvider>
-      </UsersProvider>
-    </AuthProvider>
-  </React.StrictMode>
+          </MessagesProvider>
+        </ContestsProvider>
+      </PlacesProvider>
+    </UsersProvider>
+  </AuthProvider>
+  // </React.StrictMode>
 );

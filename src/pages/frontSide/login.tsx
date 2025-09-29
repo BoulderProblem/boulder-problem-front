@@ -29,8 +29,9 @@ const Login = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = JSON.parse(params.get('token') || '{}');
+    const id = JSON.parse(params.get('id') || '{}');
     if (token.token) {
-      loginGoogle(token.token);
+      loginGoogle(token.token, id);
     }
   }, []);
 
