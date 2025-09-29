@@ -19,11 +19,6 @@ if (process.env.NODE_ENV !== 'production') {
   baseUrl = `http://localhost:3333`;
 }
 
-let baseUrlSocket = `https://boulder-problem.chabs.fr`;
-if (process.env.NODE_ENV !== 'production') {
-  baseUrlSocket = `http://localhost:3333`;
-}
-
 interface MessagesContextType {
   // We defined the Contest type in `index.d.ts`, but it's
   // a simple object with email, name and password.
@@ -72,7 +67,7 @@ export function MessagesProvider({
   // Reset the error state if we change page
   useEffect(() => {
     if (!user?.id) return;
-    const socket = io(baseUrlSocket, { transports: ['websocket'] });
+    const socket = io(baseUrl, { transports: ['websocket'] });
     socketRef.current = socket;
 
     // rejoindre room perso
