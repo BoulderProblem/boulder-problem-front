@@ -90,6 +90,9 @@ function Header({ stateChanger }: any) {
             <MenuItem component={Link} to="/contests" onClick={handleClose}>
               Contests
             </MenuItem>
+            <MenuItem component={Link} to="/messages" onClick={handleClose}>
+              Messages
+            </MenuItem>
           </Menu>
         </div>
         <ul className="menu menu-horizontal px-1">
@@ -115,6 +118,11 @@ function Header({ stateChanger }: any) {
           <li>
             <Link className="text-lg" to="/contests">
               Contests
+            </Link>
+          </li>
+          <li>
+            <Link className="text-lg" to="/messages">
+              Messages
             </Link>
           </li>
         </ul>
