@@ -225,6 +225,12 @@ const Messages = () => {
                   type="text"
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault(); // évite le saut de ligne
+                      sendMessage();
+                    }
+                  }}
                   className="flex-1 border rounded-lg px-3 py-2 mr-2"
                   placeholder="Écrire un message..."
                 />

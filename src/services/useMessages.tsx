@@ -71,7 +71,13 @@ export function MessagesProvider({
       process.env.NODE_ENV === 'production'
         ? 'https://boulder-problem.chabs.fr' // pas /api ici
         : 'http://localhost:3333',
-      { transports: ['websocket'], path: '/api/socket.io' }
+      {
+        transports: ['websocket'],
+        path:
+          process.env.NODE_ENV === 'production'
+            ? '/api/socket.io'
+            : '/socket.io',
+      }
     );
     socketRef.current = socket;
 
