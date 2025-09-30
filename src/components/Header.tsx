@@ -9,6 +9,8 @@ import ImageWithToken from 'react-image-with-auth';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import { useMessages } from '@/services/useMessages';
+import { Badge } from '@mui/material';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -17,6 +19,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 function Header({ stateChanger }: any) {
   const { user, token, logout } = useAuth();
+  const { nbMessagesUnread } = useMessages();
   const [isBlack, setIsBlack] = React.useState(
     JSON.parse(getFromLS('theme') ? getFromLS('theme') : false)
   );
@@ -121,9 +124,11 @@ function Header({ stateChanger }: any) {
             </Link>
           </li>
           <li>
-            <Link className="text-lg" to="/messages">
-              Messages
-            </Link>
+            <Badge color="primary" badgeContent={nbMessagesUnread}>
+              <Link className="text-lg" to="/messages">
+                Messages
+              </Link>
+            </Badge>
           </li>
         </ul>
       </div>

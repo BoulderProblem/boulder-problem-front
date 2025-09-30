@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { usePlaces } from '@/services/usePlaces';
 
@@ -20,7 +20,7 @@ interface WallProps {
   setWall: any;
 }
 
-const Wall = forwardRef<HTMLDivElement, WallProps>((props, ref) => {
+const Wall = forwardRef<HTMLDivElement, WallProps>((props) => {
   const { wallId, openModalWay, setWall } = props;
   const { walls, updateWall, getWalls, zone } = usePlaces();
 

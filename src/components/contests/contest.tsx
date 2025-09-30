@@ -34,7 +34,7 @@ import AddIcon from '@mui/icons-material/Add';
 import SettingsIcon from '@mui/icons-material/Settings';
 import RemoveIcon from '@mui/icons-material/Remove';
 import ImageWithToken from 'react-image-with-auth';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
 import { useContests } from '@/services/useContests';
 import { useAuth } from '@/services/useAuth';
@@ -58,7 +58,7 @@ if (process.env.NODE_ENV !== 'production') {
   baseUrl = `http://localhost:3333`;
 }
 
-const Contest = (props: any) => {
+const Contest = () => {
   const { id } = useParams() as { id: string };
   const { user, token } = useAuth();
   const { place, places, allWays, getPlace, getPlaces, getAllWays } =
@@ -273,9 +273,7 @@ const Contest = (props: any) => {
                         </div>
                       </div>
                       <div className="my-auto ms-3">
-                        <Typography component="div">
-                          {user.firstname}
-                        </Typography>
+                        <Typography>{user.firstname}</Typography>
                         <Typography color="text.secondary">
                           {user.lastname}
                         </Typography>
@@ -329,9 +327,7 @@ const Contest = (props: any) => {
               >
                 <CardActionArea>
                   <CardContent sx={{ height: '100%' }}>
-                    <Typography variant="h5" component="div">
-                      {way.name}
-                    </Typography>
+                    <Typography variant="h5">{way.name}</Typography>
                     <Typography variant="h6" color="text.secondary">
                       mur : {way.wall.name}
                     </Typography>
@@ -368,7 +364,7 @@ const Contest = (props: any) => {
               {contestRanking &&
                 contestRanking.map((ranking: RANKING, index: number) => (
                   <TableRow
-                    key={ranking.id}
+                    key={index}
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                   >
                     <TableCell component="th" scope="row">
@@ -576,7 +572,7 @@ const Contest = (props: any) => {
               <Grid container spacing={2}>
                 {tabContents.map((tab, index) => (
                   <Grid key={index} size={{ sm: 6, md: 6, lg: 3 }}>
-                    <Typography>{tab.label}</Typography>
+                    <Typography component="span">{tab.label}</Typography>
                     <Box className="mt-10">{tab.content}</Box>
                   </Grid>
                 ))}

@@ -10,7 +10,6 @@ import axiosClient from '../axios-client';
 import { WAY } from '@/types/way';
 import { PLACE } from '@/types/place';
 import { ZONE } from '@/types/zone';
-import { Favorite } from '@mui/icons-material';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -150,7 +149,7 @@ export function PlacesProvider({
   async function favoritePlace(id: number | string, favorite: boolean) {
     await axiosClient
       .post(`${baseUrl}/places/${id}/favorite`, { favorite: favorite })
-      .then((response) => {
+      .then(() => {
         // Optionally, you can update the local state to reflect the change
       })
       .catch((errors) => {
@@ -232,7 +231,7 @@ export function PlacesProvider({
   async function createZone(params: any) {
     return await axiosClient
       .post(`${baseUrl}/zones`, params)
-      .then((response) => {})
+      .then(() => {})
       .catch((errors) => {
         setError(errors.response.data.errors[0].message);
       })

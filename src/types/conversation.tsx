@@ -4,11 +4,12 @@ export type CONVERSATION = {
   createdAt: string;
   updatedAt: string;
   creatorId: string;
-  messages: [
+  latestMessage: [
     {
       text: string;
     }
   ];
+  unreadMessages: number;
   usersConversation: [
     {
       id: string;

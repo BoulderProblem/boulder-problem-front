@@ -13,11 +13,11 @@ import {
   DialogTitle,
   Autocomplete,
   TextField,
+  Badge,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useUsers } from '@/services/useUsers';
 import { CONVERSATION } from '@/types/conversation';
-import ImageWithToken from 'react-image-with-auth';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -28,20 +28,21 @@ const Messages = () => {
   const {
     conversations,
     messages,
-    getMessages,
+    selectedConv,
+    setSelectedConversation,
     sendMessages,
     createConversations,
-    getConversations,
   } = useMessages();
   const { users, getUsers } = useUsers();
   const { user, priv } = useAuth();
-  const [selectedConv, setSelectedConv] = useState<CONVERSATION | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [openConv, setOpenConv] = useState(false);
 
   useEffect(() => {
-    getConversations(false);
-  }, [selectedConv]);
+    return () => {
+      setSelectedConversation(null);
+    };
+  }, []);
 
   async function sendMessage() {
     if (newMessage.length > 0) {
@@ -51,7 +52,7 @@ const Messages = () => {
           encryptForRecipient(newMessage, priv, userConv.user.publicKey).then(
             (response) => {
               sendMessages(
-                user?.id,
+                user!.id,
                 userConv.userId,
                 response.ciphertext,
                 response.nonce,
@@ -68,6 +69,7 @@ const Messages = () => {
 
   const openModalConv = () => {
     setOpenConv(true);
+    fetchPersons('');
   };
 
   // Fonction pour effectuer la recherche via l'API
@@ -119,7 +121,7 @@ const Messages = () => {
       date.getFullYear() === now.getFullYear();
 
     if (isToday) {
-      return `Aujourd'hui à ${date.getHours()}h${date
+      return `${date.getHours()}h${date
         .getMinutes()
         .toString()
         .padStart(2, '0')}`;
@@ -140,6 +142,27 @@ const Messages = () => {
     }
   }
 
+  const emojiMap: Record<string, string> = {
+    ':)': '😊',
+    ':-)': '😊',
+    ';)': '😉',
+    ':-D': '😃',
+    ':D': '😃',
+    ':(': '🙁',
+  };
+
+  function parseEmojis(text: string): string {
+    let parsed = text;
+    for (const [key, emoji] of Object.entries(emojiMap)) {
+      const regex = new RegExp(
+        key.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1'),
+        'g'
+      );
+      parsed = parsed.replace(regex, emoji);
+    }
+    return parsed;
+  }
+
   const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
     <Tooltip {...props} classes={{ popper: className }} />
   ))(({ theme }) => ({
@@ -150,6 +173,10 @@ const Messages = () => {
       fontSize: 11,
     },
   }));
+
+  const sortedConversations = conversations.sort((a, b) => {
+    return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+  });
 
   return (
     <div className="flex h-full">
@@ -172,24 +199,34 @@ const Messages = () => {
             </div>
           </h2>
           <ul>
-            {conversations.map((c) => (
+            {sortedConversations.map((c) => (
               <li
                 key={c.id}
                 onClick={() => {
-                  setSelectedConv(c), getMessages(c.id.toString());
+                  setSelectedConversation(c);
                 }}
                 className={`p-4 cursor-pointer hover:bg-base-300 ${
-                  selectedConv?.id === c.id ? 'hover:bg-base-300' : ''
+                  selectedConv?.id === c.id ? 'bg-base-300' : ''
                 }`}
               >
-                <p className="font-medium">{selectName(c)}</p>
-                <div className="flex justify-between items-center p-2">
-                  <span className="text-left font-medium">
-                    {c.messages[0] ? c.messages[0].text : 'Pas de message'}
-                  </span>
-                  <span className="text-right text-gray-500">
-                    {displayHour(c.updatedAt)}
-                  </span>
+                <div className="relative">
+                  <p className="font-medium">{selectName(c)}</p>
+                  <div className="flex justify-between items-center p-2">
+                    <span className="text-left font-medium">
+                      {c.latestMessage[0]
+                        ? c.latestMessage[0].text
+                        : 'Pas de message'}
+                    </span>
+                    <span className="text-right text-gray-500">
+                      {displayHour(c.updatedAt)}
+                    </span>
+                  </div>
+                  <div className="absolute -top-2 right-2">
+                    <Badge
+                      color="primary"
+                      badgeContent={c.unreadMessages}
+                    ></Badge>
+                  </div>
                 </div>
               </li>
             ))}
@@ -224,7 +261,7 @@ const Messages = () => {
                 <input
                   type="text"
                   value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
+                  onChange={(e) => setNewMessage(parseEmojis(e.target.value))}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault(); // évite le saut de ligne
@@ -260,12 +297,14 @@ const Messages = () => {
               {conversations.map((c) => (
                 <li
                   key={c.id}
-                  onClick={() => setSelectedConv(c)}
+                  onClick={() => setSelectedConversation(c)}
                   className="p-4 border-b cursor-pointer hover:bg-base-300"
                 >
                   <p className="font-medium">{selectName(c)}</p>
                   <p className="text-sm text-gray-600 truncate">
-                    {c.messages[0] ? c.messages[0].text : 'Pas de message'}
+                    {c.latestMessage[0]
+                      ? c.latestMessage[0].text
+                      : 'Pas de message'}
                   </p>
                 </li>
               ))}
@@ -276,7 +315,7 @@ const Messages = () => {
           <div className="flex-1 flex flex-col">
             <div className="p-4 border-b flex items-center">
               <button
-                onClick={() => setSelectedConv(null)}
+                onClick={() => setSelectedConversation(null)}
                 className="mr-2 text-blue-500"
               >
                 ←
@@ -302,7 +341,13 @@ const Messages = () => {
               <input
                 type="text"
                 value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
+                onChange={(e) => setNewMessage(parseEmojis(e.target.value))}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault(); // évite le saut de ligne
+                    sendMessage();
+                  }
+                }}
                 className="flex-1 border rounded-lg px-3 py-2 mr-2"
                 placeholder="Écrire un message..."
               />
@@ -353,7 +398,7 @@ const Messages = () => {
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Gérant"
+                label="Destinataire"
                 variant="standard"
                 className="p-2.5"
               />

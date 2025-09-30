@@ -125,7 +125,7 @@ export function UsersProvider({
   async function likePost(id: number, like: boolean) {
     await axiosClient
       .post(`${baseUrl}/posts/${id}/like`, { favorite: like })
-      .then((response) => {})
+      .then(() => {})
       .catch((errors) => {
         setError(errors.response.data.errors[0].message);
       })
