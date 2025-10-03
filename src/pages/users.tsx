@@ -6,6 +6,7 @@ import ImageWithToken from 'react-image-with-auth';
 import { Link } from 'react-router-dom';
 import Pagination from '@mui/material/Pagination';
 import { Stack, Container } from '@mui/material';
+import { USER } from '@/types/user';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -69,7 +70,7 @@ const Users = () => {
             </thead>
             <tbody>
               {users &&
-                users.data.map((user: any) => (
+                users.data.map((user: USER) => (
                   <tr key={user.id} className="hover:bg-base-200">
                     <td>
                       <Link to={'/users/' + user.id}>

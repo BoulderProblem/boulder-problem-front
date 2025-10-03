@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMessages } from '@/services/useMessages';
 import { useAuth } from '@/services/useAuth';
 import { encryptForRecipient } from '@/crypto';
@@ -18,11 +18,8 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import { useUsers } from '@/services/useUsers';
 import { CONVERSATION } from '@/types/conversation';
-
-let baseUrl = `https://boulder-problem.chabs.fr/api`;
-if (process.env.NODE_ENV !== 'production') {
-  baseUrl = `http://localhost:3333`;
-}
+import data from '@emoji-mart/data';
+import Picker from '@emoji-mart/react';
 
 const Messages = () => {
   const {
@@ -30,6 +27,7 @@ const Messages = () => {
     messages,
     selectedConv,
     setSelectedConversation,
+    getMessages,
     sendMessages,
     createConversations,
   } = useMessages();
@@ -37,6 +35,16 @@ const Messages = () => {
   const { user, priv } = useAuth();
   const [newMessage, setNewMessage] = useState('');
   const [openConv, setOpenConv] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const endRef = useRef<HTMLDivElement | null>(null);
+  const containerRefMobile = useRef<HTMLDivElement | null>(null);
+  const endRefMobile = useRef<HTMLDivElement | null>(null);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const [isAtBottomMobile, setIsAtBottomMobile] = useState(true);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const [firstLoad, setFirstLoad] = useState(true);
+  const [showPicker, setShowPicker] = useState(false);
+  const pickerRefEmoji = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     return () => {
@@ -44,6 +52,49 @@ const Messages = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', handleScroll);
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, [loadingOlder]);
+
+  useEffect(() => {
+    console.log(isAtBottom);
+
+    if (isAtBottom) {
+      endRef.current?.scrollIntoView({ behavior: 'instant' });
+      setFirstLoad(false);
+    }
+
+    if (isAtBottomMobile) {
+      endRefMobile.current?.scrollIntoView({
+        behavior: 'instant',
+      });
+      setFirstLoad(false);
+    }
+  }, [isAtBottom, isAtBottomMobile, messages]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        pickerRefEmoji.current &&
+        !pickerRefEmoji.current.contains(event.target as Node)
+      ) {
+        setShowPicker(false);
+      }
+    }
+    if (showPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showPicker]);
+
+  const addEmoji = (emoji: any) => {
+    setNewMessage(newMessage + emoji.native);
+  };
   async function sendMessage() {
     if (newMessage.length > 0) {
       selectedConv?.usersConversation.forEach((userConv) => {
@@ -174,9 +225,83 @@ const Messages = () => {
     },
   }));
 
+  /**
+   * trie les conversations par date de mise à jour (la plus récente en premier)
+   */
   const sortedConversations = conversations.sort((a, b) => {
     return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
   });
+
+  /**
+   * trie les messages par date de mise à jour (la plus ancienne en premier)
+   */
+  const sortedMessages = messages.sort((a, b) => {
+    return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+  });
+
+  /**
+   * gestion du scroll pour le chargement des anciens messages
+   * gestion du scroll au début pour scroller en bas
+   * @returns
+   */
+  const handleScroll = async () => {
+    if (!containerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+
+    // bas
+    const nearBottom = scrollHeight - scrollTop - clientHeight < 50;
+    setIsAtBottom(nearBottom);
+
+    // haut
+    if (scrollTop === 0 && !loadingOlder) {
+      setLoadingOlder(true);
+
+      const oldScrollHeight = containerRef.current.scrollHeight;
+
+      await getMessages(selectedConv!.id, true);
+      requestAnimationFrame(() => {
+        if (containerRef.current) {
+          const newScrollHeight = containerRef.current.scrollHeight;
+          containerRef.current.scrollTop = newScrollHeight - oldScrollHeight;
+        }
+      });
+
+      setLoadingOlder(false);
+    }
+  };
+
+  /**
+   * gestion du scroll pour le chargement des anciens messages
+   * gestion du scroll au début pour scroller en bas
+   * @returns
+   */
+  const handleScrollMobile = async () => {
+    if (!containerRefMobile.current) return;
+    const { scrollTop, scrollHeight, clientHeight } =
+      containerRefMobile.current;
+
+    // bas
+    const nearBottom = scrollHeight - scrollTop - clientHeight < 50;
+    setIsAtBottomMobile(nearBottom);
+
+    // haut
+    if (scrollTop === 0 && !loadingOlder) {
+      setLoadingOlder(true);
+
+      const oldScrollHeight = containerRefMobile.current.scrollHeight;
+
+      await getMessages(selectedConv!.id, true);
+      requestAnimationFrame(() => {
+        if (containerRefMobile.current) {
+          const newScrollHeight = containerRefMobile.current.scrollHeight;
+          containerRefMobile.current.scrollTop =
+            newScrollHeight - oldScrollHeight;
+        }
+      });
+
+      setLoadingOlder(false);
+    }
+  };
 
   return (
     <div className="flex h-full">
@@ -203,7 +328,11 @@ const Messages = () => {
               <li
                 key={c.id}
                 onClick={() => {
-                  setSelectedConversation(c);
+                  if (!selectedConv || c.id !== selectedConv.id) {
+                    setFirstLoad(true);
+                    setIsAtBottom(true);
+                    setSelectedConversation(c);
+                  }
                 }}
                 className={`p-4 cursor-pointer hover:bg-base-300 ${
                   selectedConv?.id === c.id ? 'bg-base-300' : ''
@@ -234,20 +363,26 @@ const Messages = () => {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 flex flex-col">
+        <div className="relative flex-1 flex flex-col h-full">
           {selectedConv ? (
             <>
               <div className="p-4 border-b font-bold">
                 {selectName(selectedConv)}
               </div>
-              <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              <div
+                ref={containerRef}
+                onScroll={handleScroll}
+                className="flex-1 overflow-y-auto p-4 space-y-2"
+              >
                 {Array.isArray(messages) &&
-                  messages
+                  sortedMessages
                     .filter((m) => m.conversationId === selectedConv.id)
                     .map((m: MESSAGE) => (
                       <div
                         key={m.id}
                         className={`p-2 rounded-lg max-w-xs ${
+                          firstLoad ? 'opacity-0' : 'opacity-100'
+                        } ${
                           m.senderPub === user!.publicKey
                             ? 'bg-blue-500 text-white self-end ml-auto'
                             : 'bg-gray-200 text-black'
@@ -256,8 +391,16 @@ const Messages = () => {
                         {m.text}
                       </div>
                     ))}
+                <div ref={endRef} />
               </div>
-              <div className="p-4 border-t flex">
+              <div className=" p-4 border-t flex">
+                <button
+                  type="button"
+                  onClick={() => setShowPicker(!showPicker)}
+                  className="my-1 ml-0 mr-2 text-xl"
+                >
+                  😀
+                </button>
                 <input
                   type="text"
                   value={newMessage}
@@ -278,6 +421,14 @@ const Messages = () => {
                   Envoyer
                 </button>
               </div>
+              {showPicker && (
+                <div
+                  ref={pickerRefEmoji}
+                  className="absolute bottom-20 left-5 z-50"
+                >
+                  <Picker data={data} onEmojiSelect={addEmoji} />
+                </div>
+              )}
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center text-gray-500">
@@ -288,7 +439,7 @@ const Messages = () => {
       </div>
 
       {/* Mobile layout */}
-      <div className="flex w-full md:hidden">
+      <div className="flex w-full h-full md:hidden">
         {!selectedConv ? (
           // Conversations
           <div className="flex-1 bg-base-300">
@@ -297,32 +448,57 @@ const Messages = () => {
               {conversations.map((c) => (
                 <li
                   key={c.id}
-                  onClick={() => setSelectedConversation(c)}
-                  className="p-4 border-b cursor-pointer hover:bg-base-300"
+                  onClick={() => {
+                    setFirstLoad(true);
+                    setIsAtBottom(true);
+                    setSelectedConversation(c);
+                  }}
+                  className="p-4 border-b border-gray-600 cursor-pointer hover:bg-base-300"
                 >
-                  <p className="font-medium">{selectName(c)}</p>
-                  <p className="text-sm text-gray-600 truncate">
-                    {c.latestMessage[0]
-                      ? c.latestMessage[0].text
-                      : 'Pas de message'}
-                  </p>
+                  <div className="relative">
+                    <p className="font-medium">{selectName(c)}</p>
+                    <div className="flex justify-between items-center p-2">
+                      <span className="text-left font-medium">
+                        {c.latestMessage[0]
+                          ? c.latestMessage[0].text
+                          : 'Pas de message'}
+                      </span>
+                      <span className="text-right text-gray-500">
+                        {displayHour(c.updatedAt)}
+                      </span>
+                    </div>
+                    <div className="absolute -top-2 right-2">
+                      <Badge
+                        color="primary"
+                        badgeContent={c.unreadMessages}
+                      ></Badge>
+                    </div>
+                  </div>
                 </li>
               ))}
             </ul>
           </div>
         ) : (
           // Messages
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col h-full overflow-scroll">
             <div className="p-4 border-b flex items-center">
               <button
-                onClick={() => setSelectedConversation(null)}
+                onClick={() => {
+                  setFirstLoad(true);
+                  setIsAtBottom(true);
+                  setSelectedConversation(null);
+                }}
                 className="mr-2 text-blue-500"
               >
                 ←
               </button>
               <span className="font-bold">{selectName(selectedConv)}</span>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+            <div
+              ref={containerRefMobile}
+              onScroll={handleScrollMobile}
+              className="flex-1 overflow-y-auto p-4 space-y-2"
+            >
               {Array.isArray(messages) &&
                 messages.map((m: MESSAGE) => (
                   <div
@@ -336,8 +512,16 @@ const Messages = () => {
                     {m.text}
                   </div>
                 ))}
+              <div ref={endRefMobile} />
             </div>
             <div className="p-4 border-t flex">
+              <button
+                type="button"
+                onClick={() => setShowPicker(!showPicker)}
+                className="my-1 ml-0 mr-2 text-xl"
+              >
+                😀
+              </button>
               <input
                 type="text"
                 value={newMessage}
@@ -358,6 +542,14 @@ const Messages = () => {
                 Envoyer
               </button>
             </div>
+            {showPicker && (
+              <div
+                ref={pickerRefEmoji}
+                className="absolute bottom-20 left-5 z-50"
+              >
+                <Picker data={data} onEmojiSelect={addEmoji} />
+              </div>
+            )}
           </div>
         )}
       </div>

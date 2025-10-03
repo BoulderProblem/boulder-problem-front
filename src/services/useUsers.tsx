@@ -39,7 +39,7 @@ export function UsersProvider({
   children: ReactNode;
 }): JSX.Element {
   const [users, setUsers] = useState<any>();
-  const [posts, setPosts] = useState<any>();
+  const [posts, setPosts] = useState<POST[]>([]);
   const [user, setUser] = useState<any>();
   const [error, setError] = useState<any>();
   const [loading, setLoading] = useState<boolean>(false);
@@ -114,7 +114,15 @@ export function UsersProvider({
     await axiosClient
       .get(`${baseUrl}/users/${id}/posts`)
       .then((response) => {
-        setPosts(response.data);
+        console.log(response.data.data);
+
+        setPosts((prevPosts) => {
+          const allPosts = [...prevPosts, ...response.data.data];
+          return allPosts.filter(
+            (post, index, self) =>
+              index === self.findIndex((p) => p.id === post.id)
+          );
+        });
       })
       .catch((errors) => {
         setError(errors.response.data.errors[0].message);

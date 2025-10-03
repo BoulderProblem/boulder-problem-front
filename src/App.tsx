@@ -52,7 +52,13 @@ function App() {
         </Helmet>
         <div className={'h-screen layout ' + (isBlack ? 'dark' : '')}>
           <Header stateChanger={setIsBlack} />
-          <main>
+          <main
+            className={`${
+              location.pathname === '/messages'
+                ? 'h-[calc(100%-56px)] overflow-scroll'
+                : 'h-full'
+            }`}
+          >
             <Outlet />
           </main>
           <Footer />

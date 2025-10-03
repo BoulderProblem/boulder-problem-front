@@ -27,7 +27,7 @@ if (process.env.NODE_ENV !== 'production') {
 const UserId = () => {
   const { id } = useParams();
   const { token } = useAuth();
-  const { posts, getUserPosts, likePost } = useUsers();
+  const { user, posts, getUserPosts, likePost } = useUsers();
 
   dayjs.locale('fr');
   useEffect(() => {
@@ -72,9 +72,9 @@ const UserId = () => {
                             imageUrl={
                               baseUrl +
                               '/users/' +
-                              post.user!.id +
+                              user.id +
                               '/avatar/' +
-                              post.user!.avatar +
+                              user.avatar +
                               '?size=200'
                             }
                             token={token}
@@ -87,7 +87,7 @@ const UserId = () => {
                           />
                         </Avatar>
                       }
-                      title={post.user!.firstname + ' ' + post.user!.lastname}
+                      title={user.firstname + ' ' + user.lastname}
                       subheader={post.title}
                     />
                     <div

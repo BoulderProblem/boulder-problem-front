@@ -4,7 +4,11 @@ import { Link } from 'react-router-dom';
 class Footer extends Component {
   render() {
     return (
-      <footer className="footer bg-neutral text-neutral-content p-10">
+      <footer
+        className={`footer bg-neutral text-neutral-content p-10 ${
+          location.pathname === '/messages' ? 'hidden md:flex' : ''
+        }`}
+      >
         <nav>
           <h6 className="footer-title">Services</h6>
           <Link className="text-base" to="/">

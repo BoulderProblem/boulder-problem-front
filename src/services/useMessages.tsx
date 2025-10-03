@@ -13,7 +13,6 @@ import { useAuth } from './useAuth';
 import { MESSAGE } from '@/types/message';
 import { CONVERSATION } from '@/types/conversation';
 import { io } from 'socket.io-client';
-import { read } from 'fs';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -31,7 +30,7 @@ interface MessagesContextType {
   getConversations: () => Promise<any>;
   setSelectedConversation: (conv: CONVERSATION | null) => Promise<any>;
   readConversation: (id: number) => Promise<any>;
-  getMessages: (convId: string) => Promise<any>;
+  getMessages: (convId: number, loadOld?: boolean) => Promise<any>;
   sendMessages: (
     sender_id: string,
     receiver_id: string,
@@ -274,7 +273,7 @@ export function MessagesProvider({
     setSelectedConv(conv);
     if (conv) {
       // load messages of the conversation
-      getMessages(conv.id.toString());
+      getMessages(conv.id);
     }
     return;
   }
@@ -310,10 +309,21 @@ export function MessagesProvider({
    * @param convId // id de la conversation
    * @returns
    */
-  async function getMessages(convId: string) {
+  async function getMessages(convId: number, loadOld?: boolean) {
     setLoading(true);
+    let url = `${baseUrl}/messages?convId=${convId}`;
+
+    // si on charge les anciens messages, on ajoute le param before avec la date du plus ancien message déjà chargé
+    if (loadOld && messages.length > 0) {
+      const oldestMessage = messages
+        .filter((m) => m.conversationId === convId)
+        .reduce((oldest, msg) =>
+          new Date(msg.createdAt) < new Date(oldest.createdAt) ? msg : oldest
+        );
+      url += `&before=${new Date(oldestMessage.createdAt).toISOString()}`;
+    }
     await axiosClient
-      .get(`${baseUrl}/messages?convId=${convId}`)
+      .get(url)
       .then(async (response) => {
         let decryptedMessages = await Promise.all(
           response.data.map(async (msg: any) => {
@@ -333,7 +343,7 @@ export function MessagesProvider({
           );
           return [...prev, ...newOnes];
         });
-        readConversation(parseInt(convId));
+        readConversation(convId);
       })
       .catch((errors) => {
         setError(errors.response.data.errors[0].message);
