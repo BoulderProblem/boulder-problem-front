@@ -26,6 +26,7 @@ import {
   Paper,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
+import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import SpeedDial from '@mui/material/SpeedDial';
 import CreateIcon from '@mui/icons-material/Create';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -51,7 +52,6 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { usePlaces } from '@/services/usePlaces';
 import WayTreeView from './WayTreeView';
 import { RANKING } from '@/types/ranking';
-import LightTooltip from '@/lib/LightTooltip';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -208,6 +208,17 @@ const Contest = () => {
     '&.MuiSpeedDial-directionDown, &.MuiSpeedDial-directionRight': {
       top: theme.spacing(2),
       left: theme.spacing(2),
+    },
+  }));
+
+  const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: theme.palette.common.white,
+      color: 'rgba(0, 0, 0, 0.87)',
+      boxShadow: theme.shadows[1],
+      fontSize: 11,
     },
   }));
 

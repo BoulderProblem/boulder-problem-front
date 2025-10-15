@@ -11,6 +11,10 @@ import {
   TextField,
   Grid,
   IconButton,
+  styled,
+  TooltipProps,
+  Tooltip,
+  tooltipClasses,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import Way from '@/components/places/Way';
@@ -249,6 +253,17 @@ const PlaceId = () => {
   const setWall = (value: string) => {
     selectWall(value);
   };
+
+  const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: theme.palette.common.white,
+      color: 'rgba(0, 0, 0, 0.87)',
+      boxShadow: theme.shadows[1],
+      fontSize: 11,
+    },
+  }));
 
   return (
     <div className="overflow-¬x-auto">
