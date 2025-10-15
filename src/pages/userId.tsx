@@ -102,7 +102,7 @@ const UserId = () => {
                           baseUrl +
                           '/posts/' +
                           post.id +
-                          '/image/' +
+                          '/images/' +
                           post.image[0] +
                           '?size=500'
                         }

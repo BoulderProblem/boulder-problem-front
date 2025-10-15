@@ -10,11 +10,13 @@ import {
   DialogTitle,
   TextField,
   Grid,
+  IconButton,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import Way from '@/components/places/Way';
 import Wall from '@/components/places/Wall';
 import { Helmet } from 'react-helmet-async';
+import LightTooltip from '@/lib/LightTooltip';
 
 const PlaceId = () => {
   const { id } = useParams();
@@ -51,6 +53,19 @@ const PlaceId = () => {
     getWalls(0);
     getWays(0);
   }, []);
+
+  useEffect(() => {
+    if (zones && zones.length === 1 && !zoneId) {
+      console.log(zones[0].id);
+
+      setZoneId(zones[0].id);
+      getPlan(parseInt(zones[0].id)).then((response) => {
+        setPlan(addIdToSVG(response));
+      });
+      getZone(zones[0].id);
+      getWalls(zones[0].id);
+    }
+  }, [zones]);
 
   // set modal
   const [openWall, setOpenWall] = useState(false);
@@ -245,6 +260,15 @@ const PlaceId = () => {
       <div>
         <h1 className="text-center mt-20 mb-5 mx-5">
           Zones
+          <LightTooltip title="Ajouter une voie">
+            <IconButton
+              onClick={() => openModalWay()}
+              color="primary"
+              component="span"
+            >
+              <AddIcon />
+            </IconButton>
+          </LightTooltip>
           <button
             className="btn absolute right-8 text-white bg-primary-600 hover:bg-primary-700"
             onClick={() => {

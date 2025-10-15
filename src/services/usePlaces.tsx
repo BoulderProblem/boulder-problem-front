@@ -291,6 +291,7 @@ export function PlacesProvider({
       })
       .finally(() => setLoading(false));
   }
+
   function getWalls(id: number | string) {
     axiosClient
       .get(`${baseUrl}/zones/${id}/walls`)

@@ -56,7 +56,7 @@ function App() {
             className={`${
               location.pathname === '/messages'
                 ? 'h-[calc(100%-56px)] overflow-scroll'
-                : 'h-full'
+                : ''
             }`}
           >
             <Outlet />
