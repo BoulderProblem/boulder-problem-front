@@ -89,9 +89,14 @@ export function MessagesProvider({
     );
     socketRef.current = socket;
 
-    // rejoindre room perso
-    socket.emit('join:user', user.id);
+    // quand le socket se connecte (ou se reconnecte)
+    socket.on('connect', () => {
+      socket.emit('join:user', user.id);
+    });
 
+    socket.on('reconnect', () => {
+      socket.emit('join:user', user.id);
+    });
     // écouter seulement les messages qui me concernent
     socket.on('message:new', async (msg: any) => {
       try {
