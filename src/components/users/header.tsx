@@ -1,11 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
-import { MenuItem, TextField, Grid } from '@mui/material';
+import {
+  MenuItem,
+  TextField,
+  Grid,
+  IconButton,
+  tooltipClasses,
+  styled,
+  Tooltip,
+  TooltipProps,
+} from '@mui/material';
 import { useParams } from 'react-router';
 import { useAuth } from '@/services/useAuth';
 import { useUsers } from '@/services/useUsers';
 import { USER } from '@/types/user';
 import ImageWithToken from 'react-image-with-auth';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 import Roles from '@/enums/role';
 import Genders from '@/enums/gender';
 
@@ -16,8 +27,8 @@ if (process.env.NODE_ENV !== 'production') {
 
 const Header = () => {
   const { id } = useParams() as { id: string };
-  const { user, token } = useAuth();
-  const { getUser, updateUser } = useUsers();
+  const { user: me, token } = useAuth();
+  const { user, getUser, followUser, updateUser } = useUsers();
 
   const [inputs, setInputs] = useState<USER | null>(null);
 
@@ -51,17 +62,32 @@ const Header = () => {
         value: key,
       }));
 
+  const follow = (follow: boolean) => {
+    followUser(id, follow);
+  };
+
+  const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: theme.palette.common.white,
+      color: 'rgba(0, 0, 0, 0.87)',
+      boxShadow: theme.shadows[1],
+      fontSize: 11,
+    },
+  }));
+
   return (
     <div className="overflow-x-auto">
       {!inputs ? (
         <div>Loading...</div>
       ) : (
-        <div className="m-5">
+        <div className="m-5 relative">
           <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
             <Grid container spacing={2}>
               <Grid size={{ xs: 4, sm: 4 }}>
                 <div className="text-right">
-                  <p className="font-bold text-lg">{inputs.follower || '0'}</p>
+                  <p className="font-bold text-lg">{user.nbFollower || '0'}</p>
                   Abonnés
                 </div>
               </Grid>
@@ -98,7 +124,7 @@ const Header = () => {
                 </div>
               </Grid>
               <Grid size={{ xs: 4, sm: 4 }}>
-                <p className="font-bold text-lg">{inputs.following || '0'}</p>
+                <p className="font-bold text-lg">{user.nbFollowing || '0'}</p>
                 Suivis
               </Grid>
             </Grid>
@@ -144,7 +170,7 @@ const Header = () => {
                   label="Rôle"
                   variant="standard"
                   name="roleId"
-                  disabled={user && user.roleId === 2}
+                  disabled={me && me.roleId === 2}
                   value={(inputs && inputs.roleId) || '0'}
                   onChange={handleChange}
                 >
@@ -183,6 +209,34 @@ const Header = () => {
               </button>
             </div>
           </form>
+          <div className="text-right absolute w-16 right-0 top-0">
+            {user ? (
+              <div>
+                <p>{user.isFollowing}</p>
+                {user.isFollowing ? (
+                  <LightTooltip title="Ne désabonner">
+                    <IconButton
+                      onClick={() => follow(false)}
+                      color="primary"
+                      component="span"
+                    >
+                      <RemoveIcon />
+                    </IconButton>
+                  </LightTooltip>
+                ) : (
+                  <LightTooltip title="S'abonner">
+                    <IconButton
+                      onClick={() => follow(true)}
+                      color="primary"
+                      component="span"
+                    >
+                      <AddIcon />
+                    </IconButton>
+                  </LightTooltip>
+                )}
+              </div>
+            ) : null}
+          </div>
         </div>
       )}
     </div>

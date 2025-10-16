@@ -24,6 +24,7 @@ interface UsersContextType {
   error?: any;
   getUsers: (search: string, page: number | string) => Promise<any>;
   getUser: (id: string) => Promise<any>;
+  followUser: (id: string, follow: boolean) => Promise<any>;
   resetUserPosts: () => Promise<any>;
   getUserPosts: (id: string) => Promise<any>;
   likePost: (id: number, like: boolean) => Promise<any>;
@@ -136,10 +137,8 @@ export function UsersProvider({
 
   async function likePost(id: number, like: boolean) {
     await axiosClient
-      .post(`${baseUrl}/posts/${id}/like`, { favorite: like })
+      .post(`${baseUrl}/posts/${id}/like`, { like: like })
       .then((result) => {
-        console.log(result);
-
         setPosts((prev) => {
           return prev.map((post) =>
             post.id === id
@@ -174,6 +173,25 @@ export function UsersProvider({
     return user;
   }
 
+  function followUser(id: string, follow: boolean) {
+    setLoading(true);
+    axiosClient
+      .post(`${baseUrl}/users/${id}/follow`, { follow: follow })
+      .then((result) => {
+        setUser((prev: any) => {
+          return {
+            ...prev,
+            isFollowing: result.data.isFollowing,
+            nbFollower: result.data.nbFollower,
+          };
+        });
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
   function deleteUser(id: string) {
     setLoading(true);
     axiosClient
@@ -203,6 +221,7 @@ export function UsersProvider({
       error,
       getUsers,
       getUser,
+      followUser,
       resetUserPosts,
       getUserPosts,
       likePost,

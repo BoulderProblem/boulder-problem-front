@@ -36,7 +36,7 @@ interface ContestsContextType {
   getContestWays: (id: string) => void;
   getContestUsers: (id: string) => void;
   getContestRanking: (id: string) => void;
-  followContest: (id: string) => Promise<any>;
+  followContest: (id: string, follow: boolean) => Promise<any>;
 }
 
 const ContestsContext = createContext<ContestsContextType>(
@@ -247,10 +247,10 @@ export function ContestsProvider({
     return;
   }
 
-  async function followContest(id: string) {
+  async function followContest(id: string, follow: boolean) {
     setLoading(true);
     await axiosClient
-      .post(`${baseUrl}/contests/${id}/follow`)
+      .post(`${baseUrl}/contests/${id}/follow`, { follow })
       .then(() => {
         // Optionally, you can update the local state to reflect the follow action
       })

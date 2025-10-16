@@ -1,8 +1,9 @@
 export type USER = {
   id: string;
   roleId: number;
-  follower: string;
-  following: string;
+  nbFollower: number;
+  nbFollowing: number;
+  isFollowing: boolean;
   firstname: string;
   lastname: string;
   email: string;

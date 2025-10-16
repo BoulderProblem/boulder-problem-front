@@ -170,8 +170,8 @@ const Contest = () => {
     setOpenDeleteContest(true);
   };
 
-  const follow = () => {
-    followContest(id).then(() => {
+  const follow = (follow: boolean) => {
+    followContest(id, follow).then(() => {
       getContest(id);
       getContestUsers(id);
     });
@@ -483,7 +483,7 @@ const Contest = () => {
                       <SpeedDialAction
                         key="delete"
                         icon={<RemoveIcon />}
-                        onClick={() => follow()}
+                        onClick={() => follow(false)}
                         slotProps={{
                           tooltip: {
                             title: 'Se désinscrire',
@@ -494,7 +494,7 @@ const Contest = () => {
                       <SpeedDialAction
                         key="add"
                         icon={<AddIcon />}
-                        onClick={() => follow()}
+                        onClick={() => follow(true)}
                         slotProps={{
                           tooltip: {
                             title: "S'inscrire",
@@ -522,7 +522,7 @@ const Contest = () => {
                   .length > 0 ? (
                 <LightTooltip title="Se désinscrire">
                   <IconButton
-                    onClick={() => follow()}
+                    onClick={() => follow(false)}
                     color="primary"
                     component="span"
                   >
@@ -532,7 +532,7 @@ const Contest = () => {
               ) : (
                 <LightTooltip title="S'inscrire">
                   <IconButton
-                    onClick={() => follow()}
+                    onClick={() => follow(true)}
                     color="primary"
                     component="span"
                   >
