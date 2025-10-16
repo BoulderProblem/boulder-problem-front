@@ -27,18 +27,25 @@ if (process.env.NODE_ENV !== 'production') {
 const UserId = () => {
   const { id } = useParams();
   const { token } = useAuth();
-  const { user, posts, getUserPosts, likePost } = useUsers();
+  const { user, posts, getUser, resetUserPosts, getUserPosts, likePost } =
+    useUsers();
 
   dayjs.locale('fr');
   useEffect(() => {
+    getUser(id || '0');
     getUserPosts(id || '0');
+  }, []);
+
+  useEffect(() => {
+    // Cleanup function to reset posts when component unmounts
+    return () => {
+      resetUserPosts();
+    };
   }, []);
 
   const handleLike = (postId: number, like: boolean) => {
     // Call the API to like/unlike the post
-    likePost(postId, like).then(() => {
-      getUserPosts(id || '0');
-    });
+    likePost(postId, like);
   };
 
   return (
@@ -57,7 +64,7 @@ const UserId = () => {
                 gap: 2,
               }}
             >
-              {posts &&
+              {posts.length > 0 &&
                 posts.map((post) => (
                   <Card
                     key={post.id}

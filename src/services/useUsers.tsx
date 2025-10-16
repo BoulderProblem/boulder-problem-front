@@ -24,6 +24,7 @@ interface UsersContextType {
   error?: any;
   getUsers: (search: string, page: number | string) => Promise<any>;
   getUser: (id: string) => Promise<any>;
+  resetUserPosts: () => Promise<any>;
   getUserPosts: (id: string) => Promise<any>;
   likePost: (id: number, like: boolean) => Promise<any>;
   updateUser: (id: string, params: any) => Promise<any>;
@@ -109,15 +110,18 @@ export function UsersProvider({
     return user;
   }
 
+  async function resetUserPosts() {
+    setPosts([]);
+  }
+
   async function getUserPosts(id: number | string) {
     setLoading(true);
     await axiosClient
       .get(`${baseUrl}/users/${id}/posts`)
       .then((response) => {
-        console.log(response.data.data);
-
         setPosts((prevPosts) => {
           const allPosts = [...prevPosts, ...response.data.data];
+
           return allPosts.filter(
             (post, index, self) =>
               index === self.findIndex((p) => p.id === post.id)
@@ -133,7 +137,21 @@ export function UsersProvider({
   async function likePost(id: number, like: boolean) {
     await axiosClient
       .post(`${baseUrl}/posts/${id}/like`, { favorite: like })
-      .then(() => {})
+      .then((result) => {
+        console.log(result);
+
+        setPosts((prev) => {
+          return prev.map((post) =>
+            post.id === id
+              ? {
+                  ...post,
+                  isLike: result.data.isLike,
+                  likesCount: result.data.likesCount,
+                }
+              : post
+          );
+        });
+      })
       .catch((errors) => {
         setError(errors.response.data.errors[0].message);
       })
@@ -185,12 +203,13 @@ export function UsersProvider({
       error,
       getUsers,
       getUser,
+      resetUserPosts,
       getUserPosts,
       likePost,
       updateUser,
       deleteUser,
     }),
-    [users, user, loading, error]
+    [users, user, posts, loading, error]
   );
 
   // We only want to render the underlying app after we

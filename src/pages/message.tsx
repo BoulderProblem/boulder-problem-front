@@ -60,8 +60,6 @@ const Messages = () => {
   }, [loadingOlder]);
 
   useEffect(() => {
-    console.log(isAtBottom);
-
     if (isAtBottom) {
       endRef.current?.scrollIntoView({ behavior: 'instant' });
       setFirstLoad(false);
