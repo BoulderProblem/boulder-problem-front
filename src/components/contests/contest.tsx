@@ -93,7 +93,8 @@ const Contest = () => {
     setTabIndex(newValue);
   };
 
-  dayjs.locale('fr');
+  const locale = navigator.language || 'fr';
+  dayjs.locale(locale);
   useEffect(() => {
     getContest(id);
     getContestWays(id);

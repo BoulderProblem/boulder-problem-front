@@ -13,7 +13,8 @@ const ContestId = () => {
   const { id } = useParams();
   const { getContest } = useContests();
 
-  dayjs.locale('fr');
+  const locale = navigator.language || 'fr';
+  dayjs.locale(locale);
   useEffect(() => {
     getContest(id || '0');
   }, []);

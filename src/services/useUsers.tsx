@@ -130,6 +130,7 @@ export function UsersProvider({
         });
       })
       .catch((errors) => {
+        console.log(errors);
         setError(errors.response.data.errors[0].message);
       })
       .finally(() => setLoading(false));

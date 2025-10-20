@@ -20,7 +20,6 @@ import AddIcon from '@mui/icons-material/Add';
 import Way from '@/components/places/Way';
 import Wall from '@/components/places/Wall';
 import { Helmet } from 'react-helmet-async';
-import LightTooltip from '@/lib/LightTooltip';
 
 const PlaceId = () => {
   const { id } = useParams();

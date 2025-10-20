@@ -17,7 +17,8 @@ const Contests = () => {
 
   const [page, setPage] = useState(1);
 
-  dayjs.locale('fr');
+  const locale = navigator.language || 'fr';
+  dayjs.locale(locale);
 
   useEffect(() => {
     getContests(1);

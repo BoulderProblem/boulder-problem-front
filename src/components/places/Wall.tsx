@@ -20,7 +20,7 @@ interface WallProps {
   setWall: any;
 }
 
-const Wall = forwardRef<HTMLDivElement, WallProps>((props) => {
+const Wall = forwardRef<HTMLDivElement, WallProps>((props, ref) => {
   const { wallId, openModalWay, setWall } = props;
   const { walls, updateWall, getWalls, zone } = usePlaces();
 
@@ -55,7 +55,7 @@ const Wall = forwardRef<HTMLDivElement, WallProps>((props) => {
   });
 
   return (
-    <div>
+    <div ref={ref}>
       <h1 className="text-center mt-10 mb-5 mx-5">Mur</h1>
       <table className="table table-fixed">
         <thead>

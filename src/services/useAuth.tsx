@@ -9,6 +9,8 @@ import {
 import axiosClient from '../axios-client';
 import { USER } from '@/types/user';
 import { decryptPrivateKey, encryptPrivateKey, generateKeys } from '@/crypto';
+import { POST } from '@/types/post';
+import { ResetTv } from '@mui/icons-material';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -23,12 +25,18 @@ interface AuthContextType {
   token: string;
   priv: string;
   loading: boolean;
+  finished: boolean;
   error?: any;
+  feed: POST[];
   login: (email: string, password: string) => void;
   loginGoogle: (token: string) => void;
   signUp: (email: string, name: string, password: string) => void;
   logout: () => void;
   getStats: () => void;
+  getFeed: (getpage?: number) => void;
+  likePost: (id: number, like: boolean) => void;
+  setFinished: (finished: boolean) => void;
+  resetFeed: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -41,11 +49,14 @@ export function AuthProvider({
 }): JSX.Element {
   const [user, setUser] = useState<USER>();
   const [stats, setStats] = useState<any>();
+  const [feed, setFeed] = useState<POST[]>([]);
   const [token, setToken] = useState<string>('');
   const [error, setError] = useState<any>();
   const [loading, setLoading] = useState<boolean>(false);
+  const [finished, setFinished] = useState<boolean>(false);
   const [loadingInitial, setLoadingInitial] = useState<boolean>(true);
   const [priv, setPriv] = useState<string>('');
+  const [page, setPage] = useState<number>(1);
 
   function generateOrGetKeys(password: string, publicKey: string) {
     console.log('publicKey');
@@ -199,9 +210,68 @@ export function AuthProvider({
 
   function getStats() {
     axiosClient
-      .get(`${baseUrl}/stats`)
+      .get(`${baseUrl}/stats?page=${page}`)
       .then((stats) => {
         setStats(stats.data);
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
+  function getFeed(getpage?: number) {
+    if (!finished) {
+      setLoading(true);
+      if (!getpage) {
+        getpage = page;
+      }
+      axiosClient
+        .get(`${baseUrl}/feed?page=${getpage}`)
+        .then((feed) => {
+          if (feed.data.data.length === 0) {
+            setFinished(true);
+          }
+          if (getpage === 1) {
+            setFeed(feed.data.data);
+          } else {
+            setFeed((prev) => {
+              const newOnes = feed.data.data.filter(
+                ({ id }: any) => !prev.some((e) => e.id === id)
+              );
+              return [...prev, ...newOnes];
+            });
+          }
+          setPage(getpage + 1);
+        })
+        .catch((errors) => {
+          setError(errors.response.data.errors[0].message);
+        })
+        .finally(() => setLoading(false));
+    }
+  }
+
+  async function resetFeed() {
+    setFeed([]);
+    setPage(1);
+    setFinished(false);
+  }
+
+  async function likePost(id: number, like: boolean) {
+    await axiosClient
+      .post(`${baseUrl}/posts/${id}/like`, { like: like })
+      .then((result) => {
+        setFeed((prev) => {
+          return prev.map((post) =>
+            post.id === id
+              ? {
+                  ...post,
+                  isLike: result.data.isLike,
+                  likesCount: result.data.likesCount,
+                }
+              : post
+          );
+        });
       })
       .catch((errors) => {
         setError(errors.response.data.errors[0].message);
@@ -222,17 +292,23 @@ export function AuthProvider({
     () => ({
       user,
       stats,
+      feed,
       token,
       priv,
       loading,
+      finished,
       error,
       login,
       loginGoogle,
       signUp,
       logout,
       getStats,
+      getFeed,
+      likePost,
+      setFinished,
+      resetFeed,
     }),
-    [user, stats, token, priv, loading, error]
+    [user, stats, feed, token, priv, loading, finished, error]
   );
 
   // We only want to render the underlying app after we

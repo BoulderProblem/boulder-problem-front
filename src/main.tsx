@@ -24,6 +24,7 @@ import ContestId from './pages/contestId.tsx';
 import Contests from './pages/contests.tsx';
 import Messages from './pages/message.tsx';
 import { MessagesProvider } from './services/useMessages.tsx';
+import Feed from './pages/feed.tsx';
 
 const Main = () => {
   const { user } = useAuth();
@@ -35,9 +36,22 @@ const Main = () => {
       children: [
         {
           path: '/',
+          element:
+            user && user.roleId === 1 ? (
+              <ProtectedRoute>
+                <Feed />
+              </ProtectedRoute>
+            ) : (
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            ),
+        },
+        {
+          path: '/feed',
           element: (
             <ProtectedRoute>
-              <Home />
+              <Feed />
             </ProtectedRoute>
           ),
         },
