@@ -10,6 +10,7 @@ import axiosClient from '../axios-client';
 import { WAY } from '@/types/way';
 import { PLACE } from '@/types/place';
 import { ZONE } from '@/types/zone';
+import { useAuth } from './useAuth';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -52,6 +53,8 @@ interface PlacesContextType {
   addWay: (params: any) => void;
   updateWay: (id: number | string, params: any) => void;
   deleteWay: (id: number | string, wallId: number | string) => void;
+  getWayComments: (wayId: number, getpage: number) => Promise<any>;
+  addWayComment: (wayId: number, text: string) => Promise<any>;
 }
 
 const PlacesContext = createContext<PlacesContextType>({} as PlacesContextType);
@@ -62,6 +65,7 @@ export function PlacesProvider({
 }: {
   children: ReactNode;
 }): JSX.Element {
+  const { user: me } = useAuth();
   const [colors, setColors] = useState<any>();
   const [difficulties, setDifficulties] = useState<any>();
   const [places, setPlaces] = useState<any>();
@@ -378,6 +382,96 @@ export function PlacesProvider({
       .finally(() => setLoading(false));
   }
 
+  function getWayComments(wayId: number, getpage: number): Promise<any> {
+    return axiosClient
+      .get(`${baseUrl}/ways/${wayId}/comments?page=${getpage}`)
+      .then((response) => {
+        const newComments = response.data.data;
+        const haveNextPage = response.data.meta.lastPage > getpage;
+
+        setWays((prev) => {
+          return prev.map((way) => {
+            if (way.id !== wayId) return way;
+
+            const existing = way.comments || [];
+            const merged = [...existing, ...newComments].filter(
+              (comment, index, self) =>
+                index === self.findIndex((c) => c.id === comment.id)
+            );
+
+            return {
+              ...way,
+              comments: merged,
+              haveNextPage,
+              currentPage: getpage,
+            };
+          });
+        });
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
+  function addWayComment(wayId: number, text: string): Promise<any> {
+    return axiosClient
+      .post(`${baseUrl}/ways/${wayId}/comments`, { text })
+      .then((response) => {
+        response.data.user = {
+          avatar: me!.avatar,
+          firstname: me!.firstname,
+          id: me!.id,
+          lastname: me!.lastname,
+        };
+
+        let newComment = [response.data];
+
+        console.log(newComment);
+
+        setWays((prev: any) => {
+          return prev.map((way: WAY) => {
+            if (way.id !== wayId) return way;
+
+            const existing = way.comments || [];
+            const merged = [...newComment, ...existing];
+
+            return {
+              ...way,
+              comments: merged,
+              nbComments: way.nbComments + 1,
+            };
+          });
+        });
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
+  function saveRating(wayId: number, note: number) {
+    axiosClient
+      .post(`${baseUrl}/ways/${wayId}/note`, { note: note })
+      .then((response) => {
+        setWays((prev) => {
+          return prev.map((way) => {
+            if (way.id !== wayId) return way;
+
+            return {
+              ...way,
+              note: response.data.note,
+              avgNote: response.data.avgNote,
+            };
+          });
+        });
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
   // Make the provider update only when it should.
   // We only want to force re-renders if the user,
   // loading or error states change.
@@ -422,6 +516,8 @@ export function PlacesProvider({
       addWay,
       updateWay,
       deleteWay,
+      getWayComments,
+      addWayComment,
     }),
     [
       colors,

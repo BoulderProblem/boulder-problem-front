@@ -25,6 +25,7 @@ import Contests from './pages/contests.tsx';
 import Messages from './pages/message.tsx';
 import { MessagesProvider } from './services/useMessages.tsx';
 import Feed from './pages/feed.tsx';
+import PlaceIdUpdate from './pages/placeIdUpdate.tsx';
 
 const Main = () => {
   const { user } = useAuth();
@@ -84,6 +85,14 @@ const Main = () => {
           element: (
             <ProtectedRoute>
               <PlaceId />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: '/places/:id/update',
+          element: (
+            <ProtectedRoute>
+              <PlaceIdUpdate />
             </ProtectedRoute>
           ),
         },

@@ -24,6 +24,7 @@ import {
   TableCell,
   TableBody,
   Paper,
+  Button,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
@@ -86,7 +87,6 @@ const Contest = () => {
 
   const [tabIndex, setTabIndex] = useState(0);
   const theme = useTheme();
-  const isMdUp = useMediaQuery(theme.breakpoints.down('md')); // mobile = <960px
   const isSmUp = useMediaQuery(theme.breakpoints.up('sm')); // small = >=600px
 
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
@@ -250,7 +250,7 @@ const Contest = () => {
               <Card
                 key={user.id}
                 sx={{
-                  borderRadius: 3,
+                  borderRadius: 6,
                   boxShadow: 3,
                 }}
               >
@@ -288,71 +288,67 @@ const Contest = () => {
       ),
     },
     {
-      label: (
-        <div className="relative">
-          voies
-          <div className="text-right absolute -right-6 md:-right-9 lg:right-0 -top-6 md:-top-7 lg:top-0">
-            {contest && user?.id === contest.userId ? (
-              <LightTooltip title="Ajouter une voie">
-                <IconButton
-                  onClick={() => openModalWay()}
-                  color="primary"
-                  component="span"
-                >
-                  <AddIcon />
-                </IconButton>
-              </LightTooltip>
-            ) : null}
-          </div>
-        </div>
-      ),
+      label: <div>voies</div>,
       content: (
-        <Box
-          sx={{
-            width: '100%',
-            display: 'grid',
-            gridTemplateColumns:
-              'repeat(auto-fill, minmax(min(200px, 100%), 1fr))',
-            gap: 2,
-          }}
-        >
-          {contestWays &&
-            contestWays.map((way: any) => (
-              <Card
-                key={way.id}
-                sx={{
-                  borderLeft: `6px solid ${way.color.color}`,
-                  borderRadius: 3,
-                  boxShadow: 3,
-                }}
-              >
-                <CardActionArea>
-                  <CardContent sx={{ height: '100%' }}>
-                    <Typography variant="h5">{way.name}</Typography>
-                    <Typography variant="h6" color="text.secondary">
-                      mur : {way.wall.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      salle : {way.wall.zone.place.name}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      className="pt-3"
-                    >
-                      difficultée : {way.difficulty.label}
-                    </Typography>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
-            ))}
+        <Box>
+          {contest && user?.id === contest.userId ? (
+            <Button onClick={() => openModalWay()}>
+              <IconButton color="primary" component="span">
+                <AddIcon />
+              </IconButton>
+              Ajouter des voies
+            </Button>
+          ) : null}
+          <Box
+            sx={{
+              width: '100%',
+              display: 'grid',
+              gridTemplateColumns:
+                'repeat(auto-fill, minmax(min(200px, 100%), 1fr))',
+              gap: 2,
+            }}
+          >
+            {contestWays &&
+              contestWays.map((way: any) => (
+                <Card
+                  key={way.id}
+                  sx={{
+                    borderLeft: `6px solid ${way.color.color}`,
+                    borderRadius: 6,
+                    boxShadow: 3,
+                  }}
+                >
+                  <CardActionArea>
+                    <CardContent sx={{ height: '100%' }}>
+                      <Typography variant="h5">{way.name}</Typography>
+                      <Typography variant="h6" color="text.secondary">
+                        mur : {way.wall.name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        salle : {way.wall.zone.place.name}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        className="pt-3"
+                      >
+                        difficultée : {way.difficulty.label}
+                      </Typography>
+                    </CardContent>
+                  </CardActionArea>
+                </Card>
+              ))}
+          </Box>
         </Box>
       ),
     },
     {
       label: <div>Classement</div>,
       content: (
-        <TableContainer component={Paper}>
+        <TableContainer
+          component={Paper}
+          sx={{ width: '100%', borderRadius: 6 }}
+        >
           <Table aria-label="simple table">
             <TableHead>
               <TableRow>
@@ -544,41 +540,27 @@ const Contest = () => {
             </div>
           </div>
           <Divider />
-          <Box sx={{ p: 2, marginTop: 5 }}>
-            {isMdUp ? (
-              // ✅ MOBILE VIEW - Tabs classiques
-              <>
-                <Tabs
-                  value={tabIndex}
-                  onChange={handleChange}
-                  variant={isSmUp ? 'fullWidth' : 'standard'}
-                  sx={{
-                    '& .MuiTab-root': {
-                      minWidth: 0,
-                      padding: '6px 8px',
-                      fontSize: '0.8rem', // plus petit texte
-                    },
-                  }}
-                  aria-label="Onglets mobile"
-                >
-                  {tabContents.map((tab, index) => (
-                    <Tab key={index} label={tab.label} />
-                  ))}
-                </Tabs>
+          <Box className="max-w-5xl mx-auto w-full mt-7">
+            <Tabs
+              value={tabIndex}
+              onChange={handleChange}
+              variant={isSmUp ? 'fullWidth' : 'standard'}
+              sx={{
+                backgroundColor: '#f5f5f5',
+                '& .MuiTab-root': {
+                  minWidth: 0,
+                  padding: '6px 8px',
+                  fontSize: '0.8rem', // plus petit texte
+                },
+              }}
+              aria-label="Onglets mobile"
+            >
+              {tabContents.map((tab, index) => (
+                <Tab key={index} label={tab.label} />
+              ))}
+            </Tabs>
 
-                <Box sx={{ mt: 2 }}>{tabContents[tabIndex].content}</Box>
-              </>
-            ) : (
-              // ✅ DESKTOP VIEW - Tous les onglets visibles en colonne
-              <Grid container spacing={2}>
-                {tabContents.map((tab, index) => (
-                  <Grid key={index} size={{ sm: 6, md: 6, lg: 3 }}>
-                    <Typography component="span">{tab.label}</Typography>
-                    <Box className="mt-10">{tab.content}</Box>
-                  </Grid>
-                ))}
-              </Grid>
-            )}
+            <Box sx={{ p: 2, mt: 2 }}>{tabContents[tabIndex].content}</Box>
           </Box>
         </div>
       )}

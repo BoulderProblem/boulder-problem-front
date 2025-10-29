@@ -1,19 +1,12 @@
 import PostCard from '@/components/posts/PostCard';
 import { useAuth } from '@/services/useAuth';
+import { useUsers } from '@/services/useUsers';
 import { Box, CircularProgress } from '@mui/material';
 import { useEffect, useRef } from 'react';
 
 const Feed = () => {
-  const {
-    finished,
-    loading,
-    token,
-    feed,
-    setFinished,
-    getFeed,
-    resetFeed,
-    likePost,
-  } = useAuth();
+  const { loading, token } = useAuth();
+  const { finished, feed, getFeed, resetFeed } = useUsers();
   const lastElementRef = useRef(null);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
@@ -41,7 +34,7 @@ const Feed = () => {
 
   return (
     <div
-      className=" h-full overflow-scroll"
+      className=" h-full overflow-y-scroll"
       onScroll={handleScroll}
       ref={lastElementRef}
     >
@@ -51,16 +44,13 @@ const Feed = () => {
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill) minmax(100%, 1fr)',
           gap: 2,
+          paddingTop: 2,
+          paddingBottom: 2,
         }}
       >
         {feed &&
           feed.map((post) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              token={token}
-              likePost={likePost}
-            />
+            <PostCard key={post.id} post={post} token={token} />
           ))}
         {finished && (
           <p className="text-center">

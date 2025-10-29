@@ -69,7 +69,7 @@ export function GerantHome() {
     <div>
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, sm: 4 }}>
-          <div className="bg-base-300 rounded-3xl p-3">
+          <div className="bg-base-100 rounded-3xl p-3">
             <table className="table table-fixed">
               {/* head */}
               <thead>
@@ -108,7 +108,7 @@ export function GerantHome() {
           </div>
         </Grid>
         <Grid size={{ xs: 12, sm: 4 }}>
-          <div className="bg-base-300 rounded-3xl p-3">
+          <div className="bg-base-100 rounded-3xl p-3">
             <table className="table table-fixed">
               {/* head */}
               <thead>
@@ -161,13 +161,13 @@ export function GerantHome() {
           </div>
         </Grid>
         <Grid size={{ xs: 6, sm: 2 }}>
-          <div className="bg-base-300 rounded-3xl p-5">
+          <div className="bg-base-100 rounded-3xl p-5">
             <p className="font-bold text-lg text-primary-600">Mon abonnement</p>
             <p className="my-3">20€ / mois</p>
           </div>
         </Grid>
         <Grid size={{ xs: 6, sm: 2 }}>
-          <div className="bg-base-300 rounded-3xl p-5">
+          <div className="bg-base-100 rounded-3xl p-5">
             <p className="font-bold text-lg text-primary-600">Mon abonnement</p>
             <p className="my-3">20€ / mois</p>
           </div>

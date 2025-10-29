@@ -64,7 +64,7 @@ function App() {
         </Helmet>
         <div className={'h-screen layout ' + (isBlack ? 'dark' : '')}>
           <Header stateChanger={setIsBlack} />
-          <main className="h-[calc(100%-56px)]">
+          <main className="h-[calc(100%-56px)] overflow-x-scroll">
             <Box pt={headerHeight} className="h-full">
               <Outlet />
             </Box>

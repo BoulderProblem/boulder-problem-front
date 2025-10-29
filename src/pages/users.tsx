@@ -3,10 +3,23 @@ import { useAuth } from '@/services/useAuth';
 import { useUsers } from '@/services/useUsers';
 import { useEffect, useState } from 'react';
 import ImageWithToken from 'react-image-with-auth';
-import { Link } from 'react-router-dom';
-import Pagination from '@mui/material/Pagination';
-import { Stack, Container } from '@mui/material';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Paper,
+  Box,
+  TableFooter,
+  TablePagination,
+  TextField,
+  InputAdornment,
+} from '@mui/material';
 import { USER } from '@/types/user';
+import SearchIcon from '@mui/icons-material/Search';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -16,8 +29,10 @@ if (process.env.NODE_ENV !== 'production') {
 const Users = () => {
   const { token } = useAuth();
   const { users, loading, getUsers } = useUsers();
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     getUsers(search, 1);
@@ -25,55 +40,72 @@ const Users = () => {
 
   const changePage = (_event: any, value: number) => {
     setPage(value);
-    getUsers(search, value);
+    getUsers(search, value + 1);
   };
   function changeSearch(value: string) {
     setSearch(value);
-    getUsers(value, page);
+    getUsers(value, page + 1);
   }
 
   return (
     <div className="overflow-x-auto">
-      <div className="flex m-4">
-        <label className="input input-bordered flex items-center gap-2">
-          <input
-            type="text"
-            className="grow"
-            placeholder="Rechercher"
-            onChange={(e) => changeSearch(e.target.value)}
-          />
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 16 16"
-            fill="currentColor"
-            className="h-4 w-4 opacity-70"
-          >
-            <path
-              fillRule="evenodd"
-              d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </label>
-      </div>
-      {loading ? (
+      {loading && !users ? (
         <div>Loading...</div>
       ) : (
-        <Container maxWidth="lg">
-          <table className="table">
-            {/* head */}
-            <thead>
-              <tr>
-                <th>Nom</th>
-                <th>email</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users &&
-                users.data.map((user: USER) => (
-                  <tr key={user.id} className="hover:bg-base-200">
-                    <td>
-                      <Link to={'/users/' + user.id}>
+        <Paper
+          className="max-w-7xl mx-auto mt-5"
+          sx={{
+            overflow: 'hidden',
+            borderRadius: { xs: 0, lg: 6 },
+          }}
+        >
+          <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end' }}>
+            <TextField
+              variant="outlined"
+              size="small"
+              placeholder="Rechercher un utilisateur..."
+              value={search}
+              onChange={(e) => changeSearch(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                width: 300,
+                '& .MuiOutlinedInput-root': { borderRadius: '20px' },
+              }}
+            />
+          </Box>
+          <TableContainer
+            component={Paper}
+            sx={{ width: '100%', borderRadius: 6 }}
+          >
+            {users ? (
+              <Table aria-label="simple table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Nom</TableCell>
+                    <TableCell>Email</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {users.data.map((user: USER) => (
+                    <TableRow
+                      key={user.id}
+                      onClick={() => navigate(`/users/${user.id}`)}
+                      hover
+                      sx={{
+                        textDecoration: 'none',
+                        color: 'inherit',
+                        cursor: 'pointer',
+                        '&:hover': { backgroundColor: 'action.hover' },
+                        '&:last-child td, &:last-child th': { border: 0 },
+                      }}
+                    >
+                      <TableCell>
                         <div className="flex items-center gap-3">
                           <div className="avatar">
                             <div className="mask mask-circle h-12 w-12">
@@ -112,15 +144,13 @@ const Users = () => {
                             </div>
                           </div>
                         </div>
-                      </Link>
-                    </td>
-                    <td>
-                      <Link to={'/users/' + user.id}>
+                      </TableCell>
+                      <TableCell>
                         {user.email}
                         <br />
                         <span
                           className={
-                            'badge badge-sm ' +
+                            'badge text-white badge-sm ' +
                             (user.roleId === 1 ? 'bg-blue-800' : '') +
                             (user.roleId === 2 ? 'bg-green-800' : '') +
                             (user.roleId === 3 ? 'bg-red-800' : '')
@@ -128,24 +158,30 @@ const Users = () => {
                         >
                           {Roles[user.roleId]}
                         </span>
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-          {users ? (
-            <Stack alignItems="center">
-              <Pagination
-                count={users.meta.lastPage}
-                page={page > users.meta.lastPage ? users.meta.lastPage : page}
-                onChange={changePage}
-              />
-            </Stack>
-          ) : (
-            ''
-          )}
-        </Container>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+                <TableFooter>
+                  <TableRow>
+                    <TablePagination
+                      rowsPerPageOptions={[10]}
+                      count={users.meta.total}
+                      rowsPerPage={10}
+                      page={
+                        page > users.meta.lastPage - 1
+                          ? users.meta.lastPage - 1
+                          : page
+                      }
+                      onPageChange={changePage}
+                      labelRowsPerPage="Lignes par page"
+                    />
+                  </TableRow>
+                </TableFooter>
+              </Table>
+            ) : null}
+          </TableContainer>
+        </Paper>
       )}
     </div>
   );

@@ -1,3 +1,5 @@
+import { COMMENT } from './comment';
+
 export type POST = {
   id: number;
   userId: string;
@@ -15,4 +17,7 @@ export type POST = {
     lastname: string;
     avatar: string;
   };
+  comments?: [COMMENT];
+  haveNextPage?: boolean;
+  currentPage?: number;
 };

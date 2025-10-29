@@ -1,3 +1,5 @@
+import { COMMENT } from './comment';
+
 export type WAY = {
   id: number;
   colorId: number;
@@ -10,5 +12,16 @@ export type WAY = {
     id: number;
     color: string;
     label: string;
+  };
+  difficulty: {
+    id: number;
+    label: string;
+  };
+  avgNote: null | number;
+  nbComments: number;
+  comments?: COMMENT[];
+  userNote: null | {
+    note: number;
+    wayId: number;
   };
 };

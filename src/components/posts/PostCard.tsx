@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Card,
@@ -8,12 +8,16 @@ import {
   CardActions,
   IconButton,
   Avatar,
+  Button,
 } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import CommentIcon from '@mui/icons-material/Comment';
 import { POST } from '@/types/post';
 import dayjs from 'dayjs';
 import AuthImageWithSkeleton from '../AuthImageWithSkeleton';
+import { useUsers } from '@/services/useUsers';
+import MessageInput from './MessageInput';
+import CommentCard from './CommentCard';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -22,48 +26,77 @@ if (process.env.NODE_ENV !== 'production') {
 interface PostCardProps {
   token: string;
   post: POST;
-  likePost: (postId: number, like: boolean) => void;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post, token, likePost }) => {
+const PostCard: React.FC<PostCardProps> = ({ post, token }) => {
+  const { likePost, getComments, addComment } = useUsers();
   const locale = navigator.language || 'fr';
+  const [avatarUrl, setAvatarUrl] = useState(null);
   dayjs.locale(locale);
+
+  useEffect(() => {
+    const loadAvatar = async () => {
+      if (post.user!.avatar) {
+        try {
+          const res = await fetch(
+            `${baseUrl}/users/${post.user!.id}/avatar/${
+              post.user!.avatar
+            }?size=100`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+
+          if (!res.ok) throw new Error('Erreur chargement avatar');
+
+          const blob = await res.blob();
+          const objectUrl = URL.createObjectURL(blob);
+          setAvatarUrl(objectUrl);
+
+          // nettoyage pour éviter les fuites mémoire
+          return () => URL.revokeObjectURL(objectUrl);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    };
+
+    loadAvatar();
+  }, [baseUrl, post, token]);
 
   const handleLike = (postId: number, like: boolean) => {
     // Call the API to like/unlike the post
     likePost(postId, like);
   };
 
+  const handleGetComment = (postId: number) => {
+    getComments(postId, 1);
+  };
+
+  const handleAddComment = (postId: number, text: string) => {
+    // Call the API to add a comment to the post
+    addComment(postId, text);
+  };
+
   return (
-    <Card className="max-w-xl mx-auto w-full" key={post.id}>
+    <Card
+      className="max-w-xl mx-auto w-full"
+      sx={{ borderRadius: '12px' }}
+      key={post.id}
+    >
       <CardHeader
         onClick={() => {
           window.location.href = `/users/${post.user!.id}`;
         }}
         avatar={
-          <Avatar aria-label="recipe">
-            {post.user!.avatar ? (
-              <AuthImageWithSkeleton
-                imageUrl={`${baseUrl}/users/${post.user!.id}/avatar/${
-                  post.user!.avatar
-                }?size=200`}
-                token={token}
-                alt="Post image"
-              />
-            ) : (
-              <svg
-                width="48px"
-                height="48px"
-                viewBox="0 0 18 18"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill="#494c4e"
-                  d="M9 0a9 9 0 0 0-9 9 8.654 8.654 0 0 0 .05.92 9 9 0 0 0 17.9 0A8.654 8.654 0 0 0 18 9a9 9 0 0 0-9-9zm5.42 13.42c-.01 0-.06.08-.07.08a6.975 6.975 0 0 1-10.7 0c-.01 0-.06-.08-.07-.08a.512.512 0 0 1-.09-.27.522.522 0 0 1 .34-.48c.74-.25 1.45-.49 1.65-.54a.16.16 0 0 1 .03-.13.49.49 0 0 1 .43-.36l1.27-.1a2.077 2.077 0 0 0-.19-.79v-.01a2.814 2.814 0 0 0-.45-.78 3.83 3.83 0 0 1-.79-2.38A3.38 3.38 0 0 1 8.88 4h.24a3.38 3.38 0 0 1 3.1 3.58 3.83 3.83 0 0 1-.79 2.38 2.814 2.814 0 0 0-.45.78v.01a2.077 2.077 0 0 0-.19.79l1.27.1a.49.49 0 0 1 .43.36.16.16 0 0 1 .03.13c.2.05.91.29 1.65.54a.49.49 0 0 1 .25.75z"
-                />
-              </svg>
-            )}
-          </Avatar>
+          <Avatar
+            src={avatarUrl}
+            alt="Profile"
+            sx={{
+              width: 50,
+              height: 50,
+            }}
+          />
         }
         title={post.user!.firstname + ' ' + post.user!.lastname}
         subheader={post.title}
@@ -81,7 +114,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, token, likePost }) => {
           alt="Post image"
         />
       </div>
-      <CardContent className="h-28">
+      <CardContent>
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           {post.text}
         </Typography>
@@ -99,7 +132,12 @@ const PostCard: React.FC<PostCardProps> = ({ post, token, likePost }) => {
           />
           {post.likesCount}
         </IconButton>
-        <IconButton aria-label="Commenter">
+        <IconButton
+          aria-label="Commenter"
+          onClick={() => {
+            handleGetComment(post.id);
+          }}
+        >
           <CommentIcon className="mr-3" />
           {post.commentsCount}
         </IconButton>
@@ -119,6 +157,28 @@ const PostCard: React.FC<PostCardProps> = ({ post, token, likePost }) => {
           </Typography>
         </Box>
       </CardActions>
+      {post.comments && (
+        <Box display="contents" width="100%">
+          <MessageInput
+            onSend={(message) => {
+              handleAddComment(post.id, message);
+            }}
+          />
+          {post.comments.map((comment) => (
+            <CommentCard key={comment.id} comment={comment} token={token} />
+          ))}
+          {post.haveNextPage && (
+            <Button
+              sx={{ width: '100%', padding: 2 }}
+              onClick={() => {
+                getComments(post.id, post.currentPage! + 1);
+              }}
+            >
+              Voir plus de commentaires
+            </Button>
+          )}
+        </Box>
+      )}
     </Card>
   );
 };

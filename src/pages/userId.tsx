@@ -1,22 +1,21 @@
 import { useAuth } from '@/services/useAuth';
 import { useParams } from 'react-router-dom';
 import Header from '@/components/users/header';
-import { Grid, Box } from '@mui/material';
+import { Box, Tab, Tabs, useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { useUsers } from '@/services/useUsers';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import PostCard from '@/components/posts/PostCard';
-
-let baseUrl = `https://boulder-problem.chabs.fr/api`;
-if (process.env.NODE_ENV !== 'production') {
-  baseUrl = `http://localhost:3333`;
-}
 
 const UserId = () => {
   const { id } = useParams();
   const { token } = useAuth();
-  const { user, posts, getUser, resetUserPosts, getUserPosts, likePost } =
-    useUsers();
+  const { user, posts, getUser, resetUserPosts, getUserPosts } = useUsers();
+  const [tabIndex, setTabIndex] = useState(0);
+
+  const theme = useTheme();
+  const isSmUp = useMediaQuery(theme.breakpoints.up('sm')); // small = >=600px
 
   const locale = navigator.language || 'fr';
   dayjs.locale(locale);
@@ -33,52 +32,80 @@ const UserId = () => {
     };
   }, []);
 
+  const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setTabIndex(newValue);
+  };
+
+  // Contenus des onglets
+  const tabContents = [
+    {
+      label: <div>Posts</div>,
+      content: (
+        <div className="p-1 sm:p-20 w-full whitespace-pre-line">
+          <Box
+            sx={{
+              width: '100%',
+              display: 'grid',
+              gridTemplateColumns:
+                'repeat(auto-fill, minmax(min(450px, 100%), 1fr))',
+              gap: 1,
+            }}
+          >
+            {user &&
+              posts.length > 0 &&
+              posts
+                .map((post) => ({
+                  ...post,
+                  user: {
+                    id: user.id,
+                    firstname: user.firstname,
+                    lastname: user.lastname,
+                    avatar: user.avatar,
+                  },
+                }))
+                .map((postWithUser) => (
+                  <PostCard
+                    key={postWithUser.id}
+                    post={postWithUser}
+                    token={token}
+                  />
+                ))}
+          </Box>
+        </div>
+      ),
+    },
+    {
+      label: <div>Stats</div>,
+      content: (
+        <div className="max-w-3xl m-1 sm:m-20 whitespace-pre-line">plop</div>
+      ),
+    },
+  ];
   return (
     <div className="overflow-x-auto">
       <Header></Header>
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <div className="p-1 sm:p-20 w-full whitespace-pre-line">
-            <h1 className="mb-10">Posts</h1>
-            <Box
-              sx={{
-                width: '100%',
-                display: 'grid',
-                gridTemplateColumns:
-                  'repeat(auto-fill, minmax(min(300px, 100%), 1fr))',
-                gap: 2,
-              }}
-            >
-              {user &&
-                posts.length > 0 &&
-                posts
-                  .map((post) => ({
-                    ...post,
-                    user: {
-                      id: user.id,
-                      firstname: user.firstname,
-                      lastname: user.lastname,
-                      avatar: user.avatar,
-                    },
-                  }))
-                  .map((postWithUser) => (
-                    <PostCard
-                      key={postWithUser.id}
-                      post={postWithUser}
-                      token={token}
-                      likePost={likePost}
-                    />
-                  ))}
-            </Box>
-          </div>
-        </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <div className="max-w-3xl m-1 sm:m-20 whitespace-pre-line">
-            <h1 className="mb-10 relative">Stats</h1>
-            plop
-          </div>
-        </Grid>
-      </Grid>
+      <Box className="max-w-5xl mx-auto w-full">
+        <Tabs
+          value={tabIndex}
+          onChange={handleChange}
+          variant={'fullWidth'}
+          className="bg-base-100"
+          sx={{
+            '& .MuiTab-root': {
+              minWidth: 0,
+              padding: '6px 8px',
+              fontSize: '0.8rem', // plus petit texte
+            },
+          }}
+          aria-label="Onglets mobile"
+        >
+          {tabContents.map((tab, index) => (
+            <Tab key={index} label={tab.label} />
+          ))}
+        </Tabs>
+
+        <Box sx={{ p: 2, mt: 2 }}>{tabContents[tabIndex].content}</Box>
+      </Box>
     </div>
   );
 };

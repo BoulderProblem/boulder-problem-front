@@ -51,7 +51,7 @@ function Header({ stateChanger }: any) {
 
   return (
     <Box position="fixed" top={0} left={0} right={0} zIndex={1001}>
-      <div className="navbar bg-base-300">
+      <div className="navbar bg-base-100 border-b-2 border-primary-500">
         <div className="navbar-start">
           <div className="contents lg:hidden">
             <Button
@@ -149,12 +149,13 @@ function Header({ stateChanger }: any) {
           {user ? (
             <div className="contents">
               <Button
+                className="text-inherit"
                 aria-controls={openProfile ? 'basic-menu' : undefined}
                 aria-haspopup="true"
                 aria-expanded={openProfile ? 'true' : undefined}
                 onClick={handleClickProfile}
               >
-                <div className="mr-5 text-primary-500">
+                <div className="mr-5">
                   <p className="text-sm">{user.firstname}</p>
                   <p className="text-sm">{user.lastname}</p>
                 </div>

@@ -1,7 +1,7 @@
-import { GraphHome } from '@/components/GraphHome.tsx';
 import { useAuth } from '@/services/useAuth';
 import { useEffect } from 'react';
-import { GerantHome } from '@/components/GerantHome';
+import { GerantHome } from '@/components/home/GerantHome';
+import { GraphHome } from '@/components/home/GraphHome';
 
 const Home = () => {
   const { getStats } = useAuth();

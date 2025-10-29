@@ -20,6 +20,7 @@ import { useUsers } from '@/services/useUsers';
 import { CONVERSATION } from '@/types/conversation';
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
+import MessageInput from '@/components/posts/MessageInput';
 
 const Messages = () => {
   const {
@@ -43,8 +44,6 @@ const Messages = () => {
   const [isAtBottomMobile, setIsAtBottomMobile] = useState(true);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [firstLoad, setFirstLoad] = useState(true);
-  const [showPicker, setShowPicker] = useState(false);
-  const pickerRefEmoji = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     return () => {
@@ -73,47 +72,25 @@ const Messages = () => {
     }
   }, [isAtBottom, isAtBottomMobile, messages]);
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        pickerRefEmoji.current &&
-        !pickerRefEmoji.current.contains(event.target as Node)
-      ) {
-        setShowPicker(false);
+  async function sendMessage(newMessage: string) {
+    selectedConv?.usersConversation.forEach((userConv) => {
+      if (userConv.userId !== user!.id) {
+        setNewMessage('');
+        encryptForRecipient(newMessage, priv, userConv.user.publicKey).then(
+          (response) => {
+            sendMessages(
+              user!.id,
+              userConv.userId,
+              response.ciphertext,
+              response.nonce,
+              response.sender_pub,
+              response.recipient_pub,
+              selectedConv!.id
+            );
+          }
+        );
       }
-    }
-    if (showPicker) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showPicker]);
-
-  const addEmoji = (emoji: any) => {
-    setNewMessage(newMessage + emoji.native);
-  };
-  async function sendMessage() {
-    if (newMessage.length > 0) {
-      selectedConv?.usersConversation.forEach((userConv) => {
-        if (userConv.userId !== user!.id) {
-          setNewMessage('');
-          encryptForRecipient(newMessage, priv, userConv.user.publicKey).then(
-            (response) => {
-              sendMessages(
-                user!.id,
-                userConv.userId,
-                response.ciphertext,
-                response.nonce,
-                response.sender_pub,
-                response.recipient_pub,
-                selectedConv!.id
-              );
-            }
-          );
-        }
-      });
-    }
+    });
   }
 
   const openModalConv = () => {
@@ -391,42 +368,11 @@ const Messages = () => {
                     ))}
                 <div ref={endRef} />
               </div>
-              <div className=" p-4 border-t flex">
-                <button
-                  type="button"
-                  onClick={() => setShowPicker(!showPicker)}
-                  className="my-1 ml-0 mr-2 text-xl"
-                >
-                  😀
-                </button>
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(parseEmojis(e.target.value))}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault(); // évite le saut de ligne
-                      sendMessage();
-                    }
-                  }}
-                  className="flex-1 border rounded-lg px-3 py-2 mr-2"
-                  placeholder="Écrire un message..."
-                />
-                <button
-                  onClick={sendMessage}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-                >
-                  Envoyer
-                </button>
-              </div>
-              {showPicker && (
-                <div
-                  ref={pickerRefEmoji}
-                  className="absolute bottom-20 left-5 z-50"
-                >
-                  <Picker data={data} onEmojiSelect={addEmoji} />
-                </div>
-              )}
+              <MessageInput
+                onSend={(message) => {
+                  sendMessage(message);
+                }}
+              />
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center text-gray-500">
@@ -512,42 +458,11 @@ const Messages = () => {
                 ))}
               <div ref={endRefMobile} />
             </div>
-            <div className="p-4 border-t flex">
-              <button
-                type="button"
-                onClick={() => setShowPicker(!showPicker)}
-                className="my-1 ml-0 mr-2 text-xl"
-              >
-                😀
-              </button>
-              <input
-                type="text"
-                value={newMessage}
-                onChange={(e) => setNewMessage(parseEmojis(e.target.value))}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault(); // évite le saut de ligne
-                    sendMessage();
-                  }
-                }}
-                className="flex-1 border rounded-lg px-3 py-2 mr-2"
-                placeholder="Écrire un message..."
-              />
-              <button
-                onClick={sendMessage}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-              >
-                Envoyer
-              </button>
-            </div>
-            {showPicker && (
-              <div
-                ref={pickerRefEmoji}
-                className="absolute bottom-20 left-5 z-50"
-              >
-                <Picker data={data} onEmojiSelect={addEmoji} />
-              </div>
-            )}
+            <MessageInput
+              onSend={(message) => {
+                sendMessage(message);
+              }}
+            />
           </div>
         )}
       </div>

@@ -12,11 +12,8 @@ import {
   MenuItem,
   InputAdornment,
   Grid,
-  IconButton,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import { MobileTimePicker } from '@mui/x-date-pickers/MobileTimePicker';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
@@ -41,14 +38,8 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const Place = (props: any) => {
-  const {
-    place,
-    getPlace,
-    updatePlace,
-    getPlaceZones,
-    favoritePlace,
-    difficulties,
-  } = usePlaces();
+  const { place, getPlace, updatePlace, getPlaceZones, difficulties } =
+    usePlaces();
   const { getUsers, users, user } = useUsers();
   const { token } = useAuth();
 
@@ -318,12 +309,6 @@ const Place = (props: any) => {
     },
   }));
 
-  const follow = (follow: boolean) => {
-    favoritePlace(parseInt(props.id || '0'), follow).then(() => {
-      getPlace(parseInt(props.id || '0'));
-    });
-  };
-
   return (
     <div>
       {inputs ? (
@@ -373,35 +358,12 @@ const Place = (props: any) => {
               <Grid size={{ xs: 6, sm: 6 }}>
                 <h1 className="text-center my-5">{inputs.name || ''}</h1>
               </Grid>
-              <Grid size={{ xs: 3, sm: 3 }} className="relative">
+              <Grid size={{ xs: 3, sm: 3 }}>
                 <div className="h-full m-auto ">
                   <p className="font-bold text-lg">
                     {place ? place.favoriteCount : 0}
                   </p>{' '}
                   favoris
-                </div>
-                <div className="text-right absolute w-16 right-5 top-0">
-                  {place && place.isFavorite ? (
-                    <LightTooltip title="Ne plus suivre">
-                      <IconButton
-                        onClick={() => follow(false)}
-                        color="primary"
-                        component="span"
-                      >
-                        <RemoveIcon />
-                      </IconButton>
-                    </LightTooltip>
-                  ) : (
-                    <LightTooltip title="Suivre">
-                      <IconButton
-                        onClick={() => follow(true)}
-                        color="primary"
-                        component="span"
-                      >
-                        <AddIcon />
-                      </IconButton>
-                    </LightTooltip>
-                  )}
                 </div>
               </Grid>
             </Grid>

@@ -8,6 +8,8 @@ import {
 } from 'react';
 import axiosClient from '../axios-client';
 import { POST } from '@/types/post';
+import { get } from 'http';
+import { useAuth } from './useAuth';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -21,7 +23,10 @@ interface UsersContextType {
   user: any;
   posts: POST[];
   loading: boolean;
+  loadingComment: boolean;
   error?: any;
+  feed: POST[];
+  finished: boolean;
   getUsers: (search: string, page: number | string) => Promise<any>;
   getUser: (id: string) => Promise<any>;
   followUser: (id: string, follow: boolean) => Promise<any>;
@@ -30,6 +35,11 @@ interface UsersContextType {
   likePost: (id: number, like: boolean) => Promise<any>;
   updateUser: (id: string, params: any) => Promise<any>;
   deleteUser: (id: string) => void;
+  setFinished: (finished: boolean) => void;
+  getFeed: (getpage?: number) => void;
+  resetFeed: () => void;
+  getComments: (id: number, getpage: number) => Promise<any>;
+  addComment: (id: number, text: string) => Promise<any>;
 }
 
 const UsersContext = createContext<UsersContextType>({} as UsersContextType);
@@ -40,11 +50,16 @@ export function UsersProvider({
 }: {
   children: ReactNode;
 }): JSX.Element {
+  const { user: me } = useAuth();
   const [users, setUsers] = useState<any>();
   const [posts, setPosts] = useState<POST[]>([]);
   const [user, setUser] = useState<any>();
+  const [feed, setFeed] = useState<POST[]>([]);
   const [error, setError] = useState<any>();
   const [loading, setLoading] = useState<boolean>(false);
+  const [loadingComment, setLoadingComment] = useState<boolean>(false);
+  const [finished, setFinished] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(1);
   // We are using `react-router` for this example,
   // but feel free to omit this or use the
   // router of your choice.
@@ -151,11 +166,127 @@ export function UsersProvider({
               : post
           );
         });
+        setFeed((prev) => {
+          return prev.map((post) =>
+            post.id === id
+              ? {
+                  ...post,
+                  isLike: result.data.isLike,
+                  likesCount: result.data.likesCount,
+                }
+              : post
+          );
+        });
       })
       .catch((errors) => {
         setError(errors.response.data.errors[0].message);
       })
       .finally(() => setLoading(false));
+  }
+
+  async function getComments(id: number, getpage: number) {
+    setLoadingComment(true);
+    await axiosClient
+      .get(`${baseUrl}/posts/${id}/comments?page=${getpage}`)
+      .then((response) => {
+        const newComments = response.data.data;
+        const haveNextPage = response.data.meta.lastPage > getpage;
+        setPosts((prev) => {
+          return prev.map((post) => {
+            if (post.id !== id) return post;
+
+            const existing = post.comments || [];
+            const merged = [...existing, ...newComments].filter(
+              (comment, index, self) =>
+                index === self.findIndex((c) => c.id === comment.id)
+            );
+
+            return {
+              ...post,
+              comments: merged,
+              haveNextPage,
+              currentPage: getpage,
+            };
+          });
+        });
+
+        setFeed((prev) => {
+          return prev.map((post) => {
+            if (post.id !== id) return post;
+
+            const existing = post.comments || [];
+            const merged = [...existing, ...newComments].filter(
+              (comment, index, self) =>
+                index === self.findIndex((c) => c.id === comment.id)
+            );
+
+            return {
+              ...post,
+              comments: merged,
+              haveNextPage,
+              currentPage: getpage,
+            };
+          });
+        });
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoadingComment(false));
+  }
+
+  async function addComment(id: number, text: string) {
+    await axiosClient
+      .post(`${baseUrl}/posts/${id}/comments`, { text: text })
+      .then((result) => {
+        result.data.user = {
+          avatar: me!.avatar,
+          firstname: me!.firstname,
+          id: me!.id,
+          lastname: me!.lastname,
+        };
+
+        let newComment = [result.data];
+        setPosts((prev) => {
+          return prev.map((post) => {
+            if (post.id !== id) return post;
+
+            const existing = post.comments || [];
+            const merged = [...newComment, ...existing].filter(
+              (comment, index, self) =>
+                index === self.findIndex((c) => c.id === comment.id)
+            );
+
+            return {
+              ...post,
+              commentsCount: post.commentsCount! + 1,
+              comments: merged,
+            };
+          });
+        });
+
+        setFeed((prev) => {
+          return prev.map((post) => {
+            if (post.id !== id) return post;
+
+            const existing = post.comments || [];
+            const merged = [...newComment, ...existing].filter(
+              (comment, index, self) =>
+                index === self.findIndex((c) => c.id === comment.id)
+            );
+
+            return {
+              ...post,
+              commentsCount: post.commentsCount! + 1,
+              comments: merged,
+            };
+          });
+        });
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => {});
   }
 
   async function updateUser(id: string, params: any) {
@@ -204,6 +335,43 @@ export function UsersProvider({
       .finally(() => setLoading(false));
   }
 
+  function getFeed(getpage?: number) {
+    if (!finished) {
+      setLoading(true);
+      if (!getpage) {
+        getpage = page;
+      }
+      axiosClient
+        .get(`${baseUrl}/feed?page=${getpage}`)
+        .then((feed) => {
+          if (feed.data.data.length === 0) {
+            setFinished(true);
+          }
+          if (getpage === 1) {
+            setFeed(feed.data.data);
+          } else {
+            setFeed((prev) => {
+              const newOnes = feed.data.data.filter(
+                ({ id }: any) => !prev.some((e) => e.id === id)
+              );
+              return [...prev, ...newOnes];
+            });
+          }
+          setPage(getpage + 1);
+        })
+        .catch((errors) => {
+          setError(errors.response.data.errors[0].message);
+        })
+        .finally(() => setLoading(false));
+    }
+  }
+
+  async function resetFeed() {
+    setFeed([]);
+    setPage(1);
+    setFinished(false);
+  }
+
   // Make the provider update only when it should.
   // We only want to force re-renders if the user,
   // loading or error states change.
@@ -218,8 +386,10 @@ export function UsersProvider({
       users,
       user,
       posts,
+      feed,
       loading,
       error,
+      finished,
       getUsers,
       getUser,
       followUser,
@@ -228,8 +398,13 @@ export function UsersProvider({
       likePost,
       updateUser,
       deleteUser,
+      setFinished,
+      resetFeed,
+      getFeed,
+      getComments,
+      addComment,
     }),
-    [users, user, posts, loading, error]
+    [users, user, feed, posts, loading, finished, error]
   );
 
   // We only want to render the underlying app after we
