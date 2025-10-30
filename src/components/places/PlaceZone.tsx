@@ -11,6 +11,9 @@ import {
   Rating,
   DialogActions,
   Button,
+  Paper,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import 'dayjs/locale/fr';
 import WayCard from './wayCard';
@@ -35,6 +38,7 @@ const PlaceZone = (props: any) => {
     getWays,
     getWayComments,
     addWayComment,
+    saveRating,
   } = usePlaces();
   const { token } = useAuth();
   const [plan, setPlan] = useState('');
@@ -46,6 +50,8 @@ const PlaceZone = (props: any) => {
   const [openNote, setOpenNote] = useState(false);
 
   const [drawer, setDrawer] = useState(false);
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up('md')); // md = >= 900px
 
   useEffect(() => {
     if (zones && zones.length === 1) {
@@ -81,7 +87,9 @@ const PlaceZone = (props: any) => {
   const actionOnClick = (event: any) => {
     let id = event.target.getAttribute('id');
 
-    sectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!isDesktop) {
+      sectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
     if (id) {
       if (document.getElementById(wallId)) {
         document.getElementById(wallId)?.setAttribute('fill', '#46768B');
@@ -120,17 +128,19 @@ const PlaceZone = (props: any) => {
     console.log('Way note click : ' + wayId);
     setWayId(wayId);
     setOpenNote(true);
-    setSelectedRating(0);
-    ways?.find((way) => way.id === wayId)?.userNote &&
+    if (ways?.find((way) => way.id === wayId)?.userNote) {
       setSelectedRating(ways.find((way) => way.id === wayId)!.userNote!.note);
+    } else {
+      setSelectedRating(0);
+    }
   };
 
   const handleRatingChange = (event: any) => {
-    setSelectedRating(parseInt(event.target.value, 10));
+    setSelectedRating(parseFloat(event.target.value));
   };
 
   const handleSubmit = () => {
-    saveRating(selectedRating);
+    saveRating(wayId, selectedRating);
     setOpenNote(false);
   };
 
@@ -159,69 +169,109 @@ const PlaceZone = (props: any) => {
     };
 
   return (
-    <div style={{ height: 'calc(100vh - 64px)' }}>
+    <div
+      style={{
+        height: isDesktop ? 'calc(100vh - 350px)' : 'calc(100vh - 64px)',
+      }}
+    >
       {place ? (
         <Box ref={sectionRef} className="w-full max-w-5xl mx-auto px-4 py-6">
-          <div
-            className="displaysvg grid max-h-[400px]"
-            dangerouslySetInnerHTML={{
-              __html: plan,
-            }}
-            onClick={(event) => {
-              actionOnClick(event);
-            }}
-          />
-
-          {wallId && wallName ? (
-            <Typography
-              variant="h5"
-              className="text-primary-600"
-              sx={{ marginTop: 2 }}
-              fontWeight="bold"
-            >
-              {wallName}
-            </Typography>
-          ) : (
-            ''
-          )}
-
           <Box
             sx={{
               display: 'flex',
+              flexDirection: { xs: 'column', md: 'row' },
               gap: 2,
-              overflowX: 'auto',
-              p: 2,
             }}
           >
-            {ways &&
-              ways.map((way) => (
-                <WayCard
-                  key={way.id}
-                  way={way}
-                  onClick={WayClick}
-                  onClickComment={WayClickComment}
-                  onClickNote={WayClickNote}
-                />
-              ))}
+            <Box
+              sx={{
+                flex: 1,
+                p: 2,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <div
+                className="displaysvg grid max-h-[50vh]"
+                dangerouslySetInnerHTML={{
+                  __html: plan,
+                }}
+                onClick={(event) => {
+                  actionOnClick(event);
+                }}
+              />
+            </Box>
+            <Box
+              sx={{
+                flex: 1,
+                p: 2,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+              }}
+            >
+              {wallId && wallName ? (
+                <Typography
+                  variant="h5"
+                  className="text-primary-600"
+                  sx={{ marginTop: 2, textAlign: 'center' }}
+                  fontWeight="bold"
+                >
+                  {wallName}
+                </Typography>
+              ) : (
+                ''
+              )}
+
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: { xs: 'row', md: 'column' },
+                  gap: 2,
+                  overflow: 'auto',
+                  p: 2,
+                  maxHeight: '70vh',
+                }}
+              >
+                {ways &&
+                  ways.map((way) => (
+                    <WayCard
+                      key={way.id}
+                      way={way}
+                      onClick={WayClick}
+                      onClickComment={WayClickComment}
+                      onClickNote={WayClickNote}
+                    />
+                  ))}
+              </Box>
+            </Box>
           </Box>
           <SwipeableDrawer
-            anchor="bottom"
+            anchor={isDesktop ? 'right' : 'bottom'}
             open={drawer}
             onClose={toggleDrawer(false)}
             onOpen={toggleDrawer(true)}
             PaperProps={{
               sx: {
-                maxHeight: '85vh',
-                borderTopLeftRadius: 16,
-                borderTopRightRadius: 16,
+                maxHeight: isDesktop ? '100vh' : '85vh',
+                borderTopLeftRadius: isDesktop ? 0 : 16,
+                borderTopRightRadius: isDesktop ? 0 : 16,
+                width: isDesktop ? 450 : '100%',
                 overflow: 'hidden',
               },
             }}
           >
-            <Box p={2} m="auto">
+            <Box p={3} mx="auto">
               Commentaires
             </Box>
-            <Box sx={{ overflow: 'scroll' }}>
+            <Box
+              sx={{
+                marginTop: 'auto',
+                overflowY: 'scroll',
+                scrollbarColor: 'base-400',
+              }}
+            >
               {ways
                 ?.find((way) => way.id === wayId)
                 ?.comments?.map((comment) => (

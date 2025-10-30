@@ -55,6 +55,7 @@ interface PlacesContextType {
   deleteWay: (id: number | string, wallId: number | string) => void;
   getWayComments: (wayId: number, getpage: number) => Promise<any>;
   addWayComment: (wayId: number, text: string) => Promise<any>;
+  saveRating: (wayId: number, note: number) => void;
 }
 
 const PlacesContext = createContext<PlacesContextType>({} as PlacesContextType);
@@ -460,7 +461,7 @@ export function PlacesProvider({
 
             return {
               ...way,
-              note: response.data.note,
+              userNote: response.data.note,
               avgNote: response.data.avgNote,
             };
           });
@@ -518,6 +519,7 @@ export function PlacesProvider({
       deleteWay,
       getWayComments,
       addWayComment,
+      saveRating,
     }),
     [
       colors,

@@ -34,6 +34,7 @@ const WayCard: React.FC<WayCardProps> = ({
         borderLeft: `6px solid ${way.color.color}`,
         borderRadius: 6,
         boxShadow: 3,
+        flexShrink: 0,
       }}
     >
       <CardActionArea
