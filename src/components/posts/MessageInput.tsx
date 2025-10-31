@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Box, Button, IconButton, TextField } from '@mui/material';
+import { Box, IconButton, TextField } from '@mui/material';
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
 import SendIcon from '@mui/icons-material/Send';
@@ -100,9 +100,13 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSend }) => {
           )
         }
         onKeyDown={(e) => {
-          if (e.key === 'Enter') {
+          if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey) {
             e.preventDefault();
             handleSend();
+          } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            const newValue = newMessage + '\n';
+            setNewMessage(newValue);
           }
         }}
         placeholder="Écrire un message..."

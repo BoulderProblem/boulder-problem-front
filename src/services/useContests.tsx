@@ -22,7 +22,7 @@ interface ContestsContextType {
   contest: any;
   contestWays: any;
   contestUsers: any;
-  contestRanking: RANKING[];
+  contestRanking: RANKING[] | undefined;
   loading: boolean;
   error?: any;
   getMyContests: () => void;
@@ -171,7 +171,7 @@ export function ContestsProvider({
     setLoading(true);
     await axiosClient
       .post(`${baseUrl}/contests/${id}/ways/${way_id}`)
-      .then((response) => {
+      .then(() => {
         getContestWays(id);
       })
       .catch((errors) => {
@@ -184,7 +184,7 @@ export function ContestsProvider({
     setLoading(true);
     await axiosClient
       .delete(`${baseUrl}/contests/${id}/ways/${way_id}`)
-      .then((response) => {
+      .then(() => {
         getContestWays(id);
       })
       .catch((errors) => {

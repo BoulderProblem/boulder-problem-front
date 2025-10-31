@@ -13,8 +13,6 @@ import {
   InputAdornment,
   Grid,
 } from '@mui/material';
-import { styled } from '@mui/material/styles';
-import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import { MobileTimePicker } from '@mui/x-date-pickers/MobileTimePicker';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -297,17 +295,6 @@ const Place = (props: any) => {
   const fetchPersons = async (query: string) => {
     getUsers(query, 1);
   };
-
-  const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
-    <Tooltip {...props} classes={{ popper: className }} />
-  ))(({ theme }) => ({
-    [`& .${tooltipClasses.tooltip}`]: {
-      backgroundColor: theme.palette.common.white,
-      color: 'rgba(0, 0, 0, 0.87)',
-      boxShadow: theme.shadows[1],
-      fontSize: 11,
-    },
-  }));
 
   return (
     <div>

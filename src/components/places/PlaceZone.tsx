@@ -11,7 +11,6 @@ import {
   Rating,
   DialogActions,
   Button,
-  Paper,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
@@ -21,12 +20,7 @@ import MessageInput from '../posts/MessageInput';
 import CommentCard from '../posts/CommentCard';
 import { useAuth } from '@/services/useAuth';
 
-let baseUrl = `https://boulder-problem.chabs.fr/api`;
-if (process.env.NODE_ENV !== 'production') {
-  baseUrl = `http://localhost:3333`;
-}
-
-const PlaceZone = (props: any) => {
+const PlaceZone = () => {
   const {
     place,
     zones,
@@ -283,7 +277,6 @@ const PlaceZone = (props: any) => {
                 ))}
             </Box>
             <MessageInput
-              sx={{ position: 'absolute', bottom: 0, width: '100%' }}
               onSend={(message) => {
                 handleAddComment(wayId, message);
               }}

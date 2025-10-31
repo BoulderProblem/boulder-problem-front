@@ -25,8 +25,14 @@ interface AuthContextType {
   loading: boolean;
   error?: any;
   login: (email: string, password: string) => void;
-  loginGoogle: (token: string) => void;
+  loginGoogle: (token: string, id: string) => void;
   signUp: (email: string, name: string, password: string) => void;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (
+    email: string,
+    code: number,
+    password: string
+  ) => Promise<void>;
   logout: () => void;
   getStats: () => void;
 }
@@ -152,7 +158,9 @@ export function AuthProvider({
       .catch((errors) => {
         setError(errors.response.data.errors[0].message);
       })
-      .finally(() => {});
+      .finally(() => {
+        setLoading(false);
+      });
   }
 
   function loginGoogle(token: string, id: string) {
@@ -164,6 +172,44 @@ export function AuthProvider({
         generateOrGetKeys(id.toString(), user.data.publicKey);
       }, 300);
     });
+  }
+
+  async function forgotPassword(email: string) {
+    setLoading(true);
+    setError(undefined);
+
+    await axiosClient
+      .post(`${baseUrl}/forgot_password`, { email })
+      .then((response) => {
+        console.log(response);
+
+        // success
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }
+
+  async function resetPassword(email: string, code: number, password: string) {
+    setLoading(true);
+    setError(undefined);
+
+    await axiosClient
+      .post(`${baseUrl}/reset_password`, { email, code, password })
+      .then((response) => {
+        console.log(response);
+
+        // success
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }
 
   // Sends sign up details to the server. On success we just apply
@@ -228,6 +274,8 @@ export function AuthProvider({
       error,
       login,
       loginGoogle,
+      forgotPassword,
+      resetPassword,
       signUp,
       logout,
       getStats,

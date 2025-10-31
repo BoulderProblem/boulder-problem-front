@@ -3,7 +3,7 @@ import { useAuth } from '@/services/useAuth';
 import { useUsers } from '@/services/useUsers';
 import { useEffect, useState } from 'react';
 import ImageWithToken from 'react-image-with-auth';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   TableContainer,
   Table,

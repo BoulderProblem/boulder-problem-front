@@ -6,7 +6,7 @@ export type COMMENT = {
   createdAt: string;
   updatedAt: string;
   user: {
-    id: number;
+    id: string;
     firstname: string;
     lastname: string;
     avatar: string;

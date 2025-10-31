@@ -1,14 +1,20 @@
 import React, { FormEvent, useEffect, useState } from 'react';
 import { useAuth } from '../../services/useAuth.tsx';
+import { Link } from 'react-router-dom';
+
 import {
-  InputLabel,
-  Input,
-  TextField,
-  InputAdornment,
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
   IconButton,
+  InputAdornment,
+  TextField,
+  Typography,
 } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import GoogleIcon from '@mui/icons-material/Google'; // facultatif
+import { Visibility, VisibilityOff, Google } from '@mui/icons-material';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -24,8 +30,6 @@ const Login = () => {
   );
   const [showPassword, setShowPassword] = React.useState(false);
 
-  const handleClickShowPassword = () => setShowPassword((show) => !show);
-
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = JSON.parse(params.get('token') || '{}');
@@ -35,114 +39,131 @@ const Login = () => {
     }
   }, []);
 
-  const handleMouseDownPassword = (
-    event: React.MouseEvent<HTMLButtonElement>
-  ) => {
-    event.preventDefault();
-  };
-
-  const handleMouseUpPassword = (
-    event: React.MouseEvent<HTMLButtonElement>
-  ) => {
-    event.preventDefault();
-  };
-
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const formData = new FormData(event.currentTarget);
-
-    login(formData.get('email') as string, formData.get('password') as string);
+    login(email, password);
   }
 
   return (
-    <section className="">
-      <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-        <a href="#" className="flex items-center mb-6 text-2xl font-semibold ">
-          Boulder Problem
-        </a>
-        <div className="w-full bg-base-100 dark:bg-base-200 rounded-lg shadow md:mt-0 sm:max-w-md xl:p-0">
-          <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
-            <h1 className="text-xl font-bold leading-tight tracking-tight md:text-2xl">
-              Connectez vous
-            </h1>
-            <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
-              <TextField
-                id="standard-basic"
-                label="Votre email"
-                fullWidth
-                variant="standard"
-                name="email"
-                type="email"
-                onChange={(e) => setEmail(e.target.value)}
-                value={email}
-              />
-              <InputLabel htmlFor="standard-adornment-password">
-                Mot de passe
-              </InputLabel>
-              <Input
-                id="standard-adornment-password"
-                fullWidth
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                onChange={(e) => setPassword(e.target.value)}
-                value={password}
-                endAdornment={
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'background.default',
+        px: 2,
+      }}
+    >
+      <Card
+        sx={{ maxWidth: 400, width: '100%', boxShadow: 6, borderRadius: 3 }}
+      >
+        <CardContent sx={{ p: 4 }}>
+          <Box textAlign="center" mb={3}>
+            <Typography variant="h5" fontWeight="bold" gutterBottom>
+              Boulder Problem
+            </Typography>
+            <Typography variant="h6" fontWeight="bold">
+              Connectez-vous
+            </Typography>
+          </Box>
+
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+          >
+            <TextField
+              label="Votre email"
+              type="email"
+              fullWidth
+              variant="outlined"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+
+            <TextField
+              label="Mot de passe"
+              type={showPassword ? 'text' : 'password'}
+              fullWidth
+              variant="outlined"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              InputProps={{
+                endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={handleClickShowPassword}
-                      onMouseDown={handleMouseDownPassword}
-                      onMouseUp={handleMouseUpPassword}
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      edge="end"
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
-                }
-              />
-              <div className="flex items-center justify-between">
-                <a
-                  href="#"
-                  className="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
-                >
-                  Mot de passe oublié ?
-                </a>
-              </div>
-              <button
-                type="submit"
-                className="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-500 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-              >
-                {loading ? (
-                  <span className="loading loading-spinner loading-md"></span>
-                ) : (
-                  'Connexion'
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  (window.location.href = baseUrl + '/auth/google/redirect')
-                }
-                className="w-full border border-gray-300 hover:border-gray-400 text-gray-800 bg-white hover:bg-gray-50 focus:ring-2 focus:ring-primary-500 font-medium rounded-lg text-sm px-5 py-2.5 text-center flex items-center justify-center gap-2"
-              >
-                <GoogleIcon />
-                Se connecter avec Google
-              </button>
-              <p className=" text-red-500 text-center italic">{error}</p>
-              <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                Vous n'avez pas de compte ?{' '}
-                <a
-                  href="#"
-                  className="font-medium text-primary-600 hover:underline dark:text-primary-500"
-                >
-                  Créer un compte
-                </a>
-              </p>
-            </form>
-          </div>
-        </div>
-      </div>
-    </section>
+                ),
+              }}
+            />
+
+            <Box textAlign="right">
+              <Link to="/forgot_password">Mot de passe oublié ?</Link>
+            </Box>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              size="large"
+              sx={{
+                borderRadius: 2,
+                backgroundColor: 'var(--primary-600)',
+                color: 'white !important',
+                '&:hover': { backgroundColor: 'var(--primary-700)' },
+                textTransform: 'none',
+              }}
+              disabled={loading}
+            >
+              {loading ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                'Connexion'
+              )}
+            </Button>
+
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<Google />}
+              sx={{
+                borderRadius: 2,
+                textTransform: 'none',
+              }}
+              onClick={() =>
+                (window.location.href = `${baseUrl}/auth/google/redirect`)
+              }
+            >
+              Se connecter avec Google
+            </Button>
+
+            {error && (
+              <Typography color="error" textAlign="center" mt={1}>
+                {error}
+              </Typography>
+            )}
+
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              textAlign="center"
+              mt={1}
+            >
+              Vous n'avez pas de compte ?{' '}
+              <Link to="/register">Créer un compte</Link>
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
+    </Box>
   );
 };
 export default Login;

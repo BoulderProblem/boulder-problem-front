@@ -5,25 +5,10 @@ import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
 
-type RouteParams = {
-  id: string;
-};
-
 const PlaceId = () => {
   const { id } = useParams();
-  const {
-    zones,
-    getColors,
-    getDifficulties,
-    getPlaceZones,
-    getPlan,
-    getZone,
-    createWall,
-    createZone,
-    updateZone,
-    getWalls,
-    getWays,
-  } = usePlaces();
+  const { getColors, getDifficulties, getPlaceZones, getWalls, getWays } =
+    usePlaces();
 
   useEffect(() => {
     getColors();
@@ -40,7 +25,7 @@ const PlaceId = () => {
         <meta name="description" content="page de la salle d'escalade" />
       </Helmet>
       <PlaceHeader id={id} />
-      <PlaceZone id={id} />
+      <PlaceZone />
     </div>
   );
 };

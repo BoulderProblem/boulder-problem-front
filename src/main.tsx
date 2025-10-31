@@ -1,4 +1,3 @@
-import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
@@ -26,6 +25,8 @@ import Messages from './pages/message.tsx';
 import { MessagesProvider } from './services/useMessages.tsx';
 import Feed from './pages/feed.tsx';
 import PlaceIdUpdate from './pages/placeIdUpdate.tsx';
+import ForgotPassword from './pages/frontSide/forgotPassword.tsx';
+import ResetPassword from './pages/frontSide/resetPassword.tsx';
 
 const Main = () => {
   const { user } = useAuth();
@@ -131,6 +132,22 @@ const Main = () => {
       element: (
         <UnProtectedRoute>
           <Login />
+        </UnProtectedRoute>
+      ),
+    },
+    {
+      path: '/forgot_password',
+      element: (
+        <UnProtectedRoute>
+          <ForgotPassword />
+        </UnProtectedRoute>
+      ),
+    },
+    {
+      path: '/reset_password',
+      element: (
+        <UnProtectedRoute>
+          <ResetPassword />
         </UnProtectedRoute>
       ),
     },

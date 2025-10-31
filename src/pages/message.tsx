@@ -18,8 +18,6 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import { useUsers } from '@/services/useUsers';
 import { CONVERSATION } from '@/types/conversation';
-import data from '@emoji-mart/data';
-import Picker from '@emoji-mart/react';
 import MessageInput from '@/components/posts/MessageInput';
 
 const Messages = () => {
@@ -34,7 +32,6 @@ const Messages = () => {
   } = useMessages();
   const { users, getUsers } = useUsers();
   const { user, priv } = useAuth();
-  const [newMessage, setNewMessage] = useState('');
   const [openConv, setOpenConv] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
@@ -75,7 +72,6 @@ const Messages = () => {
   async function sendMessage(newMessage: string) {
     selectedConv?.usersConversation.forEach((userConv) => {
       if (userConv.userId !== user!.id) {
-        setNewMessage('');
         encryptForRecipient(newMessage, priv, userConv.user.publicKey).then(
           (response) => {
             sendMessages(
@@ -166,27 +162,6 @@ const Messages = () => {
         .toString()
         .padStart(2, '0')}`;
     }
-  }
-
-  const emojiMap: Record<string, string> = {
-    ':)': '😊',
-    ':-)': '😊',
-    ';)': '😉',
-    ':-D': '😃',
-    ':D': '😃',
-    ':(': '🙁',
-  };
-
-  function parseEmojis(text: string): string {
-    let parsed = text;
-    for (const [key, emoji] of Object.entries(emojiMap)) {
-      const regex = new RegExp(
-        key.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1'),
-        'g'
-      );
-      parsed = parsed.replace(regex, emoji);
-    }
-    return parsed;
   }
 
   const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
@@ -355,7 +330,7 @@ const Messages = () => {
                     .map((m: MESSAGE) => (
                       <div
                         key={m.id}
-                        className={`p-2 rounded-lg max-w-xs ${
+                        className={`p-2 rounded-lg max-w-xs whitespace-pre-line ${
                           firstLoad ? 'opacity-0' : 'opacity-100'
                         } ${
                           m.senderPub === user!.publicKey

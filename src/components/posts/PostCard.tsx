@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   Box,
   Card,
@@ -18,6 +18,7 @@ import AuthImageWithSkeleton from '../AuthImageWithSkeleton';
 import { useUsers } from '@/services/useUsers';
 import MessageInput from './MessageInput';
 import CommentCard from './CommentCard';
+import { useAvatar } from '@/hooks/useAvatar';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -31,38 +32,8 @@ interface PostCardProps {
 const PostCard: React.FC<PostCardProps> = ({ post, token }) => {
   const { likePost, getComments, addComment } = useUsers();
   const locale = navigator.language || 'fr';
-  const [avatarUrl, setAvatarUrl] = useState(null);
+  const avatarUrl = useAvatar(post.user!.id, post.user!.avatar, token, 'user');
   dayjs.locale(locale);
-
-  useEffect(() => {
-    const loadAvatar = async () => {
-      if (post.user!.avatar) {
-        try {
-          const res = await fetch(
-            `${baseUrl}/users/${post.user!.id}/avatar/${
-              post.user!.avatar
-            }?size=100`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
-
-          if (!res.ok) throw new Error('Erreur chargement avatar');
-
-          const blob = await res.blob();
-          const objectUrl = URL.createObjectURL(blob);
-          setAvatarUrl(objectUrl);
-
-          // nettoyage pour éviter les fuites mémoire
-          return () => URL.revokeObjectURL(objectUrl);
-        } catch (err) {
-          console.error(err);
-        }
-      }
-    };
-
-    loadAvatar();
-  }, [baseUrl, post, token]);
 
   const handleLike = (postId: number, like: boolean) => {
     // Call the API to like/unlike the post

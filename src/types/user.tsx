@@ -10,6 +10,7 @@ export type USER = {
   genderId: string;
   bio: string;
   birthDate: string;
+  nbPost: number;
   avatar?: any;
   publicKey?: string;
 };

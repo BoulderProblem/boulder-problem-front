@@ -3,7 +3,6 @@ import 'leaflet/dist/leaflet.css';
 import { usePlaces } from '@/services/usePlaces';
 import {
   Box,
-  Avatar,
   Typography,
   Button,
   Dialog,
@@ -11,61 +10,22 @@ import {
   DialogContent,
 } from '@mui/material';
 import { PLACE } from '@/types/place';
-import { useUsers } from '@/services/useUsers';
 import 'dayjs/locale/fr';
 import { useAuth } from '@/services/useAuth';
-
-let baseUrl = `https://boulder-problem.chabs.fr/api`;
-if (process.env.NODE_ENV !== 'production') {
-  baseUrl = `http://localhost:3333`;
-}
+import Profile from './profile';
 
 const PlaceHeader = (props: any) => {
-  const { place, getPlace, getPlaceZones, favoritePlace, difficulties } =
-    usePlaces();
-  const { user } = useUsers();
+  const { place, getPlace, getPlaceZones, favoritePlace } = usePlaces();
   const { token } = useAuth();
 
   const [openHours, setOpenHours] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState(null);
 
   useEffect(() => {
     getPlace(parseInt(props.id || '0')).then((response: PLACE) => {
       initHoraires(response.hours);
     });
     getPlaceZones(parseInt(props.id || '0'));
-    return () => {
-      setAvatarUrl(null);
-    };
   }, []);
-
-  useEffect(() => {
-    const loadAvatar = async () => {
-      if (place && place.logo) {
-        try {
-          const res = await fetch(
-            `${baseUrl}/places/${place.id}/logo?size=100`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
-
-          if (!res.ok) throw new Error('Erreur chargement avatar');
-
-          const blob = await res.blob();
-          const objectUrl = URL.createObjectURL(blob);
-          setAvatarUrl(objectUrl);
-
-          // nettoyage pour éviter les fuites mémoire
-          return () => URL.revokeObjectURL(objectUrl);
-        } catch (err) {
-          console.error(err);
-        }
-      }
-    };
-
-    loadAvatar();
-  }, [baseUrl, user, token]);
 
   const joursOuverts = [
     { jour: 'lundi', en: 'Mo' },
@@ -153,55 +113,7 @@ const PlaceHeader = (props: any) => {
       {place ? (
         <Box className="w-full max-w-5xl mx-auto px-4 py-6">
           {/* Avatar + Infos utilisateur */}
-          <Box className="flex items-center space-x-4 mb-2">
-            <Avatar
-              src={avatarUrl}
-              alt="Profile"
-              sx={{
-                width: 72,
-                height: 72,
-                border: '3px solid var(--primary-600)',
-              }}
-            />
-            <Typography
-              variant="h5"
-              className="text-primary-600"
-              sx={{ marginBottom: 1 }}
-              fontWeight="bold"
-            >
-              {place.name}
-            </Typography>
-          </Box>
-          <Box sx={{ marginTop: 2 }}>
-            {place.address && (
-              <Typography
-                variant="body2"
-                color="textSecondary"
-                sx={{ marginTop: 1 }}
-              >
-                Adresse : {place.address}
-              </Typography>
-            )}
-            {place.phone && (
-              <Typography
-                variant="body2"
-                color="textSecondary"
-                sx={{ marginTop: 1 }}
-              >
-                Téléphone : {place.phone}
-              </Typography>
-            )}
-            {place.website && (
-              <Typography
-                variant="body2"
-                color="textSecondary"
-                sx={{ marginTop: 1 }}
-                onClick={() => window.open(place.website)}
-              >
-                Site web : {place.website}
-              </Typography>
-            )}
-          </Box>
+          <Profile place={place} token={token} />
           <Box className="flex gap-2 mt-4">
             {place.hours ? (
               <Button
@@ -268,9 +180,40 @@ const PlaceHeader = (props: any) => {
             onClose={handleClose}
             aria-labelledby="alert-dialog-title"
             aria-describedby="alert-dialog-description"
+            PaperProps={{
+              sx: {
+                borderRadius: 6,
+              },
+            }}
           >
-            <DialogTitle>Modifier les horaires de la salle</DialogTitle>
-            <DialogContent></DialogContent>
+            <DialogTitle>Horaires d'ouverture de la salle</DialogTitle>
+            <DialogContent>
+              <Box sx={{ padding: 2 }}>
+                {joursOuverts.map((jour) => (
+                  <Box
+                    key={jour.jour}
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      marginBottom: 1,
+                    }}
+                  >
+                    <Typography variant="body1" fontWeight="bold">
+                      {jour.jour.charAt(0).toUpperCase() + jour.jour.slice(1)}
+                    </Typography>
+                    {horaires[jour.jour].ouvert ? (
+                      <Typography variant="body1">
+                        {horaires[jour.jour].debut} - {horaires[jour.jour].fin}
+                      </Typography>
+                    ) : (
+                      <Typography variant="body1" color="error">
+                        Fermé
+                      </Typography>
+                    )}
+                  </Box>
+                ))}
+              </Box>
+            </DialogContent>
           </Dialog>
         </Box>
       ) : (

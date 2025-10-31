@@ -285,8 +285,8 @@ export function PlacesProvider({
     return wall;
   }
 
-  function updateWall(id: number | string, params: any) {
-    axiosClient
+  async function updateWall(id: number | string, params: any) {
+    await axiosClient
       .put(`${baseUrl}/walls/${id}`, params)
       .then(() => {
         getWalls(params.zone_id);
@@ -390,8 +390,8 @@ export function PlacesProvider({
         const newComments = response.data.data;
         const haveNextPage = response.data.meta.lastPage > getpage;
 
-        setWays((prev) => {
-          return prev.map((way) => {
+        setWays((prev: any) => {
+          return prev.map((way: WAY) => {
             if (way.id !== wayId) return way;
 
             const existing = way.comments || [];
@@ -455,8 +455,8 @@ export function PlacesProvider({
     axiosClient
       .post(`${baseUrl}/ways/${wayId}/note`, { note: note })
       .then((response) => {
-        setWays((prev) => {
-          return prev.map((way) => {
+        setWays((prev: any) => {
+          return prev.map((way: WAY) => {
             if (way.id !== wayId) return way;
 
             return {

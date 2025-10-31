@@ -12,7 +12,7 @@ export type POST = {
   likesCount?: number;
   commentsCount?: number;
   user?: {
-    id: number;
+    id: string;
     firstname: string;
     lastname: string;
     avatar: string;

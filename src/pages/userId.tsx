@@ -1,8 +1,7 @@
 import { useAuth } from '@/services/useAuth';
 import { useParams } from 'react-router-dom';
 import Header from '@/components/users/header';
-import { Box, Tab, Tabs, useMediaQuery } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { Box, Tab, Tabs } from '@mui/material';
 import { useUsers } from '@/services/useUsers';
 import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
@@ -13,9 +12,6 @@ const UserId = () => {
   const { token } = useAuth();
   const { user, posts, getUser, resetUserPosts, getUserPosts } = useUsers();
   const [tabIndex, setTabIndex] = useState(0);
-
-  const theme = useTheme();
-  const isSmUp = useMediaQuery(theme.breakpoints.up('sm')); // small = >=600px
 
   const locale = navigator.language || 'fr';
   dayjs.locale(locale);

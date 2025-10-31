@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Avatar, Box, Card, CardHeader, Typography } from '@mui/material';
 
 import { COMMENT } from '@/types/comment';
 import dayjs from 'dayjs';
+import { useAvatar } from '@/hooks/useAvatar';
 interface MessageInputProps {
   comment: COMMENT;
   token: string;
@@ -14,35 +15,12 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const CommentCard: React.FC<MessageInputProps> = ({ comment, token }) => {
-  const [avatarUrl, setAvatarUrl] = useState(null);
-
-  useEffect(() => {
-    const loadAvatar = async () => {
-      if (comment && comment.user.avatar) {
-        try {
-          const res = await fetch(
-            `${baseUrl}/users/${comment.user.id}/avatar/${comment.user.avatar}?size=100`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
-
-          if (!res.ok) throw new Error('Erreur chargement avatar');
-
-          const blob = await res.blob();
-          const objectUrl = URL.createObjectURL(blob);
-          setAvatarUrl(objectUrl);
-
-          // nettoyage pour éviter les fuites mémoire
-          return () => URL.revokeObjectURL(objectUrl);
-        } catch (err) {
-          console.error(err);
-        }
-      }
-    };
-
-    loadAvatar();
-  }, [baseUrl, comment, token]);
+  const avatarUrl = useAvatar(
+    comment.user.id,
+    comment.user.avatar,
+    token,
+    'user'
+  );
 
   const formatDateComment = (date: string) => {
     const diff = dayjs().diff(dayjs(date), 'minute');
@@ -86,7 +64,15 @@ const CommentCard: React.FC<MessageInputProps> = ({ comment, token }) => {
             </Typography>
           </Box>
         }
-        subheader={comment.text}
+        subheader={
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ whiteSpace: 'pre-line' }}
+          >
+            {comment.text}
+          </Typography>
+        }
       />
     </Card>
   );
