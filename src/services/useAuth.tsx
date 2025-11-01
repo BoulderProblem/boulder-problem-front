@@ -69,7 +69,6 @@ export function AuthProvider({
   const setup = async (password: string, pubSrvKey: string) => {
     const k = await generateKeys();
 
-    console.log('Generated keys:', k);
     setPriv(k.priv);
     localStorage.setItem('PRIV', k.priv);
     backup(k, password, pubSrvKey);
