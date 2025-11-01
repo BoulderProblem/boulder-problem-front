@@ -292,7 +292,7 @@ const Messages = () => {
                   <p className="font-medium">{selectName(c)}</p>
                   <div className="flex justify-between items-center p-2">
                     <span className="text-left font-medium">
-                      {c.latestMessage[0]
+                      {c.latestMessage && c.latestMessage[0]
                         ? c.latestMessage[0].text
                         : 'Pas de message'}
                     </span>
@@ -378,7 +378,7 @@ const Messages = () => {
                     <p className="font-medium">{selectName(c)}</p>
                     <div className="flex justify-between items-center p-2">
                       <span className="text-left font-medium">
-                        {c.latestMessage[0]
+                        {c.latestMessage && c.latestMessage[0]
                           ? c.latestMessage[0].text
                           : 'Pas de message'}
                       </span>

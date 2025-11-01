@@ -66,49 +66,11 @@ export async function decryptPrivateKey(encrypted: any, password: string) {
 
 const SALT = 'chat-v1'; // optional context for HKDF/generichash
 
-// If keys are Ed25519 (signing keys), convert them to Curve25519 keys for ECDH
-async function ensureCurveKeys(pubB64, privB64) {
-  await sodium.ready;
-  const pub = sodium.from_base64(pubB64);
-  const priv = sodium.from_base64(privB64);
-
-  // If priv is 64 bytes it's probably an Ed25519 secretKey (crypto_sign)
-  if (
-    priv.length === sodium.crypto_sign_SECRETKEYBYTES &&
-    pub.length === sodium.crypto_sign_PUBLICKEYBYTES
-  ) {
-    const curvePub = sodium.crypto_sign_ed25519_pk_to_curve25519(pub);
-    const curvePriv = sodium.crypto_sign_ed25519_sk_to_curve25519(priv);
-    return { pub: curvePub, priv: curvePriv };
-  }
-
-  // If already curve keys (crypto_box), lengths are:
-  // public: crypto_box_PUBLICKEYBYTES, secret: crypto_box_SECRETKEYBYTES
-  if (
-    pub.length === sodium.crypto_box_PUBLICKEYBYTES &&
-    (priv.length === sodium.crypto_box_SECRETKEYBYTES ||
-      priv.length === sodium.crypto_scalarmult_SCALARBYTES)
-  ) {
-    // ensure priv is scalar size
-    const privScalar = priv.slice(0, sodium.crypto_box_SECRETKEYBYTES);
-    return { pub, priv: privScalar };
-  }
-
-  // fallback: try using as-is (but log)
-  return { pub, priv };
-}
-
-// Derive symmetric key from ECDH shared secret
-function deriveSymKey(shared) {
-  // 32 bytes key derived with a context (SALT)
-  return sodium.crypto_generichash(32, shared, sodium.from_string(SALT));
-}
-
 // Encrypt (sender can later re-derive key to decrypt if he keeps recipientPub)
 export async function encryptForRecipient(
-  message,
-  senderPrivB64,
-  recipientPubB64
+  message: string,
+  senderPrivB64: string,
+  recipientPubB64: string
 ) {
   await sodium.ready;
 
@@ -142,7 +104,10 @@ export async function encryptForRecipient(
 }
 
 // Decrypt: works for **le destinataire** ou **l'expéditeur** (si le message contient sender_pub + recipient_pub)
-export async function decryptMessageForParticipant(msgObj, myPrivB64) {
+export async function decryptMessageForParticipant(
+  msgObj: any,
+  myPrivB64: any
+) {
   await sodium.ready;
 
   const ciphertext = sodium.from_base64(msgObj.ciphertext);

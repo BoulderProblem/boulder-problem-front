@@ -100,10 +100,13 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSend }) => {
           )
         }
         onKeyDown={(e) => {
-          if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey) {
+          if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
             e.preventDefault();
             handleSend();
-          } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+          } else if (
+            e.key === 'Enter' &&
+            (e.ctrlKey || e.metaKey || e.shiftKey)
+          ) {
             e.preventDefault();
             const newValue = newMessage + '\n';
             setNewMessage(newValue);

@@ -52,7 +52,7 @@ export function MessagesProvider({
 }: {
   children: ReactNode;
 }): JSX.Element {
-  const { user } = useAuth();
+  const { user, priv } = useAuth();
   const [messages, setMessages] = useState<MESSAGE[]>([]);
   const [nbMessagesUnread, setNbMessagesUnread] = useState<number>(0);
   const [conversations, setConversations] = useState<CONVERSATION[]>([]);
@@ -60,7 +60,6 @@ export function MessagesProvider({
   const dateRef = useRef<Date | null>(null);
   const [error, setError] = useState<any>();
   const [loading, setLoading] = useState<boolean>(false);
-  const { priv } = useAuth();
 
   // We are using `react-router` for this example,
   // but feel free to omit this or use the
@@ -72,7 +71,9 @@ export function MessagesProvider({
 
   // Reset the error state if we change page
   useEffect(() => {
-    getConversations();
+    if (priv !== '') {
+      getConversations();
+    }
 
     if (!user?.id) return;
     const socket = io(
@@ -108,9 +109,10 @@ export function MessagesProvider({
         );
 
         if (
-          msg.receiverId === user.id &&
-          selectedConv &&
-          selectedConv.id === msg.conversationId
+          (msg.senderId === user.id && selectedConv) ||
+          (msg.receiverId === user.id &&
+            selectedConv &&
+            selectedConv.id === msg.conversationId)
         ) {
           readConversation(selectedConv.id);
         } else {
@@ -157,13 +159,17 @@ export function MessagesProvider({
     await axiosClient
       .post(`${baseUrl}/conversations`, { name, userIds })
       .then(async (response) => {
-        setConversations((prev) => {
-          const newOnes = response.data.filter(
-            ({ id }: any) => !prev.some((e) => e.id === id)
-          );
+        if (Array.isArray(response.data)) {
+          setConversations((prev) => {
+            const newOnes = response.data.filter(
+              ({ id }: any) => !prev.some((e) => e.id === id)
+            );
 
-          return [...prev, ...newOnes];
-        });
+            return [...prev, ...newOnes];
+          });
+        } else {
+          return;
+        }
       })
       .catch((errors) => {
         setError(errors.response.data.errors[0].message);

@@ -53,39 +53,46 @@ export function AuthProvider({
   const [loadingInitial, setLoadingInitial] = useState<boolean>(true);
   const [priv, setPriv] = useState<string>('');
 
-  function generateOrGetKeys(password: string, publicKey: string) {
-    console.log('publicKey');
-    console.log(publicKey);
-
+  function generateOrGetKeys(
+    password: string,
+    publicKey: string,
+    pubSrvKey: string
+  ) {
     if (publicKey) {
       restore(password);
     } else {
-      setup(password);
+      setup(password, pubSrvKey);
     }
   }
 
   // generate keys
-  const setup = async (password: string) => {
+  const setup = async (password: string, pubSrvKey: string) => {
     const k = await generateKeys();
-    console.log(k);
 
+    console.log('Generated keys:', k);
     setPriv(k.priv);
     localStorage.setItem('PRIV', k.priv);
-    backup(k, password);
+    backup(k, password, pubSrvKey);
   };
 
   // save keys on server
-  const backup = async (k: { pub: string; priv: string }, password: string) => {
+  const backup = async (
+    k: { pub: string; priv: string },
+    password: string,
+    pubSrvKey: string
+  ) => {
     const encrypted = await encryptPrivateKey(k.priv, password);
-    await axiosClient.post(`${baseUrl}/backup-key`, {
+    const encryptedSrv = await encryptPrivateKey(k.priv, pubSrvKey);
+    await axiosClient.post(`${baseUrl}/backup_key`, {
       priv: encrypted,
+      privSrv: encryptedSrv,
       pub: k.pub,
     });
   };
 
   // give back private key from server
   const restore = async (password: string) => {
-    const { data } = await axiosClient.get(`${baseUrl}/backup-key`);
+    const { data } = await axiosClient.get(`${baseUrl}/backup_key`);
     const privRestored = await decryptPrivateKey(data, password);
 
     setPriv(privRestored);
@@ -151,7 +158,11 @@ export function AuthProvider({
         axiosClient.get(`${baseUrl}/user`).then((user) => {
           setTimeout(() => {
             setUser(user.data);
-            generateOrGetKeys(password, user.data.publicKey);
+            generateOrGetKeys(
+              password,
+              user.data.publicKey,
+              loginData.data.pubSrvKey
+            );
           }, 300);
         });
       })
@@ -167,10 +178,16 @@ export function AuthProvider({
     localStorage.setItem('ACCESS_TOKEN', token);
     setToken(token);
     axiosClient.get(`${baseUrl}/user`).then((user) => {
-      setTimeout(() => {
-        setUser(user.data);
-        generateOrGetKeys(id.toString(), user.data.publicKey);
-      }, 300);
+      axiosClient.get(`${baseUrl}/srv_key`).then((res) => {
+        setTimeout(() => {
+          setUser(user.data);
+          generateOrGetKeys(
+            id.toString(),
+            user.data.publicKey,
+            res.data.pubSrvKey
+          );
+        }, 300);
+      });
     });
   }
 
