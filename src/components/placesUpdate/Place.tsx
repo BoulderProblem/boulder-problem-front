@@ -29,6 +29,8 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
 import { format } from 'date-fns'; // Importation de la fonction de formatage de date
 import { useAuth } from '@/services/useAuth';
+import L from 'leaflet';
+import icon from '@/assets/icon-map.svg';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -43,6 +45,13 @@ const Place = (props: any) => {
 
   const [inputs, setInputs] = useState<PLACE | null>(null);
   const [openHours, setOpenHours] = useState(false);
+
+  const iconPerson = new L.Icon({
+    iconUrl: icon,
+    iconRetinaUrl: icon,
+    popupAnchor: [-0, -0],
+    iconSize: [40, 56],
+  });
 
   useEffect(() => {
     getPlace(parseInt(props.id || '0')).then((response: PLACE) => {
@@ -611,6 +620,7 @@ const Place = (props: any) => {
                   <Marker
                     key={1}
                     position={[inputs.coordinate.y, inputs.coordinate.x]}
+                    icon={iconPerson}
                   ></Marker>
                 </MapContainer>
               </div>
