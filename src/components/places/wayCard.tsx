@@ -30,7 +30,7 @@ const WayCard: React.FC<WayCardProps> = ({
     <Card
       key={way.id}
       sx={{
-        minWidth: 230,
+        minWidth: 250,
         borderLeft: `6px solid ${way.color.color}`,
         borderRadius: 6,
         boxShadow: 3,

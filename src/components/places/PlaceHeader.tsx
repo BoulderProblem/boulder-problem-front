@@ -103,9 +103,7 @@ const PlaceHeader = (props: any) => {
   };
 
   const follow = (follow: boolean) => {
-    favoritePlace(parseInt(props.id || '0'), follow).then(() => {
-      getPlace(parseInt(props.id || '0'));
-    });
+    favoritePlace(parseInt(props.id || '0'), follow);
   };
 
   return (

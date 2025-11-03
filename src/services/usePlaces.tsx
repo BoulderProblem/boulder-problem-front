@@ -154,14 +154,14 @@ export function PlacesProvider({
   async function favoritePlace(id: number | string, favorite: boolean) {
     await axiosClient
       .post(`${baseUrl}/places/${id}/favorite`, { favorite: favorite })
-      .then(() => {
+      .then((response) => {
+        setPlace({ ...place, ...response.data });
         // Optionally, you can update the local state to reflect the change
       })
       .catch((errors) => {
         setError(errors.response.data.errors[0].message);
       })
       .finally(() => setLoading(false));
-
     return;
   }
 

@@ -199,7 +199,6 @@ const PlaceZone = () => {
             <Box
               sx={{
                 flex: 1,
-                p: 2,
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 2,
