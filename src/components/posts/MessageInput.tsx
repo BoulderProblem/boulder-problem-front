@@ -74,7 +74,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSend }) => {
       {showPicker && (
         <Box
           ref={pickerRefEmoji}
-          position="fixed"
+          position="absolute"
           bottom="60px"
           left="10px"
           zIndex={10}
