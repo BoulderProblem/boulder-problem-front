@@ -109,7 +109,7 @@ const PlaceHeader = (props: any) => {
   return (
     <div>
       {place ? (
-        <Box className="w-full max-w-5xl mx-auto px-4 py-6">
+        <Box className="w-full max-w-2xl mx-auto px-4 py-6">
           {/* Avatar + Infos utilisateur */}
           <Profile place={place} token={token} />
           <Box className="flex gap-2 mt-4">

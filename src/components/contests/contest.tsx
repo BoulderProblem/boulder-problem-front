@@ -241,7 +241,7 @@ const Contest = () => {
             width: '100%',
             display: 'grid',
             gridTemplateColumns:
-              'repeat(auto-fill, minmax(min(200px, 100%), 1fr))',
+              'repeat(auto-fill, minmax(min(250px, 100%), 1fr))',
             gap: 2,
           }}
         >
@@ -304,7 +304,7 @@ const Contest = () => {
               width: '100%',
               display: 'grid',
               gridTemplateColumns:
-                'repeat(auto-fill, minmax(min(200px, 100%), 1fr))',
+                'repeat(auto-fill, minmax(min(250px, 100%), 1fr))',
               gap: 2,
             }}
           >
@@ -545,8 +545,8 @@ const Contest = () => {
               value={tabIndex}
               onChange={handleChange}
               variant={isSmUp ? 'fullWidth' : 'standard'}
+              className="bg-base-100"
               sx={{
-                backgroundColor: '#f5f5f5',
                 '& .MuiTab-root': {
                   minWidth: 0,
                   padding: '6px 8px',
