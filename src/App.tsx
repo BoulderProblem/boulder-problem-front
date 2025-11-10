@@ -132,10 +132,6 @@ function User({ user, token, logout }: any) {
         aria-expanded={openProfile ? 'true' : undefined}
         onClick={handleClickProfile}
       >
-        <div className="mr-5">
-          <p className="text-sm">{user.firstname}</p>
-          <p className="text-sm">{user.lastname}</p>
-        </div>
         <div className="btn btn-ghost btn-circle avatar">
           <div className="w-10 rounded-full">
             <Avatar
@@ -158,7 +154,12 @@ function User({ user, token, logout }: any) {
         MenuListProps={{
           'aria-labelledby': 'basic-button',
         }}
+        className="pt-0"
       >
+        <div className="p-5 bg-base-100">
+          <p className="text-md">{user.firstname}</p>
+          <p className="text-md">{user.lastname}</p>
+        </div>
         <MenuItem
           component={Link}
           to={'/users/' + user.id}
@@ -256,7 +257,6 @@ export default function App() {
             slots={{
               toolbarActions: () => (
                 <Box display="flex" alignItems="center" gap={2}>
-                  <p>Utilisateur</p>
                   <User user={user} token={token} logout={logout} />
                   <ThemeToggle isBlack={isBlack} setIsBlack={setIsBlack} />
                 </Box>
