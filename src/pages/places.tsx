@@ -40,7 +40,7 @@ const Places = () => {
   };
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto h-screen">
       {loading && !places ? (
         <div>Loading...</div>
       ) : (

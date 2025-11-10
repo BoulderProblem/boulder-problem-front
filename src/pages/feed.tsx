@@ -34,7 +34,7 @@ const Feed = () => {
 
   return (
     <div
-      className=" h-full overflow-y-scroll"
+      className="overflow-x-auto h-screen"
       onScroll={handleScroll}
       ref={lastElementRef}
     >

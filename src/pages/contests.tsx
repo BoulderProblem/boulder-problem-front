@@ -30,7 +30,7 @@ const Contests = () => {
   };
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto h-screen">
       {loading ? (
         <div>Loading...</div>
       ) : (
@@ -73,10 +73,10 @@ const Contests = () => {
                               contest.status === 'waiting'
                                 ? '#c2410c !important' // orange-800
                                 : contest.status === 'valid'
-                                ? '#166534 !important' // green-800
-                                : contest.status === 'cancelled'
-                                ? '#991b1b !important' // red-800
-                                : '#6b7280 !important', // gray-500 (fallback)
+                                  ? '#166534 !important' // green-800
+                                  : contest.status === 'cancelled'
+                                    ? '#991b1b !important' // red-800
+                                    : '#6b7280 !important', // gray-500 (fallback)
                             color: 'white !important',
                           }}
                         />

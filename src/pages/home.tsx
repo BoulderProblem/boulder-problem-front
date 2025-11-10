@@ -9,7 +9,7 @@ const Home = () => {
     getStats();
   }, []);
   return (
-    <div>
+    <div className="overflow-x-auto h-screen">
       <div className="mx-5 lg:mx-20 my-10">
         {/* {user?.roleId === 3 ? <GraphHome></GraphHome> : ''} */}
         component admin

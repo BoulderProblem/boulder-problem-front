@@ -20,7 +20,7 @@ const ContestId = () => {
   }, []);
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto h-screen">
       <Contest></Contest>
     </div>
   );

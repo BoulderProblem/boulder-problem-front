@@ -6,7 +6,7 @@ class Footer extends Component {
     return (
       <footer
         className={`footer bg-neutral text-neutral-content p-10 ${
-          location.pathname === '/messages' ? 'hidden md:flex' : ''
+          location.pathname === '/messages' ? 'hidden md:grid' : ''
         }`}
       >
         <nav>
