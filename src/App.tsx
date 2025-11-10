@@ -153,10 +153,13 @@ function User({ user, token, logout }: any) {
         onClose={handleCloseProfile}
         MenuListProps={{
           'aria-labelledby': 'basic-button',
+          sx: {
+            minWidth: 200,
+            paddingTop: 0, // supprime le padding top
+          },
         }}
-        className="pt-0"
       >
-        <div className="p-5 bg-base-100">
+        <div className="p-5 bg-base-200">
           <p className="text-md">{user.firstname}</p>
           <p className="text-md">{user.lastname}</p>
         </div>
