@@ -18,6 +18,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import Footer from './components/Footer';
 import { useAuth } from './services/useAuth';
 import { useAvatar } from './hooks/useAvatar';
+import background from './assets/home-background.webp';
 
 const baseNavigation = [
   { segment: 'feed', title: "Fil d'actualité", icon: <DashboardIcon /> },
@@ -249,7 +250,7 @@ export default function App() {
             title: 'Boulder Problem',
             logo: (
               <img
-                src="./src/assets/home-background.webp"
+                src={background}
                 alt="Boulder Problem"
                 style={{ width: 32, height: 32 }}
               />
