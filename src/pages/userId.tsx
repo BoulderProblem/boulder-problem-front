@@ -78,7 +78,7 @@ const UserId = () => {
     },
   ];
   return (
-    <div className="overflow-x-auto h-screen">
+    <div>
       <Header></Header>
       <Box className="max-w-5xl mx-auto w-full">
         <Tabs

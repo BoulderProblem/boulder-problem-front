@@ -30,7 +30,7 @@ const Contests = () => {
   };
 
   return (
-    <div className="overflow-x-auto h-screen">
+    <div>
       {loading ? (
         <div>Loading...</div>
       ) : (

@@ -133,19 +133,14 @@ function User({ user, token, logout }: any) {
         aria-expanded={openProfile ? 'true' : undefined}
         onClick={handleClickProfile}
       >
-        <div className="btn btn-ghost btn-circle avatar">
-          <div className="w-10 rounded-full">
-            <Avatar
-              src={avatarUrl}
-              alt="Profile"
-              sx={{
-                width: 72,
-                height: 72,
-                border: '3px solid var(--primary-600)',
-              }}
-            />
-          </div>
-        </div>
+        <Avatar
+          src={avatarUrl}
+          alt="Profile"
+          sx={{
+            width: 48,
+            height: 48,
+          }}
+        />
       </Button>
       <Menu
         id="basic-menu"
@@ -267,15 +262,27 @@ export default function App() {
               ),
             }}
           >
-            {/* Contenu principal */}
             <Box
-              sx={{ height: `calc(100vh - 64px)` }} // laisse la place pour le header
-              display="flex"
-              flexDirection="column"
-              className={'' + (isBlack ? 'dark' : '')}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: 'calc(100vh - 64px)', // exclut le header du DashboardLayout
+              }}
+              className={isBlack ? 'dark' : ''}
             >
-              <Outlet height="100%" />
-              {/* Footer */}
+              {/* Contenu principal : prend tout l’espace libre */}
+              <Box
+                component="main"
+                sx={{
+                  flexGrow: 1, // occupe l'espace restant avant le footer
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                <Outlet />
+              </Box>
+
+              {/* Footer toujours visible */}
               <Footer />
             </Box>
           </DashboardLayout>

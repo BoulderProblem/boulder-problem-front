@@ -265,7 +265,7 @@ const PlaceIdUpdate = () => {
   }));
 
   return (
-    <div className="overflow-x-auto h-screen">
+    <div>
       <Helmet>
         <title>Boulder problem</title>
         <meta name="description" content="page de la salle d'escalade" />

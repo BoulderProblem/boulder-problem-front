@@ -48,7 +48,7 @@ const Users = () => {
   }
 
   return (
-    <div className="overflow-x-auto h-screen">
+    <div>
       {loading && !users ? (
         <div>Loading...</div>
       ) : (

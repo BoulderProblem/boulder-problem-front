@@ -33,11 +33,7 @@ const Feed = () => {
   };
 
   return (
-    <div
-      className="overflow-x-auto h-screen"
-      onScroll={handleScroll}
-      ref={lastElementRef}
-    >
+    <div onScroll={handleScroll} ref={lastElementRef}>
       <Box
         sx={{
           width: '100%',
