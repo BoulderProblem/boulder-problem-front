@@ -25,6 +25,7 @@ import {
   TableBody,
   Paper,
   Button,
+  CircularProgress,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
@@ -401,7 +402,16 @@ const Contest = () => {
   return (
     <div>
       {!contest ? (
-        <div>Loading...</div>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+          }}
+        >
+          <CircularProgress size={60} thickness={5} />
+        </Box>
       ) : (
         <div>
           <div className="m-5 relative">

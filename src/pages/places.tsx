@@ -14,6 +14,7 @@ import {
   TableRow,
   TextField,
   Box,
+  CircularProgress,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { PLACE } from '@/types/place';
@@ -42,7 +43,16 @@ const Places = () => {
   return (
     <div>
       {loading && !places ? (
-        <div>Loading...</div>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+          }}
+        >
+          <CircularProgress size={60} thickness={5} />
+        </Box>
       ) : (
         <Paper
           className="max-w-7xl mx-auto mt-5"

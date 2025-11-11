@@ -4,16 +4,28 @@ import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { getFromLS, setToLS } from './utils/storage';
-import { Avatar, Box, Button, Menu, MenuItem } from '@mui/material';
-import { Link } from 'react-router-dom';
+import {
+  Avatar,
+  Box,
+  Button,
+  Divider,
+  ListItemIcon,
+  Menu,
+  MenuItem,
+  Typography,
+} from '@mui/material';
 
 // Toolpad Core
 import { AppProvider, Router } from '@toolpad/core/AppProvider';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import MapIcon from '@mui/icons-material/Map';
 import SettingsIcon from '@mui/icons-material/Settings';
 import PeopleIcon from '@mui/icons-material/People';
+import MessageIcon from '@mui/icons-material/Message';
+import PlaceIcon from '@mui/icons-material/Place';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import LogoutIcon from '@mui/icons-material/Logout';
+import PersonIcon from '@mui/icons-material/Person';
 
 import Footer from './components/Footer';
 import { useAuth } from './services/useAuth';
@@ -23,9 +35,9 @@ import background from './assets/home-background.webp';
 const baseNavigation = [
   { segment: 'feed', title: "Fil d'actualité", icon: <DashboardIcon /> },
   { segment: 'users', title: 'Utilisateurs', icon: <PeopleIcon /> },
-  { segment: 'places', title: 'Salles', icon: <MapIcon /> },
-  { segment: 'contests', title: 'Contests', icon: <MapIcon /> },
-  { segment: 'messages', title: 'Messages', icon: <MapIcon /> },
+  { segment: 'places', title: 'Salles', icon: <PlaceIcon /> },
+  { segment: 'contests', title: 'Contests', icon: <EmojiEventsIcon /> },
+  { segment: 'messages', title: 'Messages', icon: <MessageIcon /> },
   { kind: 'divider' },
   { segment: 'settings', title: 'Paramètres', icon: <SettingsIcon /> },
 ];
@@ -34,9 +46,9 @@ const gerantNavigation = [
   { segment: '', title: 'Dashboard', icon: <DashboardIcon /> },
   { segment: 'feed', title: "Fil d'actualité", icon: <DashboardIcon /> },
   { segment: 'users', title: 'Utilisateurs', icon: <PeopleIcon /> },
-  { segment: 'places', title: 'Salles', icon: <MapIcon /> },
-  { segment: 'contests', title: 'Contests', icon: <MapIcon /> },
-  { segment: 'messages', title: 'Messages', icon: <MapIcon /> },
+  { segment: 'places', title: 'Salles', icon: <PlaceIcon /> },
+  { segment: 'contests', title: 'Contests', icon: <EmojiEventsIcon /> },
+  { segment: 'messages', title: 'Messages', icon: <MessageIcon /> },
   { kind: 'divider' },
   { segment: 'settings', title: 'Paramètres', icon: <SettingsIcon /> },
 ];
@@ -45,9 +57,9 @@ const adminNavigation = [
   { segment: '', title: 'Dashboard', icon: <DashboardIcon /> },
   { segment: 'feed', title: "Fil d'actualité", icon: <DashboardIcon /> },
   { segment: 'users', title: 'Utilisateurs', icon: <PeopleIcon /> },
-  { segment: 'places', title: 'Salles', icon: <MapIcon /> },
-  { segment: 'contests', title: 'Contests', icon: <MapIcon /> },
-  { segment: 'messages', title: 'Messages', icon: <MapIcon /> },
+  { segment: 'places', title: 'Salles', icon: <PlaceIcon /> },
+  { segment: 'contests', title: 'Contests', icon: <EmojiEventsIcon /> },
+  { segment: 'messages', title: 'Messages', icon: <MessageIcon /> },
   { kind: 'divider' },
   { segment: 'settings', title: 'Paramètres', icon: <SettingsIcon /> },
 ];
@@ -110,10 +122,9 @@ function ThemeToggle({
 }
 
 function User({ user, token, logout }: any) {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const navigate = useNavigate();
   const [anchorElProfile, setAnchorElProfile] =
     React.useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
   const openProfile = Boolean(anchorElProfile);
 
   const avatarUrl = useAvatar(user.id, user.avatar, token, 'user');
@@ -143,34 +154,68 @@ function User({ user, token, logout }: any) {
         />
       </Button>
       <Menu
-        id="basic-menu"
         anchorEl={anchorElProfile}
+        id="account-menu"
         open={openProfile}
         onClose={handleCloseProfile}
-        MenuListProps={{
-          'aria-labelledby': 'basic-button',
+        onClick={handleCloseProfile}
+        PaperProps={{
+          elevation: 3,
           sx: {
+            mt: 1.5,
             minWidth: 200,
-            paddingTop: 0, // supprime le padding top
+            overflow: 'visible',
+            filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.12))',
+            '& .MuiAvatar-root': { width: 28, height: 28, ml: -0.5, mr: 1 },
+            '&:before': {
+              content: '""',
+              display: 'block',
+              position: 'absolute',
+              top: 0,
+              right: 16,
+              width: 10,
+              height: 10,
+              bgcolor: 'background.paper',
+              transform: 'translateY(-50%) rotate(45deg)',
+              zIndex: 0,
+            },
           },
         }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <div className="p-5 bg-base-200">
-          <p className="text-md">{user.firstname}</p>
-          <p className="text-md">{user.lastname}</p>
-        </div>
-        <MenuItem
-          component={Link}
-          to={'/users/' + user.id}
-          onClick={handleCloseProfile}
-        >
-          Profile
+        <Box px={2} py={1}>
+          <Typography fontWeight="bold">{user.name}</Typography>
+          {user && (
+            <Typography variant="body2" color="text.secondary">
+              {user.firstname} {user.lastname}
+            </Typography>
+          )}
+        </Box>
+
+        <Divider />
+
+        <MenuItem onClick={() => navigate('/users/' + user.id)}>
+          <ListItemIcon>
+            <PersonIcon fontSize="small" />
+          </ListItemIcon>
+          Profil
         </MenuItem>
-        <MenuItem component={Link} to="/places" onClick={handleCloseProfile}>
+
+        <MenuItem onClick={() => console.log('Paramètres')}>
+          <ListItemIcon>
+            <SettingsIcon fontSize="small" />
+          </ListItemIcon>
           Paramètres
         </MenuItem>
-        <MenuItem component={Link} to="/" onClick={logout}>
-          Déconnexion
+
+        <Divider />
+
+        <MenuItem onClick={logout}>
+          <ListItemIcon>
+            <LogoutIcon fontSize="small" color="error" />
+          </ListItemIcon>
+          <Typography color="error">Déconnexion</Typography>
         </MenuItem>
       </Menu>
     </div>
@@ -197,6 +242,8 @@ export default function App() {
   }, [user]);
 
   const router = useReactRouterAdapter();
+  const location = useLocation();
+  const isMessagesPage = location.pathname.startsWith('/messages');
 
   const theme = createTheme({
     palette: {
@@ -277,6 +324,9 @@ export default function App() {
                   flexGrow: 1, // occupe l'espace restant avant le footer
                   display: 'flex',
                   flexDirection: 'column',
+                  ...(isMessagesPage && {
+                    height: '-webkit-fill-available',
+                  }),
                 }}
               >
                 <Outlet />

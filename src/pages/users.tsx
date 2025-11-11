@@ -17,6 +17,7 @@ import {
   TablePagination,
   TextField,
   InputAdornment,
+  CircularProgress,
 } from '@mui/material';
 import { USER } from '@/types/user';
 import SearchIcon from '@mui/icons-material/Search';
@@ -50,7 +51,16 @@ const Users = () => {
   return (
     <div>
       {loading && !users ? (
-        <div>Loading...</div>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+        }}
+      >
+        <CircularProgress size={60} thickness={5} />
+      </Box>
       ) : (
         <Paper
           className="max-w-7xl mx-auto mt-5"

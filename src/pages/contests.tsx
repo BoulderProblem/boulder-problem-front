@@ -4,13 +4,8 @@ import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import Status from '@/enums/status';
 import { useContests } from '@/services/useContests';
-import { Chip, Container } from '@mui/material';
+import { Box, Chip, CircularProgress, Container } from '@mui/material';
 import dayjs from 'dayjs';
-
-let baseUrl = `https://boulder-problem.chabs.fr/api`;
-if (process.env.NODE_ENV !== 'production') {
-  baseUrl = `http://localhost:3333`;
-}
 
 const Contests = () => {
   const { getContests, contests, loading } = useContests();
@@ -32,7 +27,16 @@ const Contests = () => {
   return (
     <div>
       {loading ? (
-        <div>Loading...</div>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+          }}
+        >
+          <CircularProgress size={60} thickness={5} />
+        </Box>
       ) : (
         <Container maxWidth="lg">
           <table

@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  CircularProgress,
 } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import { useParams } from 'react-router';
@@ -88,7 +89,16 @@ const Header = () => {
   return (
     <div className="overflow-x-auto">
       {!user ? (
-        <div>Loading...</div>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+          }}
+        >
+          <CircularProgress size={60} thickness={5} />
+        </Box>
       ) : (
         <Box className="w-full max-w-5xl mx-auto px-4 py-6">
           {/* Avatar + Infos utilisateur */}
