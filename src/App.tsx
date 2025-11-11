@@ -247,7 +247,7 @@ export default function App() {
               <img
                 src={background}
                 alt="Boulder Problem"
-                style={{ width: 32, height: 32 }}
+                style={{ width: 32, height: 32, borderRadius: '20%' }}
               />
             ),
           }}
