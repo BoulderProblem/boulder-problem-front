@@ -322,16 +322,24 @@ const Contest = () => {
                   <CardActionArea>
                     <CardContent sx={{ height: '100%' }}>
                       <Typography variant="h5">{way.name}</Typography>
-                      <Typography variant="h6" color="text.secondary">
+                      <Typography
+                        variant="body1"
+                        color="text.secondary"
+                        className="pt-1"
+                      >
                         mur : {way.wall.name}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        className="pt-1"
+                      >
                         salle : {way.wall.zone.place.name}
                       </Typography>
                       <Typography
                         variant="body2"
                         color="text.secondary"
-                        className="pt-3"
+                        className="pt-1"
                       >
                         difficultée : {way.difficulty.label}
                       </Typography>
@@ -414,142 +422,133 @@ const Contest = () => {
         </Box>
       ) : (
         <div>
-          <div className="m-5 relative">
-            {!isSmUp ? (
-              <div className="flex justify-center text-3xl my-10">
-                {contest.name}
-              </div>
-            ) : (
-              ''
-            )}
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 6, sm: 4 }}>
-                <div className="text-right mr-3 md:mr-0">
-                  <p className="font-bold my-3">
-                    Statut : {Status[contest.status as keyof typeof Status]}
-                  </p>
-                  <p className="font-bold my-2">
-                    Début :{' '}
-                    {dayjs(contest.startDate).format('dddd D MMMM YYYY')}
-                  </p>
-                  <p className="font-bold my-2">
-                    Fin : {dayjs(contest.endDate).format('dddd D MMMM YYYY')}
-                  </p>
-                </div>
-              </Grid>
-              {isSmUp ? (
-                <Grid size={{ xs: 0, sm: 4 }}>
-                  <div className="flex justify-center text-3xl my-10">
-                    {contest.name}
-                  </div>
-                </Grid>
+          <Box
+            className="w-full max-w-5xl mx-auto px-4 py-6"
+            sx={{ marginTop: 4 }}
+          >
+            <Typography
+              variant="h5"
+              className="text-primary-600 flex justify-center"
+              sx={{ marginBottom: 1 }}
+              fontWeight="bold"
+            >
+              {contest.name}
+            </Typography>
+            <Typography
+              variant="body1"
+              color="textPrimary"
+              sx={{ marginTop: 1 }}
+            >
+              Statut : {Status[contest.status as keyof typeof Status]}
+            </Typography>
+            <Typography
+              variant="body1"
+              color="textPrimary"
+              sx={{ marginTop: 1 }}
+            >
+              <span className="font-bold text-lg">
+                {contest.followCount || '0'}
+              </span>{' '}
+              Inscrits
+            </Typography>
+            <Typography
+              variant="body1"
+              color="textPrimary"
+              sx={{ marginTop: 1 }}
+            >
+              Début : {dayjs(contest.startDate).format('dddd D MMMM YYYY')}
+            </Typography>
+            <Typography
+              variant="body1"
+              color="textPrimary"
+              sx={{ marginTop: 1 }}
+            >
+              Fin : {dayjs(contest.endDate).format('dddd D MMMM YYYY')}
+            </Typography>
+            <Box className="flex max-w-5xl mx-auto gap-2 mt-4">
+              {user?.id === contest.userId || user?.roleId === 3 ? (
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={openModal}
+                  sx={{
+                    maxWidth: '200px',
+                    color: 'white !important',
+                    backgroundColor: 'var(--primary-600)', // si ta couleur Tailwind est en CSS var
+                    '&:hover': {
+                      backgroundColor: 'var(--primary-700)',
+                    },
+                    borderRadius: '10px',
+                    textTransform: 'none',
+                    fontWeight: 600,
+                  }}
+                >
+                  Modifier
+                </Button>
+              ) : null}
+              {contestUsers &&
+              contestUsers.filter((users: any) => users.id === user?.id)
+                .length > 0 ? (
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={() => follow(false)}
+                  sx={{
+                    maxWidth: '200px',
+                    color: 'white !important',
+                    backgroundColor: 'var(--primary-600)', // si ta couleur Tailwind est en CSS var
+                    '&:hover': {
+                      backgroundColor: 'var(--primary-700)',
+                    },
+                    borderRadius: '10px',
+                    textTransform: 'none',
+                    fontWeight: 600,
+                  }}
+                >
+                  Se désinscrire
+                </Button>
               ) : (
-                ''
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={() => follow(true)}
+                  sx={{
+                    maxWidth: '200px',
+                    color: 'white !important',
+                    backgroundColor: 'var(--primary-600)', // si ta couleur Tailwind est en CSS var
+                    '&:hover': {
+                      backgroundColor: 'var(--primary-700)',
+                    },
+                    borderRadius: '10px',
+                    textTransform: 'none',
+                    fontWeight: 600,
+                  }}
+                >
+                  S'inscrire
+                </Button>
               )}
-              <Grid size={{ xs: 6, sm: 4 }}>
-                <div className=" ml-3 md:ml-0">
-                  <p className="font-bold text-lg mt-10">
-                    {contest.followCount || '0'}
-                  </p>
-                  Inscrits
-                </div>
-              </Grid>
-            </Grid>
-            <div className="text-right absolute w-16 right-0 top-0">
-              {user?.id === contest.userId ? (
-                <Box sx={{ mt: 0, height: 50 }}>
-                  <StyledSpeedDial
-                    key={'down'}
-                    ariaLabel="SpeedDial playground example"
-                    icon={<SettingsIcon />}
-                    direction="down"
-                    sx={{
-                      '& .MuiFab-primary': {
-                        width: 40,
-                        height: 40,
-                      },
-                    }}
-                    style={{
-                      top: 0,
-                      right: 0,
-                    }}
-                  >
-                    <SpeedDialAction
-                      key="update"
-                      icon={<CreateIcon />}
-                      onClick={() => openModal()}
-                      slotProps={{
-                        tooltip: {
-                          title: 'Modifier',
-                        },
-                      }}
-                    />
-                    {contestUsers &&
-                    contestUsers.filter((users: any) => users.id === user?.id)
-                      .length > 0 ? (
-                      <SpeedDialAction
-                        key="delete"
-                        icon={<RemoveIcon />}
-                        onClick={() => follow(false)}
-                        slotProps={{
-                          tooltip: {
-                            title: 'Se désinscrire',
-                          },
-                        }}
-                      />
-                    ) : (
-                      <SpeedDialAction
-                        key="add"
-                        icon={<AddIcon />}
-                        onClick={() => follow(true)}
-                        slotProps={{
-                          tooltip: {
-                            title: "S'inscrire",
-                          },
-                        }}
-                      />
-                    )}
-                    <SpeedDialAction
-                      key="deleteOutline"
-                      icon={<DeleteOutlineIcon />}
-                      onClick={() => openModalDelete()}
-                      slotProps={{
-                        fab: {
-                          disabled: contest.status !== 'waiting', // ✅ désactiver le bouton
-                        },
-                        tooltip: {
-                          title: 'Supprimer',
-                        },
-                      }}
-                    />
-                  </StyledSpeedDial>
-                </Box>
-              ) : contestUsers &&
-                contestUsers.filter((users: any) => users.id === user?.id)
-                  .length > 0 ? (
-                <LightTooltip title="Se désinscrire">
-                  <IconButton
-                    onClick={() => follow(false)}
-                    color="primary"
-                    component="span"
-                  >
-                    <RemoveIcon />
-                  </IconButton>
-                </LightTooltip>
-              ) : (
-                <LightTooltip title="S'inscrire">
-                  <IconButton
-                    onClick={() => follow(true)}
-                    color="primary"
-                    component="span"
-                  >
-                    <AddIcon />
-                  </IconButton>
-                </LightTooltip>
-              )}
-            </div>
-          </div>
-          <Divider />
+              {contest && contest.status === 'waiting' ? (
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={() => follow(true)}
+                  sx={{
+                    maxWidth: '200px',
+                    color: 'white !important',
+                    backgroundColor: 'var(--primary-600)', // si ta couleur Tailwind est en CSS var
+                    '&:hover': {
+                      backgroundColor: 'var(--primary-700)',
+                    },
+                    borderRadius: '10px',
+                    textTransform: 'none',
+                    fontWeight: 600,
+                  }}
+                >
+                  Supprimer
+                </Button>
+              ) : null}
+            </Box>
+          </Box>
           <Box className="max-w-5xl mx-auto w-full mt-7">
             <Tabs
               value={tabIndex}

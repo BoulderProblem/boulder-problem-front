@@ -248,8 +248,19 @@ export default function App() {
   const theme = createTheme({
     palette: {
       mode: isBlack ? 'dark' : 'light',
+      primary: {
+        main: '#66a6bb',
+      },
     },
     components: {
+      MuiListItemIcon: {
+        styleOverrides: {
+          root: {
+            color: 'inherit',
+            minWidth: 36,
+          },
+        },
+      },
       MuiTextField: {
         styleOverrides: {
           root: {
@@ -289,7 +300,11 @@ export default function App() {
           router={router}
           theme={theme}
           branding={{
-            title: 'Boulder Problem',
+            title: (
+              <span style={{ color: 'var(--primary-600)', fontWeight: 600 }}>
+                Boulder Problem
+              </span>
+            ),
             logo: (
               <img
                 src={background}
