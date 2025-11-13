@@ -16,7 +16,7 @@ import Profile from './profile';
 
 const PlaceHeader = (props: any) => {
   const { place, getPlace, getPlaceZones, favoritePlace } = usePlaces();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
 
   const [openHours, setOpenHours] = useState(false);
 
@@ -106,6 +106,11 @@ const PlaceHeader = (props: any) => {
     favoritePlace(parseInt(props.id || '0'), follow);
   };
 
+  const updatePlace = (placeId: number) => {
+    // redirect to update page
+    window.location.href = `/places/${placeId}/update`;
+  };
+
   return (
     <div>
       {place ? (
@@ -153,7 +158,7 @@ const PlaceHeader = (props: any) => {
                 Se désabonner
               </Button>
             ) : null}
-            {!place.isFavorite ? (
+            {place && !place.isFavorite ? (
               <Button
                 variant="contained"
                 fullWidth
@@ -170,6 +175,27 @@ const PlaceHeader = (props: any) => {
                 }}
               >
                 S'abonner
+              </Button>
+            ) : null}
+            {user &&
+            (user.roleId === 3 ||
+              place.owners.find((owner: any) => owner.id === user.id)) ? (
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => updatePlace(place.id)}
+                sx={{
+                  maxWidth: '200px',
+                  backgroundColor: 'var(--primary-600)', // si ta couleur Tailwind est en CSS var
+                  '&:hover': {
+                    backgroundColor: 'var(--primary-700)',
+                  },
+                  borderRadius: '10px',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                }}
+              >
+                Modifier
               </Button>
             ) : null}
           </Box>

@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
-import { styled, useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import {
   IconButton,
   MenuItem,
-  SpeedDialAction,
   Dialog,
   DialogActions,
   DialogContent,
@@ -16,7 +15,6 @@ import {
   Tabs,
   Tab,
   useMediaQuery,
-  Divider,
   TableContainer,
   Table,
   TableHead,
@@ -26,16 +24,10 @@ import {
   Paper,
   Button,
   CircularProgress,
+  Avatar,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
-import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
-import SpeedDial from '@mui/material/SpeedDial';
-import CreateIcon from '@mui/icons-material/Create';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import AddIcon from '@mui/icons-material/Add';
-import SettingsIcon from '@mui/icons-material/Settings';
-import RemoveIcon from '@mui/icons-material/Remove';
-import ImageWithToken from 'react-image-with-auth';
 import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
 import { useContests } from '@/services/useContests';
@@ -54,11 +46,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { usePlaces } from '@/services/usePlaces';
 import WayTreeView from './WayTreeView';
 import { RANKING } from '@/types/ranking';
-
-let baseUrl = `https://boulder-problem.chabs.fr/api`;
-if (process.env.NODE_ENV !== 'production') {
-  baseUrl = `http://localhost:3333`;
-}
+import { useAvatar } from '@/hooks/useAvatar';
 
 const Contest = () => {
   const { id } = useParams() as { id: string };
@@ -201,29 +189,6 @@ const Contest = () => {
         value: key,
       }));
 
-  const StyledSpeedDial = styled(SpeedDial)(({ theme }) => ({
-    position: 'absolute',
-    '&.MuiSpeedDial-directionUp, &.MuiSpeedDial-directionLeft': {
-      bottom: theme.spacing(2),
-      right: theme.spacing(2),
-    },
-    '&.MuiSpeedDial-directionDown, &.MuiSpeedDial-directionRight': {
-      top: theme.spacing(2),
-      left: theme.spacing(2),
-    },
-  }));
-
-  const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
-    <Tooltip {...props} classes={{ popper: className }} />
-  ))(({ theme }) => ({
-    [`& .${tooltipClasses.tooltip}`]: {
-      backgroundColor: theme.palette.common.white,
-      color: 'rgba(0, 0, 0, 0.87)',
-      boxShadow: theme.shadows[1],
-      fontSize: 11,
-    },
-  }));
-
   // Contenus des onglets
   const tabContents = [
     {
@@ -248,42 +213,7 @@ const Contest = () => {
         >
           {contestUsers &&
             contestUsers.map((user: any) => (
-              <Card
-                key={user.id}
-                sx={{
-                  borderRadius: 6,
-                  boxShadow: 3,
-                }}
-              >
-                <Link to={'/users/' + user.id}>
-                  <CardActionArea>
-                    <CardContent sx={{ display: 'flex', width: '100%' }}>
-                      <div className="avatar m-3">
-                        <div className="rounded-full">
-                          <ImageWithToken
-                            imageUrl={
-                              baseUrl +
-                              '/users/' +
-                              user.id +
-                              '/avatar/' +
-                              user.avatar +
-                              '?size=50'
-                            }
-                            token={token}
-                            alt="avatar"
-                          />
-                        </div>
-                      </div>
-                      <div className="my-auto ms-3">
-                        <Typography>{user.firstname}</Typography>
-                        <Typography color="text.secondary">
-                          {user.lastname}
-                        </Typography>
-                      </div>
-                    </CardContent>
-                  </CardActionArea>
-                </Link>
-              </Card>
+              <UserCard key={user.id} user={user} token={token} />
             ))}
         </Box>
       ),
@@ -369,36 +299,12 @@ const Contest = () => {
             <TableBody>
               {contestRanking &&
                 contestRanking.map((ranking: RANKING, index: number) => (
-                  <TableRow
-                    key={index}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  >
-                    <TableCell component="th" scope="row">
-                      {index + 1}
-                    </TableCell>
-                    <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
-                      <div className="avatar">
-                        <div className="rounded-full">
-                          <ImageWithToken
-                            imageUrl={
-                              baseUrl +
-                              '/users/' +
-                              ranking.user_id +
-                              '/avatar/' +
-                              ranking.avatar +
-                              '?size=40'
-                            }
-                            token={token}
-                            alt="avatar"
-                          />
-                        </div>
-                      </div>
-                      <div className="my-auto ms-3">
-                        {ranking.firstname} {ranking.lastname}
-                      </div>
-                    </TableCell>
-                    <TableCell align="right">{ranking.score}</TableCell>
-                  </TableRow>
+                  <TableRowItem
+                    key={ranking.id}
+                    index={index}
+                    ranking={ranking}
+                    token={token}
+                  />
                 ))}
             </TableBody>
           </Table>
@@ -834,4 +740,73 @@ const Contest = () => {
   );
 };
 
+const UserCard = ({ user, token }: { user: any; token: string }) => {
+  const avatarUrl = useAvatar(user.id, user.avatar, token, 'user');
+  return (
+    <Card
+      key={user.id}
+      sx={{
+        borderRadius: 6,
+        boxShadow: 3,
+      }}
+    >
+      <Link to={'/users/' + user.id}>
+        <CardActionArea>
+          <CardContent sx={{ display: 'flex', width: '100%' }}>
+            <Avatar
+              src={avatarUrl}
+              alt="Profile"
+              sx={{
+                width: 48,
+                height: 48,
+                border: '3px solid var(--primary-600)',
+              }}
+            />
+            <div className="my-auto ms-3">
+              <Typography>{user.firstname}</Typography>
+              <Typography color="text.secondary">{user.lastname}</Typography>
+            </div>
+          </CardContent>
+        </CardActionArea>
+      </Link>
+    </Card>
+  );
+};
+
+const TableRowItem = ({
+  index,
+  ranking,
+  token,
+}: {
+  index: number;
+  ranking: RANKING;
+  token: string;
+}) => {
+  const avatarUrl = useAvatar(ranking.user_id, ranking.avatar, token, 'user');
+  return (
+    <TableRow
+      key={index}
+      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+    >
+      <TableCell component="th" scope="row">
+        {index + 1}
+      </TableCell>
+      <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
+        <Avatar
+          src={avatarUrl}
+          alt="Profile"
+          sx={{
+            width: 48,
+            height: 48,
+            border: '3px solid var(--primary-600)',
+          }}
+        />
+        <div className="my-auto ms-3">
+          {ranking.firstname} {ranking.lastname}
+        </div>
+      </TableCell>
+      <TableCell align="right">{ranking.score}</TableCell>
+    </TableRow>
+  );
+};
 export default Contest; // Don’t forget to use export default!

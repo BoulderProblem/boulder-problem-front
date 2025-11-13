@@ -4,16 +4,18 @@ import { GerantHome } from '@/components/home/GerantHome';
 import { GraphHome } from '@/components/home/GraphHome';
 
 const Home = () => {
-  const { getStats } = useAuth();
+  const { getStats, user } = useAuth();
   useEffect(() => {
-    getStats();
+    if (user?.roleId === 3) {
+      getStats();
+    }
   }, []);
   return (
     <div>
       <div className="mx-5 lg:mx-20 my-10">
-        {/* {user?.roleId === 3 ? <GraphHome></GraphHome> : ''} */}
-        component admin
-        <GraphHome></GraphHome>
+        {user?.roleId === 3 ? <GraphHome></GraphHome> : ''}
+        {/* component admin
+        <GraphHome></GraphHome> */}
       </div>
       <div className="mx-5 lg:mx-20 my-10">
         {/* {user?.roleId === 2 ? <GraphHome></GraphHome> : ''} */}

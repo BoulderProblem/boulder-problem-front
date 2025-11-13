@@ -12,13 +12,13 @@ import {
   MenuItem,
   InputAdornment,
   Grid,
+  Avatar,
 } from '@mui/material';
 import { MobileTimePicker } from '@mui/x-date-pickers/MobileTimePicker';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import ImageWithToken from 'react-image-with-auth';
 import Checkbox from '@mui/material/Checkbox';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import { PLACE } from '@/types/place';
@@ -31,20 +31,17 @@ import { format } from 'date-fns'; // Importation de la fonction de formatage de
 import { useAuth } from '@/services/useAuth';
 import L from 'leaflet';
 import icon from '@/assets/icon-map.svg';
-
-let baseUrl = `https://boulder-problem.chabs.fr/api`;
-if (process.env.NODE_ENV !== 'production') {
-  baseUrl = `http://localhost:3333`;
-}
+import { useAvatar } from '@/hooks/useAvatar';
 
 const Place = (props: any) => {
   const { place, getPlace, updatePlace, getPlaceZones, difficulties } =
     usePlaces();
-  const { getUsers, users, user } = useUsers();
-  const { token } = useAuth();
+  const { getUsers, users } = useUsers();
+  const { token, user } = useAuth();
 
   const [inputs, setInputs] = useState<PLACE | null>(null);
   const [openHours, setOpenHours] = useState(false);
+  let avatarUrl;
 
   const iconPerson = new L.Icon({
     iconUrl: icon,
@@ -57,6 +54,7 @@ const Place = (props: any) => {
     getPlace(parseInt(props.id || '0')).then((response: PLACE) => {
       setInputs(response);
       initHoraires(response.hours);
+      avatarUrl = useAvatar(response.id.toString(), '', token, 'place');
     });
     getPlaceZones(parseInt(props.id || '0'));
     getUsers('', 1);
@@ -233,10 +231,18 @@ const Place = (props: any) => {
     const formData = new FormData();
     Object.entries(inputs ?? {}).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
-        formData.append(key, JSON.stringify(value));
+        if (key === 'owners') {
+          formData.append(
+            key,
+            JSON.stringify(value.map((user: any) => user.id))
+          );
+        } else {
+          formData.append(key, JSON.stringify(value));
+        }
       }
     });
     formData.append('hours', formatHoraires());
+
     updatePlace(parseInt(props.id || '0'), inputs);
   };
 
@@ -245,13 +251,15 @@ const Place = (props: any) => {
    * @param user
    */
   const setOwner = (user: any) => {
-    if (user) {
-      setInputs((values: any) => ({ ...values, ownerId: user.id }));
-      setInputs((values: any) => ({ ...values, owner: user }));
-    } else {
-      setInputs((values: any) => ({ ...values, ownerId: null }));
-      setInputs((values: any) => ({ ...values, owner: null }));
-    }
+    console.log(user);
+
+    // if (user) {
+    //   setInputs((values: any) => ({ ...values, ownerId: user.id }));
+    setInputs((values: any) => ({ ...values, owners: user }));
+    // } else {
+    //   setInputs((values: any) => ({ ...values, ownerId: null }));
+    //   setInputs((values: any) => ({ ...values, owner: null }));
+    // }
   };
 
   /**
@@ -316,17 +324,13 @@ const Place = (props: any) => {
                   <div className="w-[6rem] h-[6rem] avatar">
                     {inputs && inputs.logo ? (
                       <div className="relative group overflow-hidden p-1">
-                        <ImageWithToken
-                          imageUrl={
-                            baseUrl +
-                            '/places/' +
-                            inputs.id +
-                            '/logo/' +
-                            '?size=100'
-                          }
-                          token={token}
-                          alt="logo"
-                          className="w-full h-full rounded-full object-cover transition-all duration-300 group-hover:blur-sm group-hover:brightness-75"
+                        <Avatar
+                          src={avatarUrl}
+                          alt="Profile"
+                          sx={{
+                            width: 72,
+                            height: 72,
+                          }}
                         />
                         <div className="absolute flex bottom-0 right-0 !w-10 !h-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                           <ImageCropUpload
@@ -566,12 +570,13 @@ const Place = (props: any) => {
                   </Grid>
                   <Grid size={{ xs: 12, sm: 4 }}>
                     <Autocomplete
+                      multiple
                       fullWidth
-                      value={inputs.owner}
-                      onChange={(_event: any, newValue: any) => {
-                        setOwner(newValue);
+                      value={inputs.owners || []} // tableau des propriétaires sélectionnés
+                      onChange={(_event, newValue) => {
+                        setOwner(newValue); // newValue est un tableau
                       }}
-                      id="controllable-states-demo"
+                      id="owners-autocomplete"
                       options={users ? users.data : []}
                       getOptionLabel={(option: any) =>
                         option.firstname + ' ' + option.lastname || ''
@@ -581,15 +586,34 @@ const Place = (props: any) => {
                         if (event && !event.cancelable)
                           fetchPersons(newInputValue);
                       }}
-                      disabled={user && user.roleId === 2}
+                      disabled={user && user.roleId !== 3}
                       renderInput={(params) => (
                         <TextField
                           {...params}
-                          label="Gérant"
+                          label="Gérants"
                           variant="standard"
                           className="p-2.5"
                         />
                       )}
+                      renderTags={(value, getTagProps) =>
+                        value.map((option, index) => (
+                          <span
+                            key={option.id}
+                            {...getTagProps({ index })}
+                            style={{
+                              backgroundColor: 'var(--primary-100)',
+                              color: 'var(--primary-800)',
+                              borderRadius: 8,
+                              padding: '2px 6px',
+                              marginRight: 4,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                            }}
+                          >
+                            {option.firstname} {option.lastname}
+                          </span>
+                        ))
+                      }
                     />
                   </Grid>
                 </Grid>

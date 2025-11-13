@@ -133,6 +133,7 @@ export function PlacesProvider({
   }
 
   function getPlaces(search: string, page: number | string) {
+    setLoading(true);
     axiosClient
       .get(`${baseUrl}/places?search=${search}&page=${page}`)
       .then((response) => {
