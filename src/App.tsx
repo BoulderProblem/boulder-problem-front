@@ -19,6 +19,7 @@ import {
 import { AppProvider, Router } from '@toolpad/core/AppProvider';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import ViewStreamIcon from '@mui/icons-material/ViewStream';
 import SettingsIcon from '@mui/icons-material/Settings';
 import PeopleIcon from '@mui/icons-material/People';
 import MessageIcon from '@mui/icons-material/Message';
@@ -33,7 +34,7 @@ import { useAvatar } from './hooks/useAvatar';
 import background from './assets/home-background.webp';
 
 const baseNavigation = [
-  { segment: 'feed', title: "Fil d'actualité", icon: <DashboardIcon /> },
+  { segment: 'feed', title: "Fil d'actualité", icon: <ViewStreamIcon /> },
   { segment: 'users', title: 'Utilisateurs', icon: <PeopleIcon /> },
   { segment: 'places', title: 'Salles', icon: <PlaceIcon /> },
   { segment: 'contests', title: 'Contests', icon: <EmojiEventsIcon /> },
@@ -44,7 +45,7 @@ const baseNavigation = [
 
 const gerantNavigation = [
   { segment: '', title: 'Dashboard', icon: <DashboardIcon /> },
-  { segment: 'feed', title: "Fil d'actualité", icon: <DashboardIcon /> },
+  { segment: 'feed', title: "Fil d'actualité", icon: <ViewStreamIcon /> },
   { segment: 'users', title: 'Utilisateurs', icon: <PeopleIcon /> },
   { segment: 'places', title: 'Salles', icon: <PlaceIcon /> },
   { segment: 'contests', title: 'Contests', icon: <EmojiEventsIcon /> },
@@ -55,7 +56,7 @@ const gerantNavigation = [
 
 const adminNavigation = [
   { segment: '', title: 'Dashboard', icon: <DashboardIcon /> },
-  { segment: 'feed', title: "Fil d'actualité", icon: <DashboardIcon /> },
+  { segment: 'feed', title: "Fil d'actualité", icon: <ViewStreamIcon /> },
   { segment: 'users', title: 'Utilisateurs', icon: <PeopleIcon /> },
   { segment: 'places', title: 'Salles', icon: <PlaceIcon /> },
   { segment: 'contests', title: 'Contests', icon: <EmojiEventsIcon /> },
@@ -236,9 +237,9 @@ export default function App() {
       return gerantNavigation;
     }
     if (user && user.roleId === 3) {
-      return baseNavigation;
+      return adminNavigation;
     }
-    return adminNavigation;
+    return baseNavigation;
   }, [user]);
 
   const router = useReactRouterAdapter();
@@ -300,11 +301,7 @@ export default function App() {
           router={router}
           theme={theme}
           branding={{
-            title: (
-              <span style={{ color: 'var(--primary-600)', fontWeight: 600 }}>
-                Boulder Problem
-              </span>
-            ),
+            title: 'Boulder Problem',
             logo: (
               <img
                 src={background}

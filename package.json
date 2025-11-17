@@ -29,6 +29,7 @@
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "emoji-mart": "^5.6.0",
+    "firebase": "^12.6.0",
     "formik": "^2.4.6",
     "leaflet": "^1.9.4",
     "libsodium-wrappers": "^0.7.15",

@@ -181,7 +181,7 @@ const PlaceZone = () => {
               sx={{
                 flex: 1,
                 p: 2,
-                display: 'flex',
+                display: 'block',
                 justifyContent: 'center',
                 alignItems: 'center',
               }}

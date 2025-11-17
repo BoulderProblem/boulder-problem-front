@@ -9,6 +9,7 @@ import {
 import axiosClient from '../axios-client';
 import { USER } from '@/types/user';
 import { decryptPrivateKey, encryptPrivateKey, generateKeys } from '@/crypto';
+import axios from 'axios';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -25,7 +26,7 @@ interface AuthContextType {
   loading: boolean;
   error?: any;
   login: (email: string, password: string) => void;
-  loginGoogle: (token: string, id: string) => void;
+  loginFirebase: (token: string, id: string) => Promise<void>;
   signUp: (email: string, name: string, password: string) => void;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (
@@ -173,21 +174,30 @@ export function AuthProvider({
       });
   }
 
-  function loginGoogle(token: string, id: string) {
-    localStorage.setItem('ACCESS_TOKEN', token);
-    setToken(token);
-    axiosClient.get(`${baseUrl}/user`).then((user) => {
-      axiosClient.get(`${baseUrl}/srv_key`).then((res) => {
-        setTimeout(() => {
-          setUser(user.data);
-          generateOrGetKeys(
-            id.toString(),
-            user.data.publicKey,
-            res.data.pubSrvKey
-          );
-        }, 300);
+  async function loginFirebase(token: string, id: string) {
+    axios
+      .post(
+        `${baseUrl}/auth/firebase`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      .then((loginData) => {
+        localStorage.setItem('ACCESS_TOKEN', loginData.data.token);
+
+        setToken(loginData.data.token);
+        axiosClient.get(`${baseUrl}/user`).then((user) => {
+          axiosClient.get(`${baseUrl}/srv_key`).then((res) => {
+            setTimeout(() => {
+              setUser(user.data);
+              generateOrGetKeys(
+                id.toString(),
+                user.data.publicKey,
+                res.data.pubSrvKey
+              );
+            }, 300);
+          });
+        });
       });
-    });
   }
 
   async function forgotPassword(email: string) {
@@ -289,7 +299,7 @@ export function AuthProvider({
       loading,
       error,
       login,
-      loginGoogle,
+      loginFirebase,
       forgotPassword,
       resetPassword,
       signUp,

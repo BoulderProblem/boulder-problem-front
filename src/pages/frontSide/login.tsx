@@ -1,9 +1,7 @@
 import React, { FormEvent, useEffect, useState } from 'react';
 import { useAuth } from '../../services/useAuth.tsx';
 import { Link } from 'react-router-dom';
-
 import {
-  Avatar,
   Box,
   Button,
   Card,
@@ -14,35 +12,50 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { Visibility, VisibilityOff, Google } from '@mui/icons-material';
-
-let baseUrl = `https://boulder-problem.chabs.fr/api`;
-if (process.env.NODE_ENV !== 'production') {
-  baseUrl = `http://localhost:3333`;
-}
+import {
+  Visibility,
+  VisibilityOff,
+  Google,
+  Facebook,
+} from '@mui/icons-material';
+import {
+  GoogleAuthProvider,
+  FacebookAuthProvider,
+  signInWithPopup,
+} from 'firebase/auth';
+import { auth } from '../../firebase';
 
 const Login = () => {
-  const { login, loginGoogle, loading, error } = useAuth();
+  const { login, loginFirebase, loading, error } = useAuth();
 
   const [email, setEmail] = useState(localStorage.getItem('login-email') || '');
   const [password, setPassword] = useState(
     localStorage.getItem('login-email') || ''
   );
+  const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = JSON.parse(params.get('token') || '{}');
-    const id = JSON.parse(params.get('id') || '{}');
-    if (token.token) {
-      loginGoogle(token.token, id);
-    }
-  }, []);
+  const googleProvider = new GoogleAuthProvider();
+  const facebookrovider = new FacebookAuthProvider();
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     login(email, password);
+  }
+
+  async function handleGoogle() {
+    setLoadingGoogle(true);
+    let result = await signInWithPopup(auth, googleProvider);
+    const tokenResponse = (result as any)._tokenResponse;
+    console.log(tokenResponse);
+    loginFirebase(tokenResponse.idToken, tokenResponse.localId).then(() => {
+      setLoadingGoogle(false);
+    });
+  }
+
+  async function handleFacebook() {
+    await signInWithPopup(auth, facebookrovider);
+    // onIdTokenChanged gère la suite
   }
 
   return (
@@ -138,11 +151,27 @@ const Login = () => {
                 borderRadius: 2,
                 textTransform: 'none',
               }}
-              onClick={() =>
-                (window.location.href = `${baseUrl}/auth/google/redirect`)
-              }
+              onClick={handleGoogle}
             >
-              Se connecter avec Google
+              {loadingGoogle ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                'Se connecter avec Google'
+              )}
+            </Button>
+
+            <Button
+              disabled
+              fullWidth
+              variant="outlined"
+              startIcon={<Facebook />}
+              sx={{
+                borderRadius: 2,
+                textTransform: 'none',
+              }}
+              onClick={handleFacebook}
+            >
+              Se connecter avec Facebook
             </Button>
 
             {error && (

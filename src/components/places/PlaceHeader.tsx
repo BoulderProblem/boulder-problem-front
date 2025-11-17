@@ -179,7 +179,8 @@ const PlaceHeader = (props: any) => {
             ) : null}
             {user &&
             (user.roleId === 3 ||
-              place.owners.find((owner: any) => owner.id === user.id)) ? (
+              (place.owners &&
+                place.owners.find((owner: any) => owner.id === user.id))) ? (
               <Button
                 variant="contained"
                 fullWidth
