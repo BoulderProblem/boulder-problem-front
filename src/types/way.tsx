@@ -24,4 +24,7 @@ export type WAY = {
     note: number;
     wayId: number;
   };
+  valid: null | {
+    status: string;
+  };
 };

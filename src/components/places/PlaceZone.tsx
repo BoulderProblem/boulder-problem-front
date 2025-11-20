@@ -19,6 +19,10 @@ import WayCard from './wayCard';
 import MessageInput from '../posts/MessageInput';
 import CommentCard from '../posts/CommentCard';
 import { useAuth } from '@/services/useAuth';
+import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import VerifiedIcon from '@mui/icons-material/Verified';
 
 const PlaceZone = () => {
   const {
@@ -33,6 +37,7 @@ const PlaceZone = () => {
     getWayComments,
     addWayComment,
     saveRating,
+    saveValid,
   } = usePlaces();
   const { token } = useAuth();
   const [plan, setPlan] = useState('');
@@ -42,10 +47,19 @@ const PlaceZone = () => {
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const [selectedRating, setSelectedRating] = useState(0);
   const [openNote, setOpenNote] = useState(false);
+  const [openValid, setOpenValid] = useState(false);
+  const [selectedValid, setSelectedValid] = useState('');
 
   const [drawer, setDrawer] = useState(false);
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md')); // md = >= 900px
+
+  const optionsValid = [
+    { id: 'notvalid', label: 'Non validé', icon: <PanoramaFishEyeIcon /> },
+    { id: 'zone', label: 'Zone', icon: <CheckCircleIcon /> },
+    { id: 'top', label: 'Top', icon: <CheckCircleOutlineIcon /> },
+    { id: 'flash', label: 'Flash', icon: <VerifiedIcon /> },
+  ];
 
   useEffect(() => {
     if (zones && zones.length === 1) {
@@ -105,9 +119,18 @@ const PlaceZone = () => {
     }
   };
 
-  const WayClick = (wayId: number) => {
+  const onClickValid = (wayId: number) => {
     console.log('Way click : ' + wayId);
     setWayId(wayId);
+    setSelectedValid('');
+    setOpenValid(true);
+  };
+
+  const handleSubmitValid = () => {
+    setOpenValid(false);
+    if (selectedValid !== '') {
+      saveValid(wayId, selectedValid);
+    }
   };
 
   const WayClickComment = (wayId: number) => {
@@ -140,6 +163,7 @@ const PlaceZone = () => {
 
   const handleClose = () => {
     setOpenNote(false);
+    setOpenValid(false);
   };
 
   const handleAddComment = (wayId: number, message: string) => {
@@ -232,7 +256,7 @@ const PlaceZone = () => {
                     <WayCard
                       key={way.id}
                       way={way}
-                      onClick={WayClick}
+                      onClickValid={onClickValid}
                       onClickComment={WayClickComment}
                       onClickNote={WayClickNote}
                     />
@@ -282,11 +306,53 @@ const PlaceZone = () => {
             />
           </SwipeableDrawer>
           <Dialog
+            open={openValid}
+            onClose={handleClose}
+            PaperProps={{
+              sx: {
+                minWidth: '250px',
+                borderRadius: 6,
+              },
+            }}
+          >
+            <DialogTitle>
+              Valider le bloc {ways?.find((way) => way.id === wayId)?.name}
+            </DialogTitle>
+            <DialogContent>
+              {optionsValid.map((opt) => (
+                <Box
+                  key={opt.id}
+                  onClick={() => setSelectedValid(opt.id)}
+                  sx={{
+                    display: 'flex',
+                    gap: 1,
+                    alignItems: 'center',
+                    padding: '8px 12px',
+                    borderRadius: 2,
+                    cursor: 'pointer',
+                    backgroundColor:
+                      selectedValid === opt.id ? 'var(--primary-600)' : '',
+                    color: selectedValid === opt.id ? 'white' : '',
+                    transition: '0.2s',
+                    '&:hover': { color: 'var(--primary-300)' },
+                  }}
+                >
+                  {opt.icon}
+                  {opt.label}
+                </Box>
+              ))}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleClose}>Annuler</Button>
+              <Button onClick={handleSubmitValid}>Valider</Button>
+            </DialogActions>
+          </Dialog>
+          <Dialog
             open={openNote}
             onClose={handleClose}
             PaperProps={{
               sx: {
-                minWidth: '220px',
+                minWidth: '250px',
                 borderRadius: 6,
               },
             }}

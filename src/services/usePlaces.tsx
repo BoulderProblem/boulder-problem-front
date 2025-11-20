@@ -56,6 +56,7 @@ interface PlacesContextType {
   getWayComments: (wayId: number, getpage: number) => Promise<any>;
   addWayComment: (wayId: number, text: string) => Promise<any>;
   saveRating: (wayId: number, note: number) => void;
+  saveValid: (wayId: number, status: string) => void;
 }
 
 const PlacesContext = createContext<PlacesContextType>({} as PlacesContextType);
@@ -429,8 +430,6 @@ export function PlacesProvider({
 
         let newComment = [response.data];
 
-        console.log(newComment);
-
         setWays((prev: any) => {
           return prev.map((way: WAY) => {
             if (way.id !== wayId) return way;
@@ -464,6 +463,29 @@ export function PlacesProvider({
               ...way,
               userNote: response.data.note,
               avgNote: response.data.avgNote,
+            };
+          });
+        });
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
+  function saveValid(wayId: number, status: string) {
+    axiosClient
+      .post(`${baseUrl}/ways/${wayId}/valid`, { status: status })
+      .then((response) => {
+        console.log(response.data);
+
+        setWays((prev: any) => {
+          return prev.map((way: WAY) => {
+            if (way.id !== wayId) return way;
+
+            return {
+              ...way,
+              valid: response.data,
             };
           });
         });
@@ -521,6 +543,7 @@ export function PlacesProvider({
       getWayComments,
       addWayComment,
       saveRating,
+      saveValid,
     }),
     [
       colors,
