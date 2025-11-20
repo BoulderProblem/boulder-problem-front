@@ -1,28 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { usePlaces } from '@/services/usePlaces';
-import {
-  Box,
-  Typography,
-  SwipeableDrawer,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  Rating,
-  DialogActions,
-  Button,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
+import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
 import 'dayjs/locale/fr';
 import WayCard from './wayCard';
-import MessageInput from '../posts/MessageInput';
-import CommentCard from '../posts/CommentCard';
-import { useAuth } from '@/services/useAuth';
-import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import VerifiedIcon from '@mui/icons-material/Verified';
 
 const PlaceZone = () => {
   const {
@@ -39,27 +20,12 @@ const PlaceZone = () => {
     saveRating,
     saveValid,
   } = usePlaces();
-  const { token } = useAuth();
   const [plan, setPlan] = useState('');
   const [wallId, setWallId] = useState('');
-  const [wayId, setWayId] = useState(-1);
   const [wallName, setWallName] = useState('');
   const sectionRef = useRef<HTMLDivElement | null>(null);
-  const [selectedRating, setSelectedRating] = useState(0);
-  const [openNote, setOpenNote] = useState(false);
-  const [openValid, setOpenValid] = useState(false);
-  const [selectedValid, setSelectedValid] = useState('');
-
-  const [drawer, setDrawer] = useState(false);
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md')); // md = >= 900px
-
-  const optionsValid = [
-    { id: 'notvalid', label: 'Non validé', icon: <PanoramaFishEyeIcon /> },
-    { id: 'zone', label: 'Zone', icon: <CheckCircleIcon /> },
-    { id: 'top', label: 'Top', icon: <CheckCircleOutlineIcon /> },
-    { id: 'flash', label: 'Flash', icon: <VerifiedIcon /> },
-  ];
 
   useEffect(() => {
     if (zones && zones.length === 1) {
@@ -118,73 +84,6 @@ const PlaceZone = () => {
       }
     }
   };
-
-  const onClickValid = (wayId: number) => {
-    console.log('Way click : ' + wayId);
-    setWayId(wayId);
-    setSelectedValid('');
-    setOpenValid(true);
-  };
-
-  const handleSubmitValid = () => {
-    setOpenValid(false);
-    if (selectedValid !== '') {
-      saveValid(wayId, selectedValid);
-    }
-  };
-
-  const WayClickComment = (wayId: number) => {
-    console.log('Way comment click : ' + wayId);
-    // load comments
-    setWayId(wayId);
-    getWayComments(wayId, 1);
-    setDrawer(true);
-  };
-
-  const WayClickNote = (wayId: number) => {
-    console.log('Way note click : ' + wayId);
-    setWayId(wayId);
-    setOpenNote(true);
-    if (ways?.find((way) => way.id === wayId)?.userNote) {
-      setSelectedRating(ways.find((way) => way.id === wayId)!.userNote!.note);
-    } else {
-      setSelectedRating(0);
-    }
-  };
-
-  const handleRatingChange = (event: any) => {
-    setSelectedRating(parseFloat(event.target.value));
-  };
-
-  const handleSubmit = () => {
-    saveRating(wayId, selectedRating);
-    setOpenNote(false);
-  };
-
-  const handleClose = () => {
-    setOpenNote(false);
-    setOpenValid(false);
-  };
-
-  const handleAddComment = (wayId: number, message: string) => {
-    console.log('Add comment to way ' + wayId + ' : ' + message);
-    // add comment logic here
-    addWayComment(wayId, message);
-  };
-
-  const toggleDrawer =
-    (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
-      if (
-        event &&
-        event.type === 'keydown' &&
-        ((event as React.KeyboardEvent).key === 'Tab' ||
-          (event as React.KeyboardEvent).key === 'Shift')
-      ) {
-        return;
-      }
-
-      setDrawer(open);
-    };
 
   return (
     <div
@@ -256,124 +155,16 @@ const PlaceZone = () => {
                     <WayCard
                       key={way.id}
                       way={way}
-                      onClickValid={onClickValid}
-                      onClickComment={WayClickComment}
-                      onClickNote={WayClickNote}
+                      ways={ways}
+                      saveRating={saveRating}
+                      getWayComments={getWayComments}
+                      addWayComment={addWayComment}
+                      saveValid={saveValid}
                     />
                   ))}
               </Box>
             </Box>
           </Box>
-          <SwipeableDrawer
-            anchor={isDesktop ? 'right' : 'bottom'}
-            open={drawer}
-            onClose={toggleDrawer(false)}
-            onOpen={toggleDrawer(true)}
-            PaperProps={{
-              sx: {
-                maxHeight: isDesktop ? '100vh' : '85vh',
-                borderTopLeftRadius: isDesktop ? 0 : 16,
-                borderTopRightRadius: isDesktop ? 0 : 16,
-                width: isDesktop ? 450 : '100%',
-                overflow: 'hidden',
-              },
-            }}
-          >
-            <Box p={3} mx="auto">
-              Commentaires
-            </Box>
-            <Box
-              sx={{
-                marginTop: 'auto',
-                overflowY: 'scroll',
-                scrollbarColor: 'base-400',
-              }}
-            >
-              {ways
-                ?.find((way) => way.id === wayId)
-                ?.comments?.map((comment) => (
-                  <CommentCard
-                    key={comment.id}
-                    comment={comment}
-                    token={token}
-                  />
-                ))}
-            </Box>
-            <MessageInput
-              onSend={(message) => {
-                handleAddComment(wayId, message);
-              }}
-            />
-          </SwipeableDrawer>
-          <Dialog
-            open={openValid}
-            onClose={handleClose}
-            PaperProps={{
-              sx: {
-                minWidth: '250px',
-                borderRadius: 6,
-              },
-            }}
-          >
-            <DialogTitle>
-              Valider le bloc {ways?.find((way) => way.id === wayId)?.name}
-            </DialogTitle>
-            <DialogContent>
-              {optionsValid.map((opt) => (
-                <Box
-                  key={opt.id}
-                  onClick={() => setSelectedValid(opt.id)}
-                  sx={{
-                    display: 'flex',
-                    gap: 1,
-                    alignItems: 'center',
-                    padding: '8px 12px',
-                    borderRadius: 2,
-                    cursor: 'pointer',
-                    backgroundColor:
-                      selectedValid === opt.id ? 'var(--primary-600)' : '',
-                    color: selectedValid === opt.id ? 'white' : '',
-                    transition: '0.2s',
-                    '&:hover': { color: 'var(--primary-300)' },
-                  }}
-                >
-                  {opt.icon}
-                  {opt.label}
-                </Box>
-              ))}
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleClose}>Annuler</Button>
-              <Button onClick={handleSubmitValid}>Valider</Button>
-            </DialogActions>
-          </Dialog>
-          <Dialog
-            open={openNote}
-            onClose={handleClose}
-            PaperProps={{
-              sx: {
-                minWidth: '250px',
-                borderRadius: 6,
-              },
-            }}
-          >
-            <DialogTitle>
-              Noter le bloc {ways?.find((way) => way.id === wayId)?.name}
-            </DialogTitle>
-            <DialogContent>
-              <Rating
-                name="size-large"
-                value={selectedRating}
-                onChange={handleRatingChange}
-                precision={0.5}
-                size="large"
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleClose}>Annuler</Button>
-              <Button onClick={handleSubmit}>Valider</Button>
-            </DialogActions>
-          </Dialog>
         </Box>
       ) : (
         ''

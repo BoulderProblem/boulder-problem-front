@@ -47,6 +47,7 @@ import { usePlaces } from '@/services/usePlaces';
 import WayTreeView from './WayTreeView';
 import { RANKING } from '@/types/ranking';
 import { useAvatar } from '@/hooks/useAvatar';
+import WayCard from '../places/wayCard';
 
 const Contest = () => {
   const { id } = useParams() as { id: string };
@@ -61,6 +62,10 @@ const Contest = () => {
     getContestUsers,
     getContestRanking,
     followContest,
+    getWayComments,
+    addWayComment,
+    saveRating,
+    saveValid,
     contest,
     contestWays,
     contestUsers,
@@ -129,6 +134,9 @@ const Contest = () => {
     setOpenUpdateContest(true);
   };
 
+  const saveValidWay = (wayId: number, status: string) => {
+    saveValid(wayId, status, id);
+  };
   /**
    * get ways and open modal for add ways
    */
@@ -154,10 +162,6 @@ const Contest = () => {
     getPlace(place.id);
     getAllWays(place.id);
     setOpenWay(true);
-  };
-
-  const openModalDelete = () => {
-    setOpenDeleteContest(true);
   };
 
   const follow = (follow: boolean) => {
@@ -241,41 +245,15 @@ const Contest = () => {
           >
             {contestWays &&
               contestWays.map((way: any) => (
-                <Card
+                <WayCard
                   key={way.id}
-                  sx={{
-                    borderLeft: `6px solid ${way.color.color}`,
-                    borderRadius: 6,
-                    boxShadow: 3,
-                  }}
-                >
-                  <CardActionArea>
-                    <CardContent sx={{ height: '100%' }}>
-                      <Typography variant="h5">{way.name}</Typography>
-                      <Typography
-                        variant="body1"
-                        color="text.secondary"
-                        className="pt-1"
-                      >
-                        mur : {way.wall.name}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        className="pt-1"
-                      >
-                        salle : {way.wall.zone.place.name}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        className="pt-1"
-                      >
-                        difficultée : {way.difficulty.label}
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
+                  way={way}
+                  ways={contestWays}
+                  saveRating={saveRating}
+                  getWayComments={getWayComments}
+                  addWayComment={addWayComment}
+                  saveValid={saveValidWay}
+                />
               ))}
           </Box>
         </Box>

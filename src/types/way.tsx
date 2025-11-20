@@ -1,4 +1,5 @@
 import { COMMENT } from './comment';
+import { PLACE } from './place';
 
 export type WAY = {
   id: number;
@@ -26,5 +27,16 @@ export type WAY = {
   };
   valid: null | {
     status: string;
+  };
+  wall?: {
+    id: number;
+    zoneId: number;
+    name: string;
+    zone: {
+      id: number;
+      name: string;
+      floor: string;
+      place: PLACE;
+    };
   };
 };

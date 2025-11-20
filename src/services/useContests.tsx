@@ -8,6 +8,8 @@ import {
 } from 'react';
 import axiosClient from '../axios-client';
 import { RANKING } from '@/types/ranking';
+import { WAY } from '@/types/way';
+import { useAuth } from './useAuth';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
 if (process.env.NODE_ENV !== 'production') {
@@ -37,6 +39,10 @@ interface ContestsContextType {
   getContestUsers: (id: string) => void;
   getContestRanking: (id: string) => void;
   followContest: (id: string, follow: boolean) => Promise<any>;
+  getWayComments: (wayId: number, getpage: number) => Promise<any>;
+  addWayComment: (wayId: number, text: string) => Promise<any>;
+  saveRating: (wayId: number, note: number) => void;
+  saveValid: (wayId: number, status: string, id: string) => void;
 }
 
 const ContestsContext = createContext<ContestsContextType>(
@@ -49,6 +55,7 @@ export function ContestsProvider({
 }: {
   children: ReactNode;
 }): JSX.Element {
+  const { user: me } = useAuth();
   const [myContests, setMyContests] = useState<any>();
   const [contests, setContests] = useState<any>();
   const [contest, setContest] = useState<any>();
@@ -261,6 +268,118 @@ export function ContestsProvider({
     return;
   }
 
+  function getWayComments(wayId: number, getpage: number): Promise<any> {
+    return axiosClient
+      .get(`${baseUrl}/ways/${wayId}/comments?page=${getpage}`)
+      .then((response) => {
+        const newComments = response.data.data;
+        const haveNextPage = response.data.meta.lastPage > getpage;
+
+        setContestWays((prev: any) => {
+          return prev.map((way: WAY) => {
+            if (way.id !== wayId) return way;
+
+            const existing = way.comments || [];
+            const merged = [...existing, ...newComments].filter(
+              (comment, index, self) =>
+                index === self.findIndex((c) => c.id === comment.id)
+            );
+
+            return {
+              ...way,
+              comments: merged,
+              haveNextPage,
+              currentPage: getpage,
+            };
+          });
+        });
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
+  function addWayComment(wayId: number, text: string): Promise<any> {
+    return axiosClient
+      .post(`${baseUrl}/ways/${wayId}/comments`, { text })
+      .then((response) => {
+        response.data.user = {
+          avatar: me!.avatar,
+          firstname: me!.firstname,
+          id: me!.id,
+          lastname: me!.lastname,
+        };
+
+        let newComment = [response.data];
+
+        setContestWays((prev: any) => {
+          return prev.map((way: WAY) => {
+            if (way.id !== wayId) return way;
+
+            const existing = way.comments || [];
+            const merged = [...newComment, ...existing];
+
+            return {
+              ...way,
+              comments: merged,
+              nbComments: way.nbComments + 1,
+            };
+          });
+        });
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
+  function saveRating(wayId: number, note: number) {
+    axiosClient
+      .post(`${baseUrl}/ways/${wayId}/note`, { note: note })
+      .then((response) => {
+        setContestWays((prev: any) => {
+          return prev.map((way: WAY) => {
+            if (way.id !== wayId) return way;
+
+            return {
+              ...way,
+              userNote: response.data.note,
+              avgNote: response.data.avgNote,
+            };
+          });
+        });
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
+  function saveValid(wayId: number, status: string, id: string) {
+    axiosClient
+      .post(`${baseUrl}/ways/${wayId}/valid`, { status: status })
+      .then((response) => {
+        console.log(response.data);
+
+        setContestWays((prev: any) => {
+          return prev.map((way: WAY) => {
+            if (way.id !== wayId) return way;
+
+            return {
+              ...way,
+              valid: response.data,
+            };
+          });
+        });
+        getContestRanking(id);
+      })
+      .catch((errors) => {
+        setError(errors.response.data.errors[0].message);
+      })
+      .finally(() => setLoading(false));
+  }
+
   // Make the provider update only when it should.
   // We only want to force re-renders if the Contest,
   // loading or error states change.
@@ -292,6 +411,10 @@ export function ContestsProvider({
       getContestUsers,
       getContestRanking,
       followContest,
+      getWayComments,
+      addWayComment,
+      saveRating,
+      saveValid,
     }),
     [
       myContests,
