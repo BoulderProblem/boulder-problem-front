@@ -67,7 +67,6 @@ const WayCard: React.FC<WayCardProps> = ({
   const isDesktop = useMediaQuery(theme.breakpoints.up('md')); // md = >= 900px
 
   const wayClickNote = (wayId: number) => {
-    console.log('Way note click : ' + wayId);
     setWayId(wayId);
     setOpenNote(true);
     if (ways?.find((way) => way.id === wayId)?.userNote) {
@@ -80,7 +79,6 @@ const WayCard: React.FC<WayCardProps> = ({
   };
 
   const wayClickValid = (wayId: number) => {
-    console.log('Way click : ' + wayId);
     setWayId(wayId);
 
     if (ways?.find((way) => way.id === wayId)?.valid) {
@@ -92,11 +90,14 @@ const WayCard: React.FC<WayCardProps> = ({
   };
 
   const wayClickComment = (wayId: number) => {
-    console.log('Way comment click : ' + wayId);
     // load comments
     setWayId(wayId);
     getWayComments(wayId, 1);
     setDrawer(true);
+  };
+
+  const handleLoadMoreComments = () => {
+    getWayComments(wayId, way.currentPage + 1);
   };
 
   const handleRatingChange = (event: any) => {
@@ -287,6 +288,18 @@ const WayCard: React.FC<WayCardProps> = ({
               <CommentCard key={comment.id} comment={comment} token={token} />
             ))}
         </Box>
+        {way.comments && way.comments.length < way.nbComments ? (
+          <Box
+            margin={1}
+            textAlign={'center'}
+            sx={{
+              cursor: 'pointer',
+            }}
+            onClick={handleLoadMoreComments}
+          >
+            Charger plus de commentaires
+          </Box>
+        ) : null}
         <MessageInput
           onSend={(message) => {
             handleAddComment(wayId, message);

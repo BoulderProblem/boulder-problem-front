@@ -278,7 +278,7 @@ const Contest = () => {
               {contestRanking &&
                 contestRanking.map((ranking: RANKING, index: number) => (
                   <TableRowItem
-                    key={ranking.id}
+                    key={index}
                     index={index}
                     ranking={ranking}
                     token={token}

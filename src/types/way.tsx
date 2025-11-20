@@ -7,6 +7,7 @@ export type WAY = {
   wallId: number;
   difficultyId: number;
   name: string;
+  currentPage: number;
   routeSetter: string;
   style: string;
   color: {

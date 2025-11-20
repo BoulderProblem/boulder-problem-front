@@ -262,6 +262,13 @@ export default function App() {
           },
         },
       },
+      MuiTypography: {
+        styleOverrides: {
+          root: {
+            color: 'inherit !important',
+          },
+        },
+      },
       MuiTextField: {
         styleOverrides: {
           root: {
