@@ -5,22 +5,19 @@ export async function generateKeys() {
   await sodium.ready;
   const kp = sodium.crypto_box_keypair();
   return {
-    pub: sodium.to_base64(kp.publicKey),
-    priv: sodium.to_base64(kp.privateKey),
-  };
-}
-
-export async function generateKeyPairBase64() {
-  await sodium.ready;
-  const kp = sodium.crypto_box_keypair(); // Curve25519 pair (publicKey, privateKey)
-  return {
-    pub: sodium.to_base64(kp.publicKey),
-    priv: sodium.to_base64(kp.privateKey),
+    pub: sodium.to_base64(
+      kp.publicKey,
+      sodium.base64_variants.URLSAFE_NO_PADDING
+    ),
+    priv: sodium.to_base64(
+      kp.privateKey,
+      sodium.base64_variants.URLSAFE_NO_PADDING
+    ),
   };
 }
 
 // Chiffre une clé privée avec mot de passe
-export async function encryptPrivateKey(privBase64: string, password: string) {
+export async function encrypt(privBase64: string, password: string) {
   await sodium.ready;
   const priv = sodium.from_base64(privBase64);
   const salt = sodium.randombytes_buf(16);
@@ -38,14 +35,17 @@ export async function encryptPrivateKey(privBase64: string, password: string) {
   const ciphertext = sodium.crypto_secretbox_easy(priv, nonce, key);
 
   return {
-    ciphertext: sodium.to_base64(ciphertext),
-    nonce: sodium.to_base64(nonce),
-    salt: sodium.to_base64(salt),
+    ciphertext: sodium.to_base64(
+      ciphertext,
+      sodium.base64_variants.URLSAFE_NO_PADDING
+    ),
+    nonce: sodium.to_base64(nonce, sodium.base64_variants.URLSAFE_NO_PADDING),
+    salt: sodium.to_base64(salt, sodium.base64_variants.URLSAFE_NO_PADDING),
   };
 }
 
 // Déchiffre la clé privée
-export async function decryptPrivateKey(encrypted: any, password: string) {
+export async function decrypt(encrypted: any, password: string) {
   await sodium.ready;
   const salt = sodium.from_base64(encrypted.salt);
   const nonce = sodium.from_base64(encrypted.nonce);
@@ -61,83 +61,95 @@ export async function decryptPrivateKey(encrypted: any, password: string) {
   );
 
   const priv = sodium.crypto_secretbox_open_easy(ciphertext, nonce, key);
-  return sodium.to_base64(priv);
+  return sodium.to_base64(priv, sodium.base64_variants.URLSAFE_NO_PADDING);
 }
 
-const SALT = 'chat-v1'; // optional context for HKDF/generichash
-
-// Encrypt (sender can later re-derive key to decrypt if he keeps recipientPub)
-export async function encryptForRecipient(
-  message: string,
-  senderPrivB64: string,
-  recipientPubB64: string
+export async function decryptGroupKeyFromServer(
+  cipherB64: string,
+  nonceB64: string,
+  serverPublicKey: string,
+  userPrivateKey: string
 ) {
   await sodium.ready;
 
-  const senderPriv = sodium.from_base64(senderPrivB64); // 32 bytes
-  const recipientPub = sodium.from_base64(recipientPubB64); // 32 bytes
-
-  // derive shared secret (ECDH)
-  const shared = sodium.crypto_scalarmult(senderPriv, recipientPub);
-  const key = sodium.crypto_generichash(32, shared);
-
-  const nonce = sodium.randombytes_buf(
-    sodium.crypto_aead_xchacha20poly1305_ietf_NPUBBYTES
+  const serverPublicKeyBytes = sodium.from_base64(
+    serverPublicKey,
+    sodium.base64_variants.URLSAFE_NO_PADDING
   );
-  const ciphertext = sodium.crypto_aead_xchacha20poly1305_ietf_encrypt(
-    sodium.from_string(message),
-    null,
-    null,
+
+  const userPrivateKeyBytes = sodium.from_base64(
+    userPrivateKey,
+    sodium.base64_variants.URLSAFE_NO_PADDING
+  );
+
+  const nonce = sodium.from_base64(
+    nonceB64,
+    sodium.base64_variants.URLSAFE_NO_PADDING
+  );
+
+  const cipher = sodium.from_base64(
+    cipherB64,
+    sodium.base64_variants.URLSAFE_NO_PADDING
+  );
+
+  const groupSecretKey = sodium.crypto_box_open_easy(
+    cipher,
     nonce,
-    key
+    serverPublicKeyBytes,
+    userPrivateKeyBytes
   );
 
-  const senderPub = sodium.crypto_scalarmult_base(senderPriv);
+  return sodium.to_base64(
+    groupSecretKey,
+    sodium.base64_variants.URLSAFE_NO_PADDING
+  );
+}
+
+export async function encryptGroupMessage(
+  message: string,
+  groupSecretKeyB64: string
+) {
+  console.log(groupSecretKeyB64);
+
+  await sodium.ready;
+  const groupSecretKey = sodium.from_base64(
+    groupSecretKeyB64,
+    sodium.base64_variants.URLSAFE_NO_PADDING
+  );
+  const nonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES);
+
+  const cipher = sodium.crypto_secretbox_easy(message, nonce, groupSecretKey);
 
   return {
-    ciphertext: sodium.to_base64(ciphertext),
-    nonce: sodium.to_base64(nonce),
-    sender_pub: sodium.to_base64(senderPub),
-    recipient_pub: recipientPubB64, // déjà base64
-    version: '1',
+    nonce: sodium.to_base64(nonce, sodium.base64_variants.URLSAFE_NO_PADDING),
+    ciphertext: sodium.to_base64(
+      cipher,
+      sodium.base64_variants.URLSAFE_NO_PADDING
+    ),
   };
 }
 
-// Decrypt: works for **le destinataire** ou **l'expéditeur** (si le message contient sender_pub + recipient_pub)
-export async function decryptMessageForParticipant(
-  msgObj: any,
-  myPrivB64: any
+export async function decryptGroupMessage(
+  cipherB64: string,
+  nonceB64: string,
+  groupSecretKeyB64: string
 ) {
   await sodium.ready;
-
-  const ciphertext = sodium.from_base64(msgObj.ciphertext);
-  const nonce = sodium.from_base64(msgObj.nonce);
-  const myPriv = sodium.from_base64(myPrivB64);
-
-  const myPub = sodium.crypto_scalarmult_base(myPriv);
-  const myPubB64 = sodium.to_base64(myPub);
-
-  let otherPub;
-  if (myPubB64 === msgObj.senderPub) {
-    otherPub = sodium.from_base64(msgObj.recipientPub);
-  } else if (myPubB64 === msgObj.recipientPub) {
-    otherPub = sodium.from_base64(msgObj.senderPub);
-  } else {
-    throw new Error(
-      "Cette clé privée n'appartient ni à l'expéditeur ni au destinataire"
-    );
-  }
-
-  const shared = sodium.crypto_scalarmult(myPriv, otherPub);
-  const key = sodium.crypto_generichash(32, shared);
-
-  const plaintext = sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(
-    null,
-    ciphertext,
-    null,
-    nonce,
-    key
+  const groupSecretKey = sodium.from_base64(
+    groupSecretKeyB64,
+    sodium.base64_variants.URLSAFE_NO_PADDING
   );
 
-  return sodium.to_string(plaintext);
+  const nonce = sodium.from_base64(
+    nonceB64,
+    sodium.base64_variants.URLSAFE_NO_PADDING
+  );
+  const cipher = sodium.from_base64(
+    cipherB64,
+    sodium.base64_variants.URLSAFE_NO_PADDING
+  );
+
+  const msg = sodium.crypto_secretbox_open_easy(cipher, nonce, groupSecretKey);
+
+  return sodium.to_string(msg);
 }

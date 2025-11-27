@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMessages } from '@/services/useMessages';
 import { useAuth } from '@/services/useAuth';
-import { encryptForRecipient } from '@/crypto';
+import { encrypt, encryptForRecipient, encryptGroupMessage } from '@/crypto';
 import { MESSAGE } from '@/types/message';
 import { styled } from '@mui/material/styles';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
@@ -70,22 +70,19 @@ const Messages = () => {
   }, [isAtBottom, isAtBottomMobile, messages]);
 
   async function sendMessage(newMessage: string) {
-    selectedConv?.usersConversation.forEach((userConv) => {
-      if (userConv.userId !== user!.id) {
-        encryptForRecipient(newMessage, priv, userConv.user.publicKey).then(
-          (response) => {
-            sendMessages(
-              user!.id,
-              userConv.userId,
-              response.ciphertext,
-              response.nonce,
-              response.sender_pub,
-              response.recipient_pub,
-              selectedConv!.id
-            );
-          }
-        );
-      }
+    encryptGroupMessage(
+      newMessage,
+      selectedConv!.groupKeys.filter(async (group: any) => {
+        group.version = selectedConv!.keyVersion;
+      })[0].privKey
+    ).then((response) => {
+      sendMessages(
+        user!.id,
+        response.ciphertext,
+        response.nonce,
+        selectedConv!.id,
+        selectedConv!.keyVersion
+      );
     });
   }
 

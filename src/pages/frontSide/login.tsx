@@ -46,8 +46,8 @@ const Login = () => {
   async function handleGoogle() {
     setLoadingGoogle(true);
     let result = await signInWithPopup(auth, googleProvider);
+
     const tokenResponse = (result as any)._tokenResponse;
-    console.log(tokenResponse);
     loginFirebase(tokenResponse.idToken, tokenResponse.localId).then(() => {
       setLoadingGoogle(false);
     });

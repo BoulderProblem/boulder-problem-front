@@ -8,7 +8,11 @@ import {
   useState,
 } from 'react';
 import axiosClient from '../axios-client';
-import { decryptMessageForParticipant } from '@/crypto';
+import {
+  decrypt,
+  decryptGroupKeyFromServer,
+  decryptGroupMessage,
+} from '@/crypto';
 import { useAuth } from './useAuth';
 import { MESSAGE } from '@/types/message';
 import { CONVERSATION } from '@/types/conversation';
@@ -33,12 +37,10 @@ interface MessagesContextType {
   getMessages: (convId: number, loadOld?: boolean) => Promise<any>;
   sendMessages: (
     sender_id: string,
-    receiver_id: string,
     ciphertext: string,
     nonce: string,
-    sender_pub: string,
-    recipient_pub: string,
-    conversationId: number
+    conversationId: number,
+    key_version: number
   ) => Promise<any>;
 }
 
@@ -52,7 +54,7 @@ export function MessagesProvider({
 }: {
   children: ReactNode;
 }): JSX.Element {
-  const { user, priv } = useAuth();
+  const { user, priv, pubSrvKey } = useAuth();
   const [messages, setMessages] = useState<MESSAGE[]>([]);
   const [nbMessagesUnread, setNbMessagesUnread] = useState<number>(0);
   const [conversations, setConversations] = useState<CONVERSATION[]>([]);
@@ -101,48 +103,63 @@ export function MessagesProvider({
     // écouter seulement les messages qui me concernent
     socket.on('message:new', async (msg: any) => {
       try {
-        const text = await decryptMessageForParticipant(msg, priv);
-        const decrypted = { ...msg, text };
+        // get key
+        let conv = conversations.filter(async (group: any) => {
+          group.version = selectedConv!.keyVersion;
+        })[0];
+        if (conv) {
+          const privKey = conv.groupKeys.filter(async (group: any) => {
+            group.version = msg.keyVersion;
+          })[0].privKey;
+          const text = await decryptGroupMessage(
+            msg.ciphertext,
+            msg.nonce,
+            privKey
+          );
+          const decrypted = { ...msg, text };
 
-        setMessages((prev) =>
-          prev.some((m) => m.id === decrypted.id) ? prev : [...prev, decrypted]
-        );
+          setMessages((prev) =>
+            prev.some((m) => m.id === decrypted.id)
+              ? prev
+              : [...prev, decrypted]
+          );
 
-        if (
-          (msg.senderId === user.id && selectedConv) ||
-          (msg.receiverId === user.id &&
-            selectedConv &&
-            selectedConv.id === msg.conversationId)
-        ) {
-          readConversation(selectedConv.id);
-        } else {
-          setNbMessagesUnread((prev) => prev + 1);
-        }
-
-        setConversations((prev) => {
-          const exists = prev.some((conv) => conv.id === msg.conversationId);
-
-          if (exists) {
-            return prev.map((conv) =>
-              conv.id === msg.conversationId
-                ? {
-                    ...conv,
-                    unreadMessages:
-                      (!selectedConv || selectedConv.id !== conv.id) &&
-                      msg.senderId !== user.id
-                        ? conv.unreadMessages + 1
-                        : 0,
-                    latestMessage: [decrypted], // on ajoute au lieu d'écraser
-                    updatedAt: new Date().toISOString(),
-                  }
-                : conv
-            );
+          if (
+            (msg.senderId === user.id && selectedConv) ||
+            (msg.receiverId === user.id &&
+              selectedConv &&
+              selectedConv.id === msg.conversationId)
+          ) {
+            readConversation(selectedConv.id);
           } else {
-            // si la conv n’existe pas → on la crée avec ce message
-            getConversationId(msg.conversationId);
-            return prev;
+            setNbMessagesUnread((prev) => prev + 1);
           }
-        });
+
+          setConversations((prev) => {
+            const exists = prev.some((conv) => conv.id === msg.conversationId);
+
+            if (exists) {
+              return prev.map((conv) =>
+                conv.id === msg.conversationId
+                  ? {
+                      ...conv,
+                      unreadMessages:
+                        (!selectedConv || selectedConv.id !== conv.id) &&
+                        msg.senderId !== user.id
+                          ? conv.unreadMessages + 1
+                          : 0,
+                      latestMessage: [decrypted], // on ajoute au lieu d'écraser
+                      updatedAt: new Date().toISOString(),
+                    }
+                  : conv
+              );
+            } else {
+              // si la conv n’existe pas → on la crée avec ce message
+              getConversationId(msg.conversationId);
+              return prev;
+            }
+          });
+        }
 
         // add conv if not exist
       } catch (e) {
@@ -160,6 +177,14 @@ export function MessagesProvider({
       .post(`${baseUrl}/conversations`, { name, userIds })
       .then(async (response) => {
         if (Array.isArray(response.data)) {
+          for (let group of response.data[0].groupKeys) {
+            group.privKey = await decryptGroupKeyFromServer(
+              group.ciphertext,
+              group.nonce,
+              pubSrvKey,
+              priv
+            );
+          }
           setConversations((prev) => {
             const newOnes = response.data.filter(
               ({ id }: any) => !prev.some((e) => e.id === id)
@@ -191,11 +216,25 @@ export function MessagesProvider({
 
         let decryptedMessages = await Promise.all(
           response.data.map(async (conv: any) => {
+            for (let group of conv.groupKeys) {
+              group.privKey = await decryptGroupKeyFromServer(
+                group.ciphertext,
+                group.nonce,
+                pubSrvKey,
+                priv
+              );
+            }
             if (conv.latestMessage.length === 1) {
               try {
-                const text = await decryptMessageForParticipant(
-                  conv.latestMessage[0],
-                  priv
+                // get key
+                const privKey = conv.groupKeys.filter(async (group: any) => {
+                  group.version = conv.latestMessage[0].keyVersion;
+                })[0].privKey;
+
+                const text = await decryptGroupMessage(
+                  conv.latestMessage[0].ciphertext,
+                  conv.latestMessage[0].nonce,
+                  privKey
                 );
 
                 conv.latestMessage[0].text = text;
@@ -226,8 +265,6 @@ export function MessagesProvider({
         });
       })
       .catch((errors) => {
-        console.log(error);
-
         setError(errors.response.data.errors[0].message);
       })
       .finally(() => setLoading(false));
@@ -246,10 +283,7 @@ export function MessagesProvider({
           response.data.map(async (conv: any) => {
             if (conv.messages.length === 1) {
               try {
-                const text = await decryptMessageForParticipant(
-                  conv.messages[0],
-                  priv
-                );
+                const text = await decrypt(conv.messages[0], priv);
 
                 conv.messages[0].text = text;
                 return conv; // conserve metadata + ajoute texte clair
@@ -273,8 +307,6 @@ export function MessagesProvider({
         });
       })
       .catch((errors) => {
-        console.log(error);
-
         setError(errors.response.data.errors[0].message);
       })
       .finally(() => setLoading(false));
@@ -339,8 +371,22 @@ export function MessagesProvider({
         let decryptedMessages = await Promise.all(
           response.data.map(async (msg: any) => {
             try {
-              const text = await decryptMessageForParticipant(msg, priv);
-              return { ...msg, text }; // conserve metadata + ajoute texte clair
+              // get key
+              let conv = conversations.filter(async (group: any) => {
+                group.version = selectedConv!.keyVersion;
+              })[0];
+              if (conv) {
+                const privKey = conv.groupKeys.filter(async (group: any) => {
+                  group.version = msg.keyVersion;
+                })[0].privKey;
+
+                const text = await decryptGroupMessage(
+                  msg.ciphertext,
+                  msg.nonce,
+                  privKey
+                );
+                return { ...msg, text }; // conserve metadata + ajoute texte clair
+              }
             } catch (e) {
               console.error('Erreur de déchiffrement:', e);
               return { ...msg, text: '[Message illisible]' };
@@ -375,21 +421,17 @@ export function MessagesProvider({
    */
   async function sendMessages(
     sender_id: string,
-    receiver_id: string,
     ciphertext: string,
     nonce: string,
-    sender_pub: string,
-    recipient_pub: string,
-    conversationId: number
+    conversationId: number,
+    key_version: number
   ) {
     socketRef.current.emit('message:send', {
       sender_id,
-      receiver_id,
       ciphertext,
       nonce,
-      sender_pub,
-      recipient_pub,
       conversationId,
+      key_version,
     });
   }
 

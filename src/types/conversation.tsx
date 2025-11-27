@@ -4,10 +4,20 @@ export type CONVERSATION = {
   createdAt: string;
   updatedAt: string;
   creatorId: string;
+  pubKeyGroup: string;
+  keyVersion: number;
   latestMessage: [
     {
       text: string;
-    }
+    },
+  ];
+  groupKeys: [
+    {
+      ciphertext: string;
+      nonce: string;
+      version: number;
+      privKey: string;
+    },
   ];
   unreadMessages: number;
   usersConversation: [
@@ -22,6 +32,6 @@ export type CONVERSATION = {
         lastname: string;
         publicKey: string;
       };
-    }
+    },
   ];
 };

@@ -251,8 +251,6 @@ const Place = (props: any) => {
    * @param user
    */
   const setOwner = (user: any) => {
-    console.log(user);
-
     // if (user) {
     //   setInputs((values: any) => ({ ...values, ownerId: user.id }));
     setInputs((values: any) => ({ ...values, owners: user }));

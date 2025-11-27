@@ -8,7 +8,7 @@ import {
 } from 'react';
 import axiosClient from '../axios-client';
 import { USER } from '@/types/user';
-import { decryptPrivateKey, encryptPrivateKey, generateKeys } from '@/crypto';
+import { decrypt, encrypt, generateKeys } from '@/crypto';
 import axios from 'axios';
 
 let baseUrl = `https://boulder-problem.chabs.fr/api`;
@@ -23,6 +23,7 @@ interface AuthContextType {
   stats?: any;
   token: string;
   priv: string;
+  pubSrvKey: string;
   loading: boolean;
   error?: any;
   login: (email: string, password: string) => void;
@@ -49,6 +50,7 @@ export function AuthProvider({
   const [user, setUser] = useState<USER>();
   const [stats, setStats] = useState<any>();
   const [token, setToken] = useState<string>('');
+  const [pubSrvKey, setPubSrvKey] = useState<string>('');
   const [error, setError] = useState<any>();
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingInitial, setLoadingInitial] = useState<boolean>(true);
@@ -69,7 +71,6 @@ export function AuthProvider({
   // generate keys
   const setup = async (password: string, pubSrvKey: string) => {
     const k = await generateKeys();
-
     setPriv(k.priv);
     localStorage.setItem('PRIV', k.priv);
     backup(k, password, pubSrvKey);
@@ -81,8 +82,8 @@ export function AuthProvider({
     password: string,
     pubSrvKey: string
   ) => {
-    const encrypted = await encryptPrivateKey(k.priv, password);
-    const encryptedSrv = await encryptPrivateKey(k.priv, pubSrvKey);
+    const encrypted = await encrypt(k.priv, password);
+    const encryptedSrv = await encrypt(k.priv, pubSrvKey);
     await axiosClient.post(`${baseUrl}/backup_key`, {
       priv: encrypted,
       privSrv: encryptedSrv,
@@ -93,7 +94,7 @@ export function AuthProvider({
   // give back private key from server
   const restore = async (password: string) => {
     const { data } = await axiosClient.get(`${baseUrl}/backup_key`);
-    const privRestored = await decryptPrivateKey(data, password);
+    const privRestored = await decrypt(data, password);
 
     setPriv(privRestored);
     localStorage.setItem('PRIV', privRestored);
@@ -119,7 +120,9 @@ export function AuthProvider({
   useEffect(() => {
     let token = localStorage.getItem('ACCESS_TOKEN');
     let priv = localStorage.getItem('PRIV');
+    let pubSrv = localStorage.getItem('PUBSRV');
     setPriv(priv ? priv : '');
+    setPubSrvKey(pubSrv ? pubSrv : '');
     if (token) {
       axiosClient
         .get(`${baseUrl}/user`)
@@ -158,6 +161,9 @@ export function AuthProvider({
         axiosClient.get(`${baseUrl}/user`).then((user) => {
           setTimeout(() => {
             setUser(user.data);
+            setPubSrvKey(loginData.data.pubSrvKey);
+
+            localStorage.setItem('PUBSRV', loginData.data.pubSrvKey);
             generateOrGetKeys(
               password,
               user.data.publicKey,
@@ -189,6 +195,8 @@ export function AuthProvider({
           axiosClient.get(`${baseUrl}/srv_key`).then((res) => {
             setTimeout(() => {
               setUser(user.data);
+              setPubSrvKey(res.data.pubSrvKey);
+              localStorage.setItem('PUBSRV', loginData.data.pubSrvKey);
               generateOrGetKeys(
                 id.toString(),
                 user.data.publicKey,
@@ -207,8 +215,6 @@ export function AuthProvider({
     await axiosClient
       .post(`${baseUrl}/forgot_password`, { email })
       .then((response) => {
-        console.log(response);
-
         // success
       })
       .catch((errors) => {
@@ -226,8 +232,7 @@ export function AuthProvider({
     await axiosClient
       .post(`${baseUrl}/reset_password`, { email, code, password })
       .then((response) => {
-        console.log(response);
-
+        Ès;
         // success
       })
       .catch((errors) => {
@@ -296,6 +301,7 @@ export function AuthProvider({
       stats,
       token,
       priv,
+      pubSrvKey,
       loading,
       error,
       login,
@@ -306,7 +312,7 @@ export function AuthProvider({
       logout,
       getStats,
     }),
-    [user, stats, token, priv, loading, error]
+    [user, stats, token, priv, pubSrvKey, loading, error]
   );
 
   // We only want to render the underlying app after we
