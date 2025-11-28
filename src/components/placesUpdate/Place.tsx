@@ -32,6 +32,7 @@ import { useAuth } from '@/services/useAuth';
 import L from 'leaflet';
 import icon from '@/assets/icon-map.svg';
 import { useAvatar } from '@/hooks/useAvatar';
+import { SearchPeopleOption, SearchPeopleTag } from '../searchPeople';
 
 const Place = (props: any) => {
   const { place, getPlace, updatePlace, getPlaceZones, difficulties } =
@@ -593,23 +594,24 @@ const Place = (props: any) => {
                           className="p-2.5"
                         />
                       )}
-                      renderTags={(value, getTagProps) =>
-                        value.map((option, index) => (
-                          <span
+                      renderOption={(props, option) => (
+                        <li {...props} key={option.id}>
+                          <SearchPeopleOption
+                            user={option}
+                            token={token}
                             key={option.id}
-                            {...getTagProps({ index })}
-                            style={{
-                              backgroundColor: 'var(--primary-100)',
-                              color: 'var(--primary-800)',
-                              borderRadius: 8,
-                              padding: '2px 6px',
-                              marginRight: 4,
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                            }}
-                          >
-                            {option.firstname} {option.lastname}
-                          </span>
+                            mb={0.5}
+                          />
+                        </li>
+                      )}
+                      renderTags={(value, getTagProps) =>
+                        value.map((option) => (
+                          <SearchPeopleTag
+                            user={option}
+                            token={token}
+                            getTagProps={getTagProps}
+                            key={option.id}
+                          />
                         ))
                       }
                     />

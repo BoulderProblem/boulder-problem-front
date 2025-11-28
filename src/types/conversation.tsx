@@ -6,11 +6,9 @@ export type CONVERSATION = {
   creatorId: string;
   pubKeyGroup: string;
   keyVersion: number;
-  latestMessage: [
-    {
-      text: string;
-    },
-  ];
+  latestMessage: {
+    text: string;
+  };
   groupKeys: [
     {
       ciphertext: string;

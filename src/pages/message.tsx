@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMessages } from '@/services/useMessages';
 import { useAuth } from '@/services/useAuth';
-import { encrypt, encryptForRecipient, encryptGroupMessage } from '@/crypto';
+import { encryptGroupMessage } from '@/crypto';
 import { MESSAGE } from '@/types/message';
 import { styled } from '@mui/material/styles';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
@@ -14,11 +14,14 @@ import {
   Autocomplete,
   TextField,
   Badge,
+  Chip,
+  Avatar,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useUsers } from '@/services/useUsers';
 import { CONVERSATION } from '@/types/conversation';
 import MessageInput from '@/components/posts/MessageInput';
+import { SearchPeopleOption, SearchPeopleTag } from '@/components/searchPeople';
 
 const Messages = () => {
   const {
@@ -31,7 +34,7 @@ const Messages = () => {
     createConversations,
   } = useMessages();
   const { users, getUsers } = useUsers();
-  const { user, priv } = useAuth();
+  const { user, token } = useAuth();
   const [openConv, setOpenConv] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
@@ -41,6 +44,7 @@ const Messages = () => {
   const [isAtBottomMobile, setIsAtBottomMobile] = useState(true);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [firstLoad, setFirstLoad] = useState(true);
+  const [newConv, setNewConv] = useState<any[]>([]);
 
   useEffect(() => {
     return () => {
@@ -89,6 +93,7 @@ const Messages = () => {
   const openModalConv = () => {
     setOpenConv(true);
     fetchPersons('');
+    setNewConv([]);
   };
 
   // Fonction pour effectuer la recherche via l'API
@@ -97,12 +102,13 @@ const Messages = () => {
   };
 
   const setOwner = (dest: any) => {
-    console.log(dest);
-    // create conversation
-    createConversations('', [user!.id, dest.id]);
-    handleClose();
+    setNewConv(dest);
   };
 
+  const createConv = () => {
+    createConversations('', [user!.id, ...newConv.map((user: any) => user.id)]);
+    handleClose();
+  };
   // close modals
   const handleClose = () => {
     setOpenConv(false);
@@ -281,19 +287,19 @@ const Messages = () => {
                     setSelectedConversation(c);
                   }
                 }}
-                className={`p-4 cursor-pointer hover:bg-base-300 ${
-                  selectedConv?.id === c.id ? 'bg-base-300' : ''
+                className={`p-4 cursor-pointer hover:bg-primary-800 ${
+                  selectedConv?.id === c.id ? 'bg-primary-700' : ''
                 }`}
               >
                 <div className="relative">
                   <p className="font-medium">{selectName(c)}</p>
                   <div className="flex justify-between items-center p-2">
                     <span className="text-left font-medium">
-                      {c.latestMessage && c.latestMessage[0]
-                        ? c.latestMessage[0].text
+                      {c.latestMessage
+                        ? c.latestMessage.text
                         : 'Pas de message'}
                     </span>
-                    <span className="text-right text-gray-500">
+                    <span className="text-right ">
                       {displayHour(c.updatedAt)}
                     </span>
                   </div>
@@ -330,7 +336,7 @@ const Messages = () => {
                         className={`p-2 rounded-lg max-w-xs whitespace-pre-line ${
                           firstLoad ? 'opacity-0' : 'opacity-100'
                         } ${
-                          m.senderPub === user!.publicKey
+                          m.senderId === user!.id
                             ? 'bg-blue-500 text-white self-end ml-auto'
                             : 'bg-gray-200 text-black'
                         }`}
@@ -375,8 +381,8 @@ const Messages = () => {
                     <p className="font-medium">{selectName(c)}</p>
                     <div className="flex justify-between items-center p-2">
                       <span className="text-left font-medium">
-                        {c.latestMessage && c.latestMessage[0]
-                          ? c.latestMessage[0].text
+                        {c.latestMessage
+                          ? c.latestMessage.text
                           : 'Pas de message'}
                       </span>
                       <span className="text-right text-gray-500">
@@ -451,10 +457,11 @@ const Messages = () => {
           className: 'dark:bg-zinc-700 relative',
         }}
       >
-        <DialogTitle>Choisissez un destinataire</DialogTitle>
+        <DialogTitle>Ajoutez des destinataires</DialogTitle>
         <DialogContent>
           <Autocomplete
             fullWidth
+            multiple
             onChange={(_event: any, newValue: any) => {
               setOwner(newValue);
             }}
@@ -472,6 +479,26 @@ const Messages = () => {
               if (event && !event.cancelable) fetchPersons(newInputValue);
             }}
             disabled={user && user.roleId === 2}
+            renderOption={(props, option) => (
+              <li {...props} key={option.id}>
+                <SearchPeopleOption
+                  user={option}
+                  token={token}
+                  key={option.id}
+                  mb={0}
+                />
+              </li>
+            )}
+            renderTags={(value, getTagProps) =>
+              value.map((option) => (
+                <SearchPeopleTag
+                  user={option}
+                  token={token}
+                  getTagProps={getTagProps}
+                  key={option.id}
+                />
+              ))
+            }
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -485,6 +512,9 @@ const Messages = () => {
         <DialogActions>
           <button className="btn" onClick={handleClose}>
             Fermer
+          </button>
+          <button className="btn" onClick={createConv}>
+            Créer
           </button>
         </DialogActions>
       </Dialog>

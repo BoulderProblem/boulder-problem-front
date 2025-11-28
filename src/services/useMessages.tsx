@@ -148,7 +148,7 @@ export function MessagesProvider({
                         msg.senderId !== user.id
                           ? conv.unreadMessages + 1
                           : 0,
-                      latestMessage: [decrypted], // on ajoute au lieu d'écraser
+                      latestMessage: decrypted, // on ajoute au lieu d'écraser
                       updatedAt: new Date().toISOString(),
                     }
                   : conv
@@ -193,6 +193,9 @@ export function MessagesProvider({
             return [...prev, ...newOnes];
           });
         } else {
+          setSelectedConversation(
+            conversations.find((c) => c.id === response.data.convId) ?? null
+          );
           return;
         }
       })
@@ -224,24 +227,24 @@ export function MessagesProvider({
                 priv
               );
             }
-            if (conv.latestMessage.length === 1) {
+            if (conv.latestMessage) {
               try {
                 // get key
                 const privKey = conv.groupKeys.filter(async (group: any) => {
-                  group.version = conv.latestMessage[0].keyVersion;
+                  group.version = conv.latestMessage.keyVersion;
                 })[0].privKey;
 
                 const text = await decryptGroupMessage(
-                  conv.latestMessage[0].ciphertext,
-                  conv.latestMessage[0].nonce,
+                  conv.latestMessage.ciphertext,
+                  conv.latestMessage.nonce,
                   privKey
                 );
 
-                conv.latestMessage[0].text = text;
+                conv.latestMessage.text = text;
                 return conv; // conserve metadata + ajoute texte clair
               } catch (e) {
                 console.error('Erreur de déchiffrement:', e);
-                conv.latestMessage[0].text = '[Message illisible]';
+                conv.latestMessage.text = '[Message illisible]';
                 return conv;
               }
             } else {
@@ -372,9 +375,9 @@ export function MessagesProvider({
           response.data.map(async (msg: any) => {
             try {
               // get key
-              let conv = conversations.filter(async (group: any) => {
-                group.version = selectedConv!.keyVersion;
-              })[0];
+              let conv = conversations.some((c) => c.id === msg.conversationId)
+                ? conversations.find((c) => c.id === msg.conversationId)
+                : null;
               if (conv) {
                 const privKey = conv.groupKeys.filter(async (group: any) => {
                   group.version = msg.keyVersion;
