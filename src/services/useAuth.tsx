@@ -232,7 +232,6 @@ export function AuthProvider({
     await axiosClient
       .post(`${baseUrl}/reset_password`, { email, code, password })
       .then((response) => {
-        Ès;
         // success
       })
       .catch((errors) => {

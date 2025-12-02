@@ -28,7 +28,7 @@ export type CONVERSATION = {
         id: string;
         firstname: string;
         lastname: string;
-        publicKey: string;
+        avatar: string | null;
       };
     },
   ];

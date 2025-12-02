@@ -9,11 +9,6 @@ interface MessageInputProps {
   token: string;
 }
 
-let baseUrl = `https://boulder-problem.chabs.fr/api`;
-if (process.env.NODE_ENV !== 'production') {
-  baseUrl = `http://localhost:3333`;
-}
-
 const CommentCard: React.FC<MessageInputProps> = ({ comment, token }) => {
   const avatarUrl = useAvatar(
     comment.user.id,

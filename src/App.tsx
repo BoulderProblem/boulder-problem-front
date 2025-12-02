@@ -6,6 +6,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { getFromLS, setToLS } from './utils/storage';
 import {
   Avatar,
+  Badge,
   Box,
   Button,
   Divider,
@@ -32,38 +33,7 @@ import Footer from './components/Footer';
 import { useAuth } from './services/useAuth';
 import { useAvatar } from './hooks/useAvatar';
 import background from './assets/home-background.webp';
-
-const baseNavigation = [
-  { segment: 'feed', title: "Fil d'actualité", icon: <ViewStreamIcon /> },
-  { segment: 'users', title: 'Utilisateurs', icon: <PeopleIcon /> },
-  { segment: 'places', title: 'Salles', icon: <PlaceIcon /> },
-  { segment: 'contests', title: 'Contests', icon: <EmojiEventsIcon /> },
-  { segment: 'messages', title: 'Messages', icon: <MessageIcon /> },
-  { kind: 'divider' },
-  { segment: 'settings', title: 'Paramètres', icon: <SettingsIcon /> },
-];
-
-const gerantNavigation = [
-  { segment: '', title: 'Dashboard', icon: <DashboardIcon /> },
-  { segment: 'feed', title: "Fil d'actualité", icon: <ViewStreamIcon /> },
-  { segment: 'users', title: 'Utilisateurs', icon: <PeopleIcon /> },
-  { segment: 'places', title: 'Salles', icon: <PlaceIcon /> },
-  { segment: 'contests', title: 'Contests', icon: <EmojiEventsIcon /> },
-  { segment: 'messages', title: 'Messages', icon: <MessageIcon /> },
-  { kind: 'divider' },
-  { segment: 'settings', title: 'Paramètres', icon: <SettingsIcon /> },
-];
-
-const adminNavigation = [
-  { segment: '', title: 'Dashboard', icon: <DashboardIcon /> },
-  { segment: 'feed', title: "Fil d'actualité", icon: <ViewStreamIcon /> },
-  { segment: 'users', title: 'Utilisateurs', icon: <PeopleIcon /> },
-  { segment: 'places', title: 'Salles', icon: <PlaceIcon /> },
-  { segment: 'contests', title: 'Contests', icon: <EmojiEventsIcon /> },
-  { segment: 'messages', title: 'Messages', icon: <MessageIcon /> },
-  { kind: 'divider' },
-  { segment: 'settings', title: 'Paramètres', icon: <SettingsIcon /> },
-];
+import { useMessages } from './services/useMessages';
 
 // Adapter React Router pour Toolpad
 function useReactRouterAdapter(): Router {
@@ -225,9 +195,66 @@ function User({ user, token, logout }: any) {
 
 export default function App() {
   const { user, token, logout } = useAuth();
+  const { nbMessagesUnread } = useMessages();
   const [isBlack, setIsBlack] = React.useState(
     JSON.parse(getFromLS('theme') || 'false')
   );
+
+  const baseNavigation = [
+    { segment: 'feed', title: "Fil d'actualité", icon: <ViewStreamIcon /> },
+    { segment: 'users', title: 'Utilisateurs', icon: <PeopleIcon /> },
+    { segment: 'places', title: 'Salles', icon: <PlaceIcon /> },
+    { segment: 'contests', title: 'Contests', icon: <EmojiEventsIcon /> },
+    {
+      segment: 'messages',
+      title: 'Messages',
+      icon: (
+        <Badge badgeContent={nbMessagesUnread} color="primary">
+          <MessageIcon />
+        </Badge>
+      ),
+    },
+    { kind: 'divider' },
+    { segment: 'settings', title: 'Paramètres', icon: <SettingsIcon /> },
+  ];
+
+  const gerantNavigation = [
+    { segment: '', title: 'Dashboard', icon: <DashboardIcon /> },
+    { segment: 'feed', title: "Fil d'actualité", icon: <ViewStreamIcon /> },
+    { segment: 'users', title: 'Utilisateurs', icon: <PeopleIcon /> },
+    { segment: 'places', title: 'Salles', icon: <PlaceIcon /> },
+    { segment: 'contests', title: 'Contests', icon: <EmojiEventsIcon /> },
+    {
+      segment: 'messages',
+      title: 'Messages',
+      icon: (
+        <Badge badgeContent={nbMessagesUnread} color="primary">
+          <MessageIcon />
+        </Badge>
+      ),
+    },
+    { kind: 'divider' },
+    { segment: 'settings', title: 'Paramètres', icon: <SettingsIcon /> },
+  ];
+
+  const adminNavigation = [
+    { segment: '', title: 'Dashboard', icon: <DashboardIcon /> },
+    { segment: 'feed', title: "Fil d'actualité", icon: <ViewStreamIcon /> },
+    { segment: 'users', title: 'Utilisateurs', icon: <PeopleIcon /> },
+    { segment: 'places', title: 'Salles', icon: <PlaceIcon /> },
+    { segment: 'contests', title: 'Contests', icon: <EmojiEventsIcon /> },
+    {
+      segment: 'messages',
+      title: 'Messages',
+      icon: (
+        <Badge badgeContent={nbMessagesUnread} color="primary">
+          <MessageIcon />
+        </Badge>
+      ),
+    },
+    { kind: 'divider' },
+    { segment: 'settings', title: 'Paramètres', icon: <SettingsIcon /> },
+  ];
 
   const NAVIGATION = React.useMemo(() => {
     if (user && user.roleId === 1) {
@@ -240,7 +267,7 @@ export default function App() {
       return adminNavigation;
     }
     return baseNavigation;
-  }, [user]);
+  }, [user, nbMessagesUnread]);
 
   const router = useReactRouterAdapter();
   const location = useLocation();
@@ -262,10 +289,12 @@ export default function App() {
           },
         },
       },
-      MuiTypography: {
+      MuiListItem: {
         styleOverrides: {
           root: {
-            color: 'inherit !important',
+            '.MuiTypography-body1': {
+              color: 'inherit !important',
+            },
           },
         },
       },

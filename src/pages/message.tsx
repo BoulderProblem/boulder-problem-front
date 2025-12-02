@@ -14,14 +14,18 @@ import {
   Autocomplete,
   TextField,
   Badge,
-  Chip,
+  Typography,
+  Box,
   Avatar,
+  Divider,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useUsers } from '@/services/useUsers';
 import { CONVERSATION } from '@/types/conversation';
 import MessageInput from '@/components/posts/MessageInput';
 import { SearchPeopleOption, SearchPeopleTag } from '@/components/searchPeople';
+import { USER } from '@/types/user';
+import { useAvatar } from '@/hooks/useAvatar';
 
 const Messages = () => {
   const {
@@ -45,6 +49,7 @@ const Messages = () => {
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [firstLoad, setFirstLoad] = useState(true);
   const [newConv, setNewConv] = useState<any[]>([]);
+  let lastDate = null as string | null;
 
   useEffect(() => {
     return () => {
@@ -188,9 +193,11 @@ const Messages = () => {
   /**
    * trie les messages par date de mise à jour (la plus ancienne en premier)
    */
-  const sortedMessages = messages.sort((a, b) => {
-    return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
-  });
+  const sortedMessages = messages
+    .filter((m) => m.conversationId === selectedConv?.id)
+    .sort((a, b) => {
+      return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+    });
 
   /**
    * gestion du scroll pour le chargement des anciens messages
@@ -287,8 +294,8 @@ const Messages = () => {
                     setSelectedConversation(c);
                   }
                 }}
-                className={`p-4 cursor-pointer hover:bg-primary-800 ${
-                  selectedConv?.id === c.id ? 'bg-primary-700' : ''
+                className={`p-4 cursor-pointer hover:bg-primary-500 ${
+                  selectedConv?.id === c.id ? 'bg-primary-400' : ''
                 }`}
               >
                 <div className="relative">
@@ -316,7 +323,7 @@ const Messages = () => {
         </div>
 
         {/* Messages */}
-        <div className="relative flex-1 flex flex-col h-full">
+        <div className="relative flex-1 flex flex-col h-full bg-base-200">
           {selectedConv ? (
             <>
               <div className="p-4 border-b font-bold">
@@ -328,22 +335,17 @@ const Messages = () => {
                 className="flex-1 overflow-y-auto p-4 space-y-2"
               >
                 {Array.isArray(messages) &&
-                  sortedMessages
-                    .filter((m) => m.conversationId === selectedConv.id)
-                    .map((m: MESSAGE) => (
-                      <div
-                        key={m.id}
-                        className={`p-2 rounded-lg max-w-xs whitespace-pre-line ${
-                          firstLoad ? 'opacity-0' : 'opacity-100'
-                        } ${
-                          m.senderId === user!.id
-                            ? 'bg-blue-500 text-white self-end ml-auto'
-                            : 'bg-gray-200 text-black'
-                        }`}
-                      >
-                        {m.text}
-                      </div>
-                    ))}
+                  sortedMessages.map((msg: MESSAGE, index: number) => (
+                    <ChatMessages
+                      key={msg.id}
+                      msg={msg}
+                      user={user}
+                      selectedConv={selectedConv}
+                      firstLoad={firstLoad}
+                      index={index}
+                      messages={sortedMessages}
+                    />
+                  ))}
                 <div ref={endRef} />
               </div>
               <MessageInput
@@ -422,17 +424,16 @@ const Messages = () => {
               className="flex-1 overflow-y-auto p-4 space-y-2"
             >
               {Array.isArray(messages) &&
-                messages.map((m: MESSAGE) => (
-                  <div
-                    key={m.id}
-                    className={`p-2 rounded-lg max-w-xs ${
-                      m.senderPub === user!.publicKey
-                        ? 'bg-blue-500 text-white self-end ml-auto'
-                        : 'bg-gray-200 text-black'
-                    }`}
-                  >
-                    {m.text}
-                  </div>
+                sortedMessages.map((msg: MESSAGE, index: number) => (
+                  <ChatMessages
+                    key={msg.id}
+                    msg={msg}
+                    user={user}
+                    selectedConv={selectedConv}
+                    firstLoad={firstLoad}
+                    index={index}
+                    messages={sortedMessages}
+                  />
                 ))}
               <div ref={endRefMobile} />
             </div>
@@ -520,6 +521,110 @@ const Messages = () => {
       </Dialog>
     </div>
   );
+
+  function ChatMessages({
+    msg,
+    user,
+    selectedConv,
+    firstLoad,
+    index,
+    messages,
+  }: {
+    msg: MESSAGE;
+    user: USER | undefined;
+    selectedConv: CONVERSATION;
+    firstLoad: boolean;
+    index: number;
+    messages: MESSAGE[];
+  }) {
+    const msgDate = new Date(msg.createdAt).toDateString();
+    const showDate = lastDate !== msgDate;
+    lastDate = msgDate;
+
+    const nextMsg = messages[index + 1];
+    const previousMsg = messages[index - 1];
+    const isNextSameSender = nextMsg?.senderId === msg.senderId;
+    const isPreviousSameSender = previousMsg?.senderId === msg.senderId;
+    const isMine = msg.senderId === user!.id;
+
+    let avatarUrl = '';
+
+    if (selectedConv.usersConversation.length > 2) {
+      avatarUrl = useAvatar(
+        selectedConv.usersConversation.find((uc) => uc.userId === msg.senderId)
+          ?.user.id as string,
+        selectedConv.usersConversation.find((uc) => uc.userId === msg.senderId)
+          ?.user.avatar as string,
+        token,
+        'user'
+      );
+    }
+
+    return (
+      <Box>
+        {showDate && (
+          <Divider>
+            <Typography>
+              {new Date(msg.createdAt).toLocaleDateString(undefined, {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </Typography>
+          </Divider>
+        )}
+        <Box
+          key={msg.id}
+          sx={{
+            display: 'flex',
+            justifyContent:
+              msg.senderId === user!.id ? 'flex-end' : 'flex-start',
+            mb: 1,
+          }}
+        >
+          {selectedConv.usersConversation.length > 2 &&
+            msg.senderId !== user!.id && (
+              <Avatar sx={{ width: 32, height: 32, mr: 1 }} src={avatarUrl} />
+            )}
+          <Box
+            className={`p-2 rounded-2xl max-w-[70%] whitespace-pre-line ${
+              firstLoad ? 'opacity-0' : 'opacity-100'
+            } ${
+              msg.senderId === user!.id
+                ? 'bg-blue-500 text-white self-end ml-auto pl-4'
+                : 'bg-gray-200 text-black pr-4'
+            }
+            ${isPreviousSameSender && !showDate && isMine && 'rounded-se-sm'}
+            ${isNextSameSender && isMine && 'rounded-ee-sm'}
+            ${isPreviousSameSender && !showDate && !isMine && 'rounded-ss-sm'}
+            ${isNextSameSender && !isMine && 'rounded-es-sm'}`}
+          >
+            {selectedConv.usersConversation.length > 2 &&
+              (!isPreviousSameSender || showDate) && (
+                <Typography variant="body2" fontWeight="bold" mb={0.5}>
+                  {
+                    selectedConv.usersConversation.find(
+                      (uc) => uc.userId === msg.senderId
+                    )?.user.firstname
+                  }
+                </Typography>
+              )}
+            <Typography variant="body1">{msg.text}</Typography>
+            <Typography
+              variant="caption"
+              sx={{ display: 'block', mt: 0.5, opacity: 0.7 }}
+            >
+              {new Date(msg.createdAt).toLocaleTimeString(undefined, {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
 };
 
 export default Messages;

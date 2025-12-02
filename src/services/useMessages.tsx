@@ -62,6 +62,7 @@ export function MessagesProvider({
   const dateRef = useRef<Date | null>(null);
   const [error, setError] = useState<any>();
   const [loading, setLoading] = useState<boolean>(false);
+  const conversationsRef = useRef<CONVERSATION[]>([]);
 
   // We are using `react-router` for this example,
   // but feel free to omit this or use the
@@ -70,6 +71,10 @@ export function MessagesProvider({
 
   // ⚡️ Socket.IO client (init une fois)
   const socketRef = useRef<any>(null);
+
+  useEffect(() => {
+    conversationsRef.current = conversations;
+  }, [conversations]);
 
   // Reset the error state if we change page
   useEffect(() => {
@@ -102,11 +107,13 @@ export function MessagesProvider({
     });
     // écouter seulement les messages qui me concernent
     socket.on('message:new', async (msg: any) => {
+      const convs = conversationsRef.current;
       try {
         // get key
-        let conv = conversations.filter(async (group: any) => {
-          group.version = selectedConv!.keyVersion;
-        })[0];
+        let conv = convs.some((c) => c.id === msg.conversationId)
+          ? convs.find((c) => c.id === msg.conversationId)
+          : null;
+
         if (conv) {
           const privKey = conv.groupKeys.filter(async (group: any) => {
             group.version = msg.keyVersion;
@@ -116,6 +123,7 @@ export function MessagesProvider({
             msg.nonce,
             privKey
           );
+
           const decrypted = { ...msg, text };
 
           setMessages((prev) =>
