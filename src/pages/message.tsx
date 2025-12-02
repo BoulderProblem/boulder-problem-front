@@ -26,6 +26,9 @@ import MessageInput from '@/components/posts/MessageInput';
 import { SearchPeopleOption, SearchPeopleTag } from '@/components/searchPeople';
 import { USER } from '@/types/user';
 import { useAvatar } from '@/hooks/useAvatar';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import GroupIcon from '@mui/icons-material/Group';
 
 const Messages = () => {
   const {
@@ -284,40 +287,15 @@ const Messages = () => {
             </div>
           </h2>
           <ul>
-            {sortedConversations.map((c) => (
-              <li
-                key={c.id}
-                onClick={() => {
-                  if (!selectedConv || c.id !== selectedConv.id) {
-                    setFirstLoad(true);
-                    setIsAtBottom(true);
-                    setSelectedConversation(c);
-                  }
-                }}
-                className={`p-4 cursor-pointer hover:bg-primary-500 ${
-                  selectedConv?.id === c.id ? 'bg-primary-400' : ''
-                }`}
-              >
-                <div className="relative">
-                  <p className="font-medium">{selectName(c)}</p>
-                  <div className="flex justify-between items-center p-2">
-                    <span className="text-left font-medium">
-                      {c.latestMessage
-                        ? c.latestMessage.text
-                        : 'Pas de message'}
-                    </span>
-                    <span className="text-right ">
-                      {displayHour(c.updatedAt)}
-                    </span>
-                  </div>
-                  <div className="absolute -top-2 right-2">
-                    <Badge
-                      color="primary"
-                      badgeContent={c.unreadMessages}
-                    ></Badge>
-                  </div>
-                </div>
-              </li>
+            {sortedConversations.map((conv) => (
+              <ListConv
+                key={conv.id}
+                conv={conv}
+                selectedConv={selectedConv}
+                setSelectedConversation={setSelectedConversation}
+                setFirstLoad={setFirstLoad}
+                setIsAtBottom={setIsAtBottom}
+              />
             ))}
           </ul>
         </div>
@@ -414,7 +392,7 @@ const Messages = () => {
                 }}
                 className="mr-2 text-blue-500"
               >
-                ←
+                <ArrowBackIcon />
               </button>
               <span className="font-bold">{selectName(selectedConv)}</span>
             </div>
@@ -521,6 +499,76 @@ const Messages = () => {
       </Dialog>
     </div>
   );
+
+  function ListConv({
+    conv,
+    selectedConv,
+    setSelectedConversation,
+    setFirstLoad,
+    setIsAtBottom,
+  }: {
+    conv: CONVERSATION;
+    selectedConv: CONVERSATION | null;
+    setSelectedConversation: (conv: CONVERSATION | null) => void;
+    setFirstLoad: (load: boolean) => void;
+    setIsAtBottom: (bottom: boolean) => void;
+  }) {
+    let avatar = '';
+    if (conv.usersConversation.length <= 2) {
+      let userAvatar = conv.usersConversation.find(
+        (uc) => uc.userId !== user!.id
+      )?.user;
+      avatar = useAvatar(
+        userAvatar?.id as string,
+        userAvatar?.avatar as string,
+        token,
+        'user'
+      );
+    }
+
+    return (
+      <Box
+        key={conv.id}
+        onClick={() => {
+          if (!selectedConv || conv.id !== selectedConv.id) {
+            setFirstLoad(true);
+            setIsAtBottom(true);
+            setSelectedConversation(conv);
+          }
+        }}
+        sx={{
+          display: 'flex',
+        }}
+        className={`p-4 cursor-pointer hover:bg-primary-500 ${
+          selectedConv?.id === conv.id ? 'bg-primary-400' : ''
+        }`}
+      >
+        <Avatar src={avatar} sx={{ width: 50, height: 50 }}>
+          {conv.usersConversation.length > 2 && <GroupIcon />}
+        </Avatar>
+        <div className="relative ml-4 w-full">
+          <div className="flex justify-between items-center p-2">
+            <p className="font-medium">{selectName(conv)}</p>
+            <span className="text-right ">{displayHour(conv.updatedAt)}</span>
+          </div>
+          <span
+            className="text-left font-medium"
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
+            {conv.latestMessage ? conv.latestMessage.text : 'Pas de message'}
+          </span>
+          <div className="absolute -top-2 right-2">
+            <Badge color="primary" badgeContent={conv.unreadMessages}></Badge>
+          </div>
+        </div>
+      </Box>
+    );
+  }
 
   function ChatMessages({
     msg,
