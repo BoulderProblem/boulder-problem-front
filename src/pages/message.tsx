@@ -347,36 +347,15 @@ const Messages = () => {
           <div className="flex-1 bg-base-300">
             <h2 className="p-4 font-bold text-lg">Conversations</h2>
             <ul>
-              {conversations.map((c) => (
-                <li
-                  key={c.id}
-                  onClick={() => {
-                    setFirstLoad(true);
-                    setIsAtBottom(true);
-                    setSelectedConversation(c);
-                  }}
-                  className="p-4 border-b border-gray-600 cursor-pointer hover:bg-base-300"
-                >
-                  <div className="relative">
-                    <p className="font-medium">{selectName(c)}</p>
-                    <div className="flex justify-between items-center p-2">
-                      <span className="text-left font-medium">
-                        {c.latestMessage
-                          ? c.latestMessage.text
-                          : 'Pas de message'}
-                      </span>
-                      <span className="text-right text-gray-500">
-                        {displayHour(c.updatedAt)}
-                      </span>
-                    </div>
-                    <div className="absolute -top-2 right-2">
-                      <Badge
-                        color="primary"
-                        badgeContent={c.unreadMessages}
-                      ></Badge>
-                    </div>
-                  </div>
-                </li>
+              {sortedConversations.map((conv) => (
+                <ListConv
+                  key={conv.id}
+                  conv={conv}
+                  selectedConv={selectedConv}
+                  setSelectedConversation={setSelectedConversation}
+                  setFirstLoad={setFirstLoad}
+                  setIsAtBottom={setIsAtBottom}
+                />
               ))}
             </ul>
           </div>
@@ -543,7 +522,7 @@ const Messages = () => {
           selectedConv?.id === conv.id ? 'bg-primary-400' : ''
         }`}
       >
-        <Avatar src={avatar} sx={{ width: 50, height: 50 }}>
+        <Avatar src={avatar}>
           {conv.usersConversation.length > 2 && <GroupIcon />}
         </Avatar>
         <div className="relative ml-4 w-full">

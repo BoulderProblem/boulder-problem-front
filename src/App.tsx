@@ -194,8 +194,7 @@ function User({ user, token, logout }: any) {
 }
 
 export default function App() {
-  const { user, token, logout } = useAuth();
-  const { nbMessagesUnread } = useMessages();
+  const { user, token, logout, nbMessagesUnread } = useAuth();
   const [isBlack, setIsBlack] = React.useState(
     JSON.parse(getFromLS('theme') || 'false')
   );

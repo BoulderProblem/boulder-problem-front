@@ -25,6 +25,7 @@ interface AuthContextType {
   priv: string;
   pubSrvKey: string;
   loading: boolean;
+  nbMessagesUnread: number;
   error?: any;
   login: (email: string, password: string) => void;
   loginFirebase: (token: string, id: string) => Promise<void>;
@@ -35,6 +36,7 @@ interface AuthContextType {
     code: number,
     password: string
   ) => Promise<void>;
+  SetNbMessagesUnread: (nb: number, reset: boolean) => void;
   logout: () => void;
   getStats: () => void;
 }
@@ -51,6 +53,7 @@ export function AuthProvider({
   const [stats, setStats] = useState<any>();
   const [token, setToken] = useState<string>('');
   const [pubSrvKey, setPubSrvKey] = useState<string>('');
+  const [nbMessagesUnread, setNbMessagesUnread] = useState<number>(0);
   const [error, setError] = useState<any>();
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingInitial, setLoadingInitial] = useState<boolean>(true);
@@ -285,6 +288,16 @@ export function AuthProvider({
       .finally(() => setLoading(false));
   }
 
+  function SetNbMessagesUnread(nb: number, reset: boolean) {
+    console.log(nb);
+
+    if (reset) {
+      setNbMessagesUnread(nb);
+    } else {
+      setNbMessagesUnread((prev) => prev + nb);
+    }
+  }
+
   // Make the provider update only when it should.
   // We only want to force re-renders if the user,
   // loading or error states change.
@@ -302,6 +315,7 @@ export function AuthProvider({
       priv,
       pubSrvKey,
       loading,
+      nbMessagesUnread,
       error,
       login,
       loginFirebase,
@@ -310,8 +324,9 @@ export function AuthProvider({
       signUp,
       logout,
       getStats,
+      SetNbMessagesUnread,
     }),
-    [user, stats, token, priv, pubSrvKey, loading, error]
+    [user, stats, token, priv, pubSrvKey, nbMessagesUnread, loading, error]
   );
 
   // We only want to render the underlying app after we

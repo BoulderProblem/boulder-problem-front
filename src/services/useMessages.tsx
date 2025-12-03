@@ -29,7 +29,6 @@ interface MessagesContextType {
   messages: MESSAGE[];
   conversations: CONVERSATION[];
   selectedConv: CONVERSATION | null;
-  nbMessagesUnread: number;
   createConversations: (name: string, userIds: string[]) => Promise<any>;
   getConversations: () => Promise<any>;
   setSelectedConversation: (conv: CONVERSATION | null) => Promise<any>;
@@ -54,11 +53,11 @@ export function MessagesProvider({
 }: {
   children: ReactNode;
 }): JSX.Element {
-  const { user, priv, pubSrvKey } = useAuth();
+  const { user, priv, pubSrvKey, SetNbMessagesUnread } = useAuth();
   const [messages, setMessages] = useState<MESSAGE[]>([]);
-  const [nbMessagesUnread, setNbMessagesUnread] = useState<number>(0);
   const [conversations, setConversations] = useState<CONVERSATION[]>([]);
   const [selectedConv, setSelectedConv] = useState<CONVERSATION | null>(null);
+  const selectedConvRef = useRef<CONVERSATION | null>(null);
   const dateRef = useRef<Date | null>(null);
   const [error, setError] = useState<any>();
   const [loading, setLoading] = useState<boolean>(false);
@@ -133,14 +132,14 @@ export function MessagesProvider({
           );
 
           if (
-            (msg.senderId === user.id && selectedConv) ||
-            (msg.receiverId === user.id &&
-              selectedConv &&
-              selectedConv.id === msg.conversationId)
+            selectedConvRef.current &&
+            selectedConvRef.current.id === msg.conversationId
           ) {
-            readConversation(selectedConv.id);
+            readConversation(selectedConvRef.current.id);
           } else {
-            setNbMessagesUnread((prev) => prev + 1);
+            console.log('plop');
+
+            SetNbMessagesUnread(1, false);
           }
 
           setConversations((prev) => {
@@ -152,7 +151,8 @@ export function MessagesProvider({
                   ? {
                       ...conv,
                       unreadMessages:
-                        (!selectedConv || selectedConv.id !== conv.id) &&
+                        (!selectedConvRef.current ||
+                          selectedConvRef.current.id !== conv.id) &&
                         msg.senderId !== user.id
                           ? conv.unreadMessages + 1
                           : 0,
@@ -178,7 +178,7 @@ export function MessagesProvider({
     return () => {
       socket.disconnect();
     };
-  }, [user?.id, selectedConv, priv]);
+  }, [user?.id, priv]);
 
   async function createConversations(name: string, userIds: string[]) {
     await axiosClient
@@ -268,12 +268,11 @@ export function MessagesProvider({
 
           return [...prev, ...newOnes];
         });
-
-        response.data.forEach((conv: CONVERSATION) => {
-          setNbMessagesUnread(
-            (prev) => prev + (conv.unreadMessages ? conv.unreadMessages : 0)
-          );
-        });
+        let unredMessages = 0;
+        for (const conv of response.data) {
+          unredMessages += conv.unreadMessages;
+        }
+        SetNbMessagesUnread(unredMessages, true);
       })
       .catch((errors) => {
         setError(errors.response.data.errors[0].message);
@@ -324,9 +323,16 @@ export function MessagesProvider({
   }
 
   async function setSelectedConversation(conv: CONVERSATION | null) {
-    setSelectedConv(conv);
+    // Mettre à jour la référence sans déclencher de re-rendu
+    selectedConvRef.current = conv;
+
+    // Ne mettre à jour l'état que si la conversation a réellement changé
+    if (selectedConv?.id !== conv?.id) {
+      setSelectedConv(conv);
+    }
+
     if (conv) {
-      // load messages of the conversation
+      // Charger les messages de la conversation
       getMessages(conv.id);
     }
     return;
@@ -346,10 +352,13 @@ export function MessagesProvider({
               : conv
           );
         });
-        setNbMessagesUnread(
-          nbMessagesUnread -
-            (conversations.find((c) => c.id === id)?.unreadMessages || 0)
-        );
+        let selectedConv = conversations.find((c) => c.id === id);
+        if (selectedConv && selectedConv.unreadMessages > 0) {
+          console.log('a');
+          console.log(selectedConv.unreadMessages);
+
+          SetNbMessagesUnread(-selectedConv.unreadMessages, false);
+        }
       })
       .catch((errors) => {
         setError(errors.response.data.errors[0].message);
@@ -369,12 +378,15 @@ export function MessagesProvider({
 
     // si on charge les anciens messages, on ajoute le param before avec la date du plus ancien message déjà chargé
     if (loadOld && messages.length > 0) {
-      const oldestMessage = messages
-        .filter((m) => m.conversationId === convId)
-        .reduce((oldest, msg) =>
+      const conversationMessages = messages.filter(
+        (m) => m.conversationId === convId
+      );
+      if (conversationMessages.length > 0) {
+        const oldestMessage = conversationMessages.reduce((oldest, msg) =>
           new Date(msg.createdAt) < new Date(oldest.createdAt) ? msg : oldest
         );
-      url += `&before=${new Date(oldestMessage.createdAt).toISOString()}`;
+        url += `&before=${new Date(oldestMessage.createdAt).toISOString()}`;
+      }
     }
     await axiosClient
       .get(url)
@@ -451,7 +463,6 @@ export function MessagesProvider({
       messages,
       conversations,
       selectedConv,
-      nbMessagesUnread,
       createConversations,
       getConversations,
       setSelectedConversation,
@@ -459,8 +470,13 @@ export function MessagesProvider({
       getMessages,
       sendMessages,
     }),
-    [loading, messages, conversations, selectedConv, nbMessagesUnread]
+    [loading, messages, conversations, selectedConv]
   );
+
+  // Mettre à jour la référence lorsque selectedConv change
+  useEffect(() => {
+    selectedConvRef.current = selectedConv;
+  }, [selectedConv]);
 
   // We only want to render the underlying app after we
   // assert for the presence of a current Contest.
