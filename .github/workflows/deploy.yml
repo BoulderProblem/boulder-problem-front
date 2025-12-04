@@ -13,13 +13,6 @@ jobs:
       - name: 🔄 Checkout repository
         uses: actions/checkout@v3
 
-      - name: 📂 Load .env variables
-        run: |
-          echo "Loading .env variables"
-          set -o allexport
-          source .env
-          set +o allexport
-
       - name: 🐳 Build Docker image
         run: |
           docker build --build-arg VITE_URL=${{ secrets.VITE_URL }} --build-arg VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }} -t boulder-problem-front .
