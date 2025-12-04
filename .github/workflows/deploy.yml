@@ -13,8 +13,11 @@ jobs:
       - name: 🔄 Checkout repository
         uses: actions/checkout@v3
 
+      - name: 📂 Load .env variables
+        run: echo "Loading .env variables" && export $(grep -v '^#' .env | xargs)
+
       - name: 🐳 Build Docker image
-        run: docker build --env-file .env -t boulder-problem-front .
+        run: docker build --build-arg VITE_URL=${VITE_URL} --build-arg VITE_API_BASE_URL=${VITE_API_BASE_URL} -t boulder-problem-front .
 
       - name: 📦 Save image to tarball
         run: docker save boulder-problem-front -o boulder-problem-front.tar
