@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 let avatarCache: Record<string, string> = {};
 
 const baseUrl = import.meta.env.VITE_URL;
-
+console.log(baseUrl);
 export function useAvatar(
   id: string,
   avatarName: string,
