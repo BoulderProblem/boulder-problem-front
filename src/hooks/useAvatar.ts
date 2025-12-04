@@ -30,7 +30,6 @@ export function useAvatar(
       if (kind === 'user') {
         url = `${baseUrl}/users/${id}/avatar/${avatarName}?size=100`;
       }
-      console.log(url);
 
       try {
         const res = await fetch(url, {

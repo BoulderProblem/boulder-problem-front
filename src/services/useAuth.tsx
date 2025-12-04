@@ -12,7 +12,6 @@ import { decrypt, encrypt, generateKeys } from '@/crypto';
 import axios from 'axios';
 
 let baseUrl = import.meta.env.VITE_URL;
-console.log(baseUrl);
 
 interface AuthContextType {
   // We defined the user type in `index.d.ts`, but it's
