@@ -18,10 +18,7 @@ import { MESSAGE } from '@/types/message';
 import { CONVERSATION } from '@/types/conversation';
 import { io } from 'socket.io-client';
 
-let baseUrl = `https://boulder-problem.chabs.fr/api`;
-if (process.env.NODE_ENV !== 'production') {
-  baseUrl = `http://localhost:3333`;
-}
+let baseUrl = import.meta.env.VITE_URL;
 
 interface MessagesContextType {
   // We defined the Contest type in `index.d.ts`, but it's

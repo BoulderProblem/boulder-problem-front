@@ -11,10 +11,7 @@ import { USER } from '@/types/user';
 import { decrypt, encrypt, generateKeys } from '@/crypto';
 import axios from 'axios';
 
-let baseUrl = `https://boulder-problem.chabs.fr/api`;
-if (process.env.NODE_ENV !== 'production') {
-  baseUrl = `http://localhost:3333`;
-}
+let baseUrl = import.meta.env.VITE_URL;
 
 interface AuthContextType {
   // We defined the user type in `index.d.ts`, but it's

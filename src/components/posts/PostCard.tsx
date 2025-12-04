@@ -20,10 +20,8 @@ import MessageInput from './MessageInput';
 import CommentCard from './CommentCard';
 import { useAvatar } from '@/hooks/useAvatar';
 
-let baseUrl = `https://boulder-problem.chabs.fr/api`;
-if (process.env.NODE_ENV !== 'production') {
-  baseUrl = `http://localhost:3333`;
-}
+let baseUrl = import.meta.env.VITE_URL;
+
 interface PostCardProps {
   token: string;
   post: POST;

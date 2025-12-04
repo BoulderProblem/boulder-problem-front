@@ -4,11 +4,6 @@ import { useContests } from '@/services/useContests';
 import dayjs from 'dayjs';
 import Contest from '@/components/contests/contest';
 
-let baseUrl = `https://boulder-problem.chabs.fr/api`;
-if (process.env.NODE_ENV !== 'production') {
-  baseUrl = `http://localhost:3333`;
-}
-
 const ContestId = () => {
   const { id } = useParams();
   const { getContest } = useContests();

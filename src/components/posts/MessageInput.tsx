@@ -70,7 +70,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSend }) => {
       >
         {' '}
         <span style={{ fontSize: '1.5rem' }}>😀</span>{' '}
-      </IconButton>{' '}
+      </IconButton>
       {showPicker && (
         <Box
           ref={pickerRefEmoji}

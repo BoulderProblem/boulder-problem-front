@@ -12,10 +12,7 @@ import { PLACE } from '@/types/place';
 import { ZONE } from '@/types/zone';
 import { useAuth } from './useAuth';
 
-let baseUrl = `https://boulder-problem.chabs.fr/api`;
-if (process.env.NODE_ENV !== 'production') {
-  baseUrl = `http://localhost:3333`;
-}
+let baseUrl = import.meta.env.VITE_URL;
 
 interface PlacesContextType {
   // We defined the user type in `index.d.ts`, but it's

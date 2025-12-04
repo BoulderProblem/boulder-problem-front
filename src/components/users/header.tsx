@@ -21,11 +21,6 @@ import Roles from '@/enums/role';
 import Genders from '@/enums/gender';
 import Profile from './profile';
 
-let baseUrl = `https://boulder-problem.chabs.fr/api`;
-if (process.env.NODE_ENV !== 'production') {
-  baseUrl = `http://localhost:3333`;
-}
-
 const Header = () => {
   const { id } = useParams() as { id: string };
   const { user: me, token } = useAuth();

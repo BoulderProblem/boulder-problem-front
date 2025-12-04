@@ -11,10 +11,7 @@ import { RANKING } from '@/types/ranking';
 import { WAY } from '@/types/way';
 import { useAuth } from './useAuth';
 
-let baseUrl = `https://boulder-problem.chabs.fr/api`;
-if (process.env.NODE_ENV !== 'production') {
-  baseUrl = `http://localhost:3333`;
-}
+let baseUrl = import.meta.env.VITE_URL;
 
 interface ContestsContextType {
   // We defined the Contest type in `index.d.ts`, but it's

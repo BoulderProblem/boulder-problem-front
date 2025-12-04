@@ -8,13 +8,9 @@ import {
 } from 'react';
 import axiosClient from '../axios-client';
 import { POST } from '@/types/post';
-import { get } from 'http';
 import { useAuth } from './useAuth';
 
-let baseUrl = `https://boulder-problem.chabs.fr/api`;
-if (process.env.NODE_ENV !== 'production') {
-  baseUrl = `http://localhost:3333`;
-}
+let baseUrl = import.meta.env.VITE_URL;
 
 interface UsersContextType {
   // We defined the user type in `index.d.ts`, but it's

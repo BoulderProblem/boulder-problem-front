@@ -2,10 +2,7 @@ import { useEffect, useState } from 'react';
 
 let avatarCache: Record<string, string> = {};
 
-const baseUrl =
-  process.env.NODE_ENV !== 'production'
-    ? 'http://localhost:3333'
-    : 'https://boulder-problem.chabs.fr/api';
+const baseUrl = import.meta.env.VITE_URL;
 
 export function useAvatar(
   id: string,

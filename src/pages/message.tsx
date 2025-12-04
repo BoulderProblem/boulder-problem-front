@@ -18,6 +18,7 @@ import {
   Box,
   Avatar,
   Divider,
+  AvatarGroup,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useUsers } from '@/services/useUsers';
@@ -43,6 +44,7 @@ const Messages = () => {
   const { users, getUsers } = useUsers();
   const { user, token } = useAuth();
   const [openConv, setOpenConv] = useState(false);
+  const [openDetails, setOpenDetails] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
   const containerRefMobile = useRef<HTMLDivElement | null>(null);
@@ -304,8 +306,27 @@ const Messages = () => {
         <div className="relative flex-1 flex flex-col h-full bg-base-200">
           {selectedConv ? (
             <>
-              <div className="p-4 border-b font-bold">
+              <div className="p-4 border-b flex justify-between font-bold ">
                 {selectName(selectedConv)}
+                <Box className="flex items-center">
+                  {selectedConv.usersConversation.length > 2 && (
+                    <AvatarGroup max={4}>
+                      {selectedConv.usersConversation.map((user) => (
+                        <GroupAvatar key={user.id} user={user} />
+                      ))}
+                    </AvatarGroup>
+                  )}
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenDetails(true);
+                    }}
+                    className="w-9 h-9"
+                  >
+                    {' '}
+                    <MoreVertIcon />
+                  </IconButton>
+                </Box>
               </div>
               <div
                 ref={containerRef}
@@ -651,6 +672,16 @@ const Messages = () => {
         </Box>
       </Box>
     );
+  }
+
+  function GroupAvatar({ user }: { user: any }) {
+    let avatarUrl = useAvatar(
+      user.user.id as string,
+      user.user.avatar as string,
+      token,
+      'user'
+    );
+    return <Avatar alt={user.user.firstname} src={avatarUrl} />;
   }
 };
 
