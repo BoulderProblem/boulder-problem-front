@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 let avatarCache: Record<string, string> = {};
 
 const baseUrl = import.meta.env.VITE_URL;
-console.log(baseUrl);
+
 export function useAvatar(
   id: string,
   avatarName: string,
@@ -30,6 +30,8 @@ export function useAvatar(
       if (kind === 'user') {
         url = `${baseUrl}/users/${id}/avatar/${avatarName}?size=100`;
       }
+      console.log(url);
+
       try {
         const res = await fetch(url, {
           headers: { Authorization: `Bearer ${token}` },
