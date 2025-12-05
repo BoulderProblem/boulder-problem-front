@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/services/useAuth';
 import { Conversations } from '@/components/messages/conversations';
+import { Box } from '@mui/material';
 
 const MessagesIframe = () => {
   const [searchParams] = useSearchParams();
@@ -16,7 +17,11 @@ const MessagesIframe = () => {
     }
   }, [token, SetToken]);
 
-  return <Conversations />;
+  return (
+    <Box sx={{ height: '100vh' }}>
+      <Conversations />
+    </Box>
+  );
 };
 
 export default MessagesIframe;

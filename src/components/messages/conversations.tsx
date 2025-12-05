@@ -19,6 +19,7 @@ import { useUsers } from '@/services/useUsers';
 import { useAuth } from '@/services/useAuth';
 import { encryptGroupMessage } from '@/crypto';
 import { CONVERSATION } from '@/types/conversation';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
 import { ConversationList } from './ConversationList';
 import { ConversationHeader } from './ConversationHeader';
@@ -28,9 +29,18 @@ import MessageInput from '../posts/MessageInput';
 import { SearchPeopleOption, SearchPeopleTag } from '../searchPeople';
 import { useLocation } from 'react-router';
 
-interface ConversationsProps {}
+const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: theme.palette.common.white,
+    color: 'rgba(0, 0, 0, 0.87)',
+    boxShadow: theme.shadows[1],
+    fontSize: 11,
+  },
+}));
 
-export const Conversations: React.FC<ConversationsProps> = ({}) => {
+export const Conversations = () => {
   const {
     conversations,
     messages,
@@ -140,17 +150,6 @@ export const Conversations: React.FC<ConversationsProps> = ({}) => {
       return title;
     }
   }
-
-  const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
-    <Tooltip {...props} classes={{ popper: className }} />
-  ))(({ theme }) => ({
-    [`& .${tooltipClasses.tooltip}`]: {
-      backgroundColor: theme.palette.common.white,
-      color: 'rgba(0, 0, 0, 0.87)',
-      boxShadow: theme.shadows[1],
-      fontSize: 11,
-    },
-  }));
 
   /**
    * trie les conversations par date de mise à jour (la plus récente en premier)
@@ -314,7 +313,20 @@ export const Conversations: React.FC<ConversationsProps> = ({}) => {
       {/* Mobile layout */}
       <div className="flex w-full h-full md:hidden">
         <div className="flex-1 bg-base-300">
-          <h2 className="p-4 font-bold text-lg">Conversations</h2>
+          <h2 className="p-4 font-bold relative text-lg">
+            Conversations
+            <div className="absolute right-3 top-2">
+              <LightTooltip title="Créer une conversation">
+                <IconButton
+                  onClick={() => openModalConv()}
+                  color="primary"
+                  component="span"
+                >
+                  <AddIcon />
+                </IconButton>
+              </LightTooltip>
+            </div>
+          </h2>
           <ul>
             {sortedConversations.map((conv) => (
               <ConversationList
