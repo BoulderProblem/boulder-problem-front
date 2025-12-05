@@ -24,6 +24,7 @@ interface AuthContextType {
   loading: boolean;
   nbMessagesUnread: number;
   error?: any;
+  SetToken: (token: string) => void;
   login: (email: string, password: string) => void;
   loginFirebase: (token: string, id: string) => Promise<void>;
   signUp: (email: string, name: string, password: string) => void;
@@ -139,14 +140,11 @@ export function AuthProvider({
     }
   }, []);
 
-  // Flags the component loading state and posts the login
-  // data to the server.
-  //
-  // An error means that the email/password combination is
-  // not valid.
-  //
-  // Finally, just signal the component that loading the
-  // loading state is over.
+  function SetToken(token: string) {
+    localStorage.setItem('ACCESS_TOKEN', token);
+    setToken(token);
+  }
+
   function login(email: string, password: string) {
     setLoading(true);
     setError(undefined);
@@ -314,6 +312,7 @@ export function AuthProvider({
       loading,
       nbMessagesUnread,
       error,
+      SetToken,
       login,
       loginFirebase,
       forgotPassword,

@@ -89,7 +89,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
       sx={{
         display: 'flex',
       }}
-      className={`p-4 cursor-pointer hover:bg-primary-500 ${
+      className={`p-4 cursor-pointer hover:bg-primary-500 border-b border-gray-300 ${
         selectedConv?.id === conv.id ? 'bg-primary-400' : ''
       }`}
     >

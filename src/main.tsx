@@ -27,6 +27,7 @@ import Feed from './pages/feed.tsx';
 import PlaceIdUpdate from './pages/placeIdUpdate.tsx';
 import ForgotPassword from './pages/frontSide/forgotPassword.tsx';
 import ResetPassword from './pages/frontSide/resetPassword.tsx';
+import MessagesIframe from './pages/MessagesIframe.tsx';
 
 const Main = () => {
   const { user } = useAuth();
@@ -158,6 +159,10 @@ const Main = () => {
     {
       path: '/terms_of_service',
       element: <Conditions />,
+    },
+    {
+      path: '/iframe/messages',
+      element: <MessagesIframe />,
     },
   ];
 

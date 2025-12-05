@@ -5,6 +5,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import { CONVERSATION } from '@/types/conversation';
 import { USER } from '@/types/user';
 import { useAvatar } from '@/hooks/useAvatar';
+import { useLocation } from 'react-router';
 
 interface ConversationSettingsProps {
   isOpen: boolean;
@@ -50,8 +51,10 @@ export const ConversationSettings: React.FC<ConversationSettingsProps> = ({
           width: { xs: '100%', sm: '400px' },
           boxSizing: 'border-box',
           backgroundColor: 'background.paper',
-          mt: '64px',
-          height: 'calc(100% - 64px)',
+          mt: useLocation().pathname.includes('iframe') ? '0' : '64px',
+          height: useLocation().pathname.includes('iframe')
+            ? '100%'
+            : 'calc(100% - 64px)',
         },
       }}
     >
