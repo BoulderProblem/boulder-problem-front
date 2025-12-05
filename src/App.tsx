@@ -33,7 +33,6 @@ import Footer from './components/Footer';
 import { useAuth } from './services/useAuth';
 import { useAvatar } from './hooks/useAvatar';
 import background from './assets/home-background.webp';
-import { useMessages } from './services/useMessages';
 
 // Adapter React Router pour Toolpad
 function useReactRouterAdapter(): Router {
@@ -110,7 +109,7 @@ function User({ user, token, logout }: any) {
     <div className="contents">
       <Button
         className="text-inherit"
-        aria-controls={openProfile ? 'basic-menu' : undefined}
+        aria-controls={openProfile ? 'account-menu' : undefined}
         aria-haspopup="true"
         aria-expanded={openProfile ? 'true' : undefined}
         onClick={handleClickProfile}
@@ -277,6 +276,9 @@ export default function App() {
       mode: isBlack ? 'dark' : 'light',
       primary: {
         main: '#66a6bb',
+      },
+      background: {
+        default: '#f3f4f6', // ou la valeur de votre bg-base-200
       },
     },
     components: {

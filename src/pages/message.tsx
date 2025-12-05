@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMessages } from '@/services/useMessages';
 import { useAuth } from '@/services/useAuth';
 import { encryptGroupMessage } from '@/crypto';
 import { MESSAGE } from '@/types/message';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import {
   IconButton,
@@ -18,7 +18,8 @@ import {
   Box,
   Avatar,
   Divider,
-  AvatarGroup,
+  Drawer,
+  useMediaQuery,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useUsers } from '@/services/useUsers';
@@ -27,9 +28,10 @@ import MessageInput from '@/components/posts/MessageInput';
 import { SearchPeopleOption, SearchPeopleTag } from '@/components/searchPeople';
 import { USER } from '@/types/user';
 import { useAvatar } from '@/hooks/useAvatar';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import GroupIcon from '@mui/icons-material/Group';
+import { ConversationHeader } from '@/components/messages/ConversationHeader';
+import { ChatMessage } from '@/components/messages/ChatMessages';
+import { ConversationList } from '@/components/messages/ConversationList';
 
 const Messages = () => {
   const {
@@ -44,7 +46,6 @@ const Messages = () => {
   const { users, getUsers } = useUsers();
   const { user, token } = useAuth();
   const [openConv, setOpenConv] = useState(false);
-  const [openDetails, setOpenDetails] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
   const containerRefMobile = useRef<HTMLDivElement | null>(null);
@@ -55,6 +56,9 @@ const Messages = () => {
   const [firstLoad, setFirstLoad] = useState(true);
   const [newConv, setNewConv] = useState<any[]>([]);
   let lastDate = null as string | null;
+
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up('md')); // md = >= 900px
 
   useEffect(() => {
     return () => {
@@ -138,42 +142,6 @@ const Messages = () => {
         }
       });
       return title;
-    }
-  }
-
-  function displayHour(dateStr: string) {
-    const date = new Date(dateStr);
-    const now = new Date();
-
-    const isToday =
-      date.getDate() === now.getDate() &&
-      date.getMonth() === now.getMonth() &&
-      date.getFullYear() === now.getFullYear();
-
-    const isYesterday =
-      date.getDate() === now.getDate() - 1 &&
-      date.getMonth() === now.getMonth() &&
-      date.getFullYear() === now.getFullYear();
-
-    if (isToday) {
-      return `${date.getHours()}h${date
-        .getMinutes()
-        .toString()
-        .padStart(2, '0')}`;
-    } else if (isYesterday) {
-      return `Hier à ${date.getHours()}h${date
-        .getMinutes()
-        .toString()
-        .padStart(2, '0')}`;
-    } else {
-      return `${date.getDate().toString().padStart(2, '0')}/${(
-        date.getMonth() + 1
-      )
-        .toString()
-        .padStart(2, '0')} à ${date.getHours()}h${date
-        .getMinutes()
-        .toString()
-        .padStart(2, '0')}`;
     }
   }
 
@@ -290,44 +258,29 @@ const Messages = () => {
           </h2>
           <ul>
             {sortedConversations.map((conv) => (
-              <ListConv
+              <ConversationList
                 key={conv.id}
                 conv={conv}
                 selectedConv={selectedConv}
                 setSelectedConversation={setSelectedConversation}
                 setFirstLoad={setFirstLoad}
                 setIsAtBottom={setIsAtBottom}
+                token={token}
+                user={user!}
+                name={selectName(conv)}
               />
             ))}
           </ul>
         </div>
 
         {/* Messages */}
-        <div className="relative flex-1 flex flex-col h-full bg-base-200">
+        <div className="flex-1 flex flex-col h-full bg-base-200">
           {selectedConv ? (
             <>
-              <div className="p-4 border-b flex justify-between font-bold ">
-                {selectName(selectedConv)}
-                <Box className="flex items-center">
-                  {selectedConv.usersConversation.length > 2 && (
-                    <AvatarGroup max={4}>
-                      {selectedConv.usersConversation.map((user) => (
-                        <GroupAvatar key={user.id} user={user} />
-                      ))}
-                    </AvatarGroup>
-                  )}
-                  <IconButton
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenDetails(true);
-                    }}
-                    className="w-9 h-9"
-                  >
-                    {' '}
-                    <MoreVertIcon />
-                  </IconButton>
-                </Box>
-              </div>
+              <ConversationHeader
+                selectedConv={selectedConv}
+                close={() => setSelectedConversation(null)}
+              />
               <div
                 ref={containerRef}
                 onScroll={handleScroll}
@@ -335,7 +288,7 @@ const Messages = () => {
               >
                 {Array.isArray(messages) &&
                   sortedMessages.map((msg: MESSAGE, index: number) => (
-                    <ChatMessages
+                    <ChatMessage
                       key={msg.id}
                       msg={msg}
                       user={user}
@@ -343,6 +296,7 @@ const Messages = () => {
                       firstLoad={firstLoad}
                       index={index}
                       messages={sortedMessages}
+                      token={token}
                     />
                   ))}
                 <div ref={endRef} />
@@ -363,65 +317,80 @@ const Messages = () => {
 
       {/* Mobile layout */}
       <div className="flex w-full h-full md:hidden">
-        {!selectedConv ? (
-          // Conversations
-          <div className="flex-1 bg-base-300">
-            <h2 className="p-4 font-bold text-lg">Conversations</h2>
-            <ul>
-              {sortedConversations.map((conv) => (
-                <ListConv
-                  key={conv.id}
-                  conv={conv}
-                  selectedConv={selectedConv}
-                  setSelectedConversation={setSelectedConversation}
-                  setFirstLoad={setFirstLoad}
-                  setIsAtBottom={setIsAtBottom}
-                />
-              ))}
-            </ul>
-          </div>
-        ) : (
-          // Messages
-          <div className="flex-1 flex flex-col h-full overflow-scroll">
-            <div className="p-4 border-b flex items-center">
-              <button
-                onClick={() => {
-                  setFirstLoad(true);
-                  setIsAtBottom(true);
-                  setSelectedConversation(null);
-                }}
-                className="mr-2 text-blue-500"
+        <div className="flex-1 bg-base-300">
+          <h2 className="p-4 font-bold text-lg">Conversations</h2>
+          <ul>
+            {sortedConversations.map((conv) => (
+              <ConversationList
+                key={conv.id}
+                conv={conv}
+                selectedConv={selectedConv}
+                setSelectedConversation={setSelectedConversation}
+                setFirstLoad={setFirstLoad}
+                setIsAtBottom={setIsAtBottom}
+                token={token}
+                user={user!}
+                name={selectName(conv)}
+              />
+            ))}
+          </ul>
+        </div>
+        <Drawer
+          anchor="right"
+          open={selectedConv !== null && !isDesktop}
+          onClose={() => setSelectedConversation(null)}
+          sx={{
+            '& .MuiDrawer-paper': {
+              position: 'absolute',
+              right: 0,
+              width: { xs: '100%', sm: '400px' },
+              height: 'calc(100% - 64px)',
+              mt: '64px',
+              backgroundColor: 'background.default',
+              boxShadow: 'none',
+              '--Paper-overlay': 'none !important',
+            },
+            '& .MuiBackdrop-root': {
+              display: 'none', // Désactive complètement le backdrop
+            },
+          }}
+        >
+          {selectedConv && (
+            <Box style={{ height: 'inherit' }}>
+              <ConversationHeader
+                selectedConv={selectedConv}
+                close={() => setSelectedConversation(null)}
+              />
+
+              <div
+                ref={containerRefMobile}
+                onScroll={handleScrollMobile}
+                style={{ height: 'inherit' }}
+                className="flex-1 overflow-y-auto p-4 space-y-2"
               >
-                <ArrowBackIcon />
-              </button>
-              <span className="font-bold">{selectName(selectedConv)}</span>
-            </div>
-            <div
-              ref={containerRefMobile}
-              onScroll={handleScrollMobile}
-              className="flex-1 overflow-y-auto p-4 space-y-2"
-            >
-              {Array.isArray(messages) &&
-                sortedMessages.map((msg: MESSAGE, index: number) => (
-                  <ChatMessages
-                    key={msg.id}
-                    msg={msg}
-                    user={user}
-                    selectedConv={selectedConv}
-                    firstLoad={firstLoad}
-                    index={index}
-                    messages={sortedMessages}
-                  />
-                ))}
-              <div ref={endRefMobile} />
-            </div>
-            <MessageInput
-              onSend={(message) => {
-                sendMessage(message);
-              }}
-            />
-          </div>
-        )}
+                {Array.isArray(messages) &&
+                  sortedMessages.map((msg: MESSAGE, index: number) => (
+                    <ChatMessage
+                      key={msg.id}
+                      msg={msg}
+                      user={user}
+                      selectedConv={selectedConv}
+                      firstLoad={firstLoad}
+                      index={index}
+                      messages={sortedMessages}
+                      token={token}
+                    />
+                  ))}
+                <div ref={endRefMobile} />
+              </div>
+              <MessageInput
+                onSend={(message) => {
+                  sendMessage(message);
+                }}
+              />
+            </Box>
+          )}
+        </Drawer>
       </div>
       <Dialog
         open={openConv}
@@ -499,190 +468,6 @@ const Messages = () => {
       </Dialog>
     </div>
   );
-
-  function ListConv({
-    conv,
-    selectedConv,
-    setSelectedConversation,
-    setFirstLoad,
-    setIsAtBottom,
-  }: {
-    conv: CONVERSATION;
-    selectedConv: CONVERSATION | null;
-    setSelectedConversation: (conv: CONVERSATION | null) => void;
-    setFirstLoad: (load: boolean) => void;
-    setIsAtBottom: (bottom: boolean) => void;
-  }) {
-    let avatar = '';
-    if (conv.usersConversation.length <= 2) {
-      let userAvatar = conv.usersConversation.find(
-        (uc) => uc.userId !== user!.id
-      )?.user;
-      avatar = useAvatar(
-        userAvatar?.id as string,
-        userAvatar?.avatar as string,
-        token,
-        'user'
-      );
-    }
-
-    return (
-      <Box
-        key={conv.id}
-        onClick={() => {
-          if (!selectedConv || conv.id !== selectedConv.id) {
-            setFirstLoad(true);
-            setIsAtBottom(true);
-            setSelectedConversation(conv);
-          }
-        }}
-        sx={{
-          display: 'flex',
-        }}
-        className={`p-4 cursor-pointer hover:bg-primary-500 ${
-          selectedConv?.id === conv.id ? 'bg-primary-400' : ''
-        }`}
-      >
-        <Avatar src={avatar}>
-          {conv.usersConversation.length > 2 && <GroupIcon />}
-        </Avatar>
-        <div className="relative ml-4 w-full">
-          <div className="flex justify-between items-center p-2">
-            <p className="font-medium">{selectName(conv)}</p>
-            <span className="text-right ">{displayHour(conv.updatedAt)}</span>
-          </div>
-          <span
-            className="text-left font-medium"
-            style={{
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }}
-          >
-            {conv.latestMessage ? conv.latestMessage.text : 'Pas de message'}
-          </span>
-          <div className="absolute -top-2 right-2">
-            <Badge color="primary" badgeContent={conv.unreadMessages}></Badge>
-          </div>
-        </div>
-      </Box>
-    );
-  }
-
-  function ChatMessages({
-    msg,
-    user,
-    selectedConv,
-    firstLoad,
-    index,
-    messages,
-  }: {
-    msg: MESSAGE;
-    user: USER | undefined;
-    selectedConv: CONVERSATION;
-    firstLoad: boolean;
-    index: number;
-    messages: MESSAGE[];
-  }) {
-    const msgDate = new Date(msg.createdAt).toDateString();
-    const showDate = lastDate !== msgDate;
-    lastDate = msgDate;
-
-    const nextMsg = messages[index + 1];
-    const previousMsg = messages[index - 1];
-    const isNextSameSender = nextMsg?.senderId === msg.senderId;
-    const isPreviousSameSender = previousMsg?.senderId === msg.senderId;
-    const isMine = msg.senderId === user!.id;
-
-    let avatarUrl = '';
-
-    if (selectedConv.usersConversation.length > 2) {
-      avatarUrl = useAvatar(
-        selectedConv.usersConversation.find((uc) => uc.userId === msg.senderId)
-          ?.user.id as string,
-        selectedConv.usersConversation.find((uc) => uc.userId === msg.senderId)
-          ?.user.avatar as string,
-        token,
-        'user'
-      );
-    }
-
-    return (
-      <Box>
-        {showDate && (
-          <Divider>
-            <Typography>
-              {new Date(msg.createdAt).toLocaleDateString(undefined, {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </Typography>
-          </Divider>
-        )}
-        <Box
-          key={msg.id}
-          sx={{
-            display: 'flex',
-            justifyContent:
-              msg.senderId === user!.id ? 'flex-end' : 'flex-start',
-            mb: 1,
-          }}
-        >
-          {selectedConv.usersConversation.length > 2 &&
-            msg.senderId !== user!.id && (
-              <Avatar sx={{ width: 32, height: 32, mr: 1 }} src={avatarUrl} />
-            )}
-          <Box
-            className={`p-2 rounded-2xl max-w-[70%] whitespace-pre-line ${
-              firstLoad ? 'opacity-0' : 'opacity-100'
-            } ${
-              msg.senderId === user!.id
-                ? 'bg-blue-500 text-white self-end ml-auto pl-4'
-                : 'bg-gray-200 text-black pr-4'
-            }
-            ${isPreviousSameSender && !showDate && isMine && 'rounded-se-sm'}
-            ${isNextSameSender && isMine && 'rounded-ee-sm'}
-            ${isPreviousSameSender && !showDate && !isMine && 'rounded-ss-sm'}
-            ${isNextSameSender && !isMine && 'rounded-es-sm'}`}
-          >
-            {selectedConv.usersConversation.length > 2 &&
-              (!isPreviousSameSender || showDate) && (
-                <Typography variant="body2" fontWeight="bold" mb={0.5}>
-                  {
-                    selectedConv.usersConversation.find(
-                      (uc) => uc.userId === msg.senderId
-                    )?.user.firstname
-                  }
-                </Typography>
-              )}
-            <Typography variant="body1">{msg.text}</Typography>
-            <Typography
-              variant="caption"
-              sx={{ display: 'block', mt: 0.5, opacity: 0.7 }}
-            >
-              {new Date(msg.createdAt).toLocaleTimeString(undefined, {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
-    );
-  }
-
-  function GroupAvatar({ user }: { user: any }) {
-    let avatarUrl = useAvatar(
-      user.user.id as string,
-      user.user.avatar as string,
-      token,
-      'user'
-    );
-    return <Avatar alt={user.user.firstname} src={avatarUrl} />;
-  }
 };
 
 export default Messages;

@@ -264,11 +264,13 @@ const WayCard: React.FC<WayCardProps> = ({
         onOpen={toggleDrawer(true)}
         PaperProps={{
           sx: {
-            maxHeight: isDesktop ? '100vh' : '85vh',
             borderTopLeftRadius: isDesktop ? 0 : 16,
             borderTopRightRadius: isDesktop ? 0 : 16,
             width: isDesktop ? 450 : '100%',
             overflow: 'hidden',
+
+            mt: isDesktop ? '64px' : '0', // Hauteur de votre header
+            height: isDesktop ? 'calc(100% - 64px)' : '85%', // Hauteur totale moins la hauteur du header
           },
         }}
       >

@@ -23,6 +23,7 @@ export type CONVERSATION = {
       id: string;
       conversationId: number;
       userId: string;
+      role: string;
       createdAt: string;
       user: {
         id: string;
