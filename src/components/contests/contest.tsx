@@ -323,6 +323,13 @@ const Contest = () => {
               color="textPrimary"
               sx={{ marginTop: 1 }}
             >
+              Salle : {contest.place.name}
+            </Typography>
+            <Typography
+              variant="body1"
+              color="textPrimary"
+              sx={{ marginTop: 1 }}
+            >
               Statut : {Status[contest.status as keyof typeof Status]}
             </Typography>
             <Typography

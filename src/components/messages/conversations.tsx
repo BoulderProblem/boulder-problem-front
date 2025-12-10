@@ -19,7 +19,6 @@ import { useUsers } from '@/services/useUsers';
 import { useAuth } from '@/services/useAuth';
 import { encryptGroupMessage } from '@/crypto';
 import { CONVERSATION } from '@/types/conversation';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
 import { ConversationList } from './ConversationList';
 import { ConversationHeader } from './ConversationHeader';

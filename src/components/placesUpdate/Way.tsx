@@ -15,6 +15,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { WAY } from '@/types/way';
+import SchemaPage from './SchemaPage';
 
 const Way = React.forwardRef((props: { wallId: string }, ref) => {
   const { ways, colors, difficulties, getWay, updateWay, addWay, deleteWay } =
@@ -26,6 +27,8 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
   useEffect(() => {}, []);
   // close modals
 
+  const [transformedImage, setTransformedImage] = useState('');
+
   const formikWay = useFormik({
     initialValues: {
       id: '',
@@ -35,6 +38,7 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
       routeSetter: '',
       style: '',
       wallId: null,
+      image: '',
     },
     validationSchema: Yup.object({
       name: Yup.string().required('Un nom de voie est requis'),
@@ -89,11 +93,18 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
   }
 
   const openModalWay = (id?: number) => {
+    setTransformedImage('');
     if (id) {
       getWay(id).then((response) => {
         setWayId(response.id);
         setOpenAddWay(true);
-        formikWay.setValues(response);
+        formikWay.setValues({
+          ...response,
+          image: response.image || '',
+        });
+        if (response.image) {
+          setTransformedImage(response.image);
+        }
       });
     } else {
       setOpenAddWay(true);
@@ -103,14 +114,19 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
 
   // add way
   function handleAddWay(values: any) {
+    const wayData = {
+      ...values,
+      ...(transformedImage && { image: transformedImage }),
+    };
+
     if (values.id) {
       // update Way
-      updateWay(values.id, values);
+      updateWay(values.id, wayData);
       handleClose();
     } else {
-      //  crate way
-      values.wallId = props.wallId;
-      addWay(values);
+      // create way
+      wayData.wallId = props.wallId;
+      addWay(wayData);
       handleClose();
     }
   }
@@ -220,7 +236,7 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
       <Dialog
         open={openAddWay}
         onClose={handleClose}
-        maxWidth={'xs'}
+        maxWidth={'xl'}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
         PaperProps={{
@@ -246,53 +262,58 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
               value={formikWay.values.name}
               onChange={formikWay.handleChange}
               className="p-2.5"
+              sx={{ margin: '0 !important' }}
             />
             {formikWay.errors.name && formikWay.touched.name && (
               <p style={{ color: '#ff4444' }}>{formikWay.errors.name}</p>
             )}
-            <TextField
-              id="standard-select-currency"
-              select
-              fullWidth
-              label="Couleur"
-              variant="standard"
-              name="colorId"
-              value={formikWay.values.colorId}
-              onChange={formikWay.handleChange}
-            >
-              {colors &&
-                colors.map((color: any) => (
-                  <MenuItem key={color.id} value={color.id}>
-                    {color.label}
-                  </MenuItem>
-                ))}
-            </TextField>
-            {formikWay.errors.colorId && formikWay.touched.colorId && (
-              <p style={{ color: '#ff4444' }}>{formikWay.errors.colorId}</p>
-            )}
-            <TextField
-              id="standard-select-currency"
-              select
-              fullWidth
-              label="Difficultée"
-              variant="standard"
-              name="difficultyId"
-              value={formikWay.values.difficultyId}
-              onChange={formikWay.handleChange}
-            >
-              {difficulties &&
-                difficulties.map((difficulty: any) => (
-                  <MenuItem key={difficulty.id} value={difficulty.id}>
-                    {difficulty.label}
-                  </MenuItem>
-                ))}
-            </TextField>
-            {formikWay.errors.difficultyId &&
-              formikWay.touched.difficultyId && (
-                <p style={{ color: '#ff4444' }}>
-                  {formikWay.errors.difficultyId}
-                </p>
+            <Box className="flex gap-4">
+              <TextField
+                id="standard-select-currency"
+                select
+                fullWidth
+                label="Couleur"
+                variant="standard"
+                name="colorId"
+                value={formikWay.values.colorId}
+                onChange={formikWay.handleChange}
+                sx={{ margin: '0 !important' }}
+              >
+                {colors &&
+                  colors.map((color: any) => (
+                    <MenuItem key={color.id} value={color.id}>
+                      {color.label}
+                    </MenuItem>
+                  ))}
+              </TextField>
+              {formikWay.errors.colorId && formikWay.touched.colorId && (
+                <p style={{ color: '#ff4444' }}>{formikWay.errors.colorId}</p>
               )}
+              <TextField
+                id="standard-select-currency"
+                select
+                fullWidth
+                label="Difficultée"
+                variant="standard"
+                name="difficultyId"
+                value={formikWay.values.difficultyId}
+                onChange={formikWay.handleChange}
+                sx={{ margin: '0 !important' }}
+              >
+                {difficulties &&
+                  difficulties.map((difficulty: any) => (
+                    <MenuItem key={difficulty.id} value={difficulty.id}>
+                      {difficulty.label}
+                    </MenuItem>
+                  ))}
+              </TextField>
+              {formikWay.errors.difficultyId &&
+                formikWay.touched.difficultyId && (
+                  <p style={{ color: '#ff4444' }}>
+                    {formikWay.errors.difficultyId}
+                  </p>
+                )}
+            </Box>
             <TextField
               id="standard-basic"
               label="Ouvreur"
@@ -302,6 +323,7 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
               value={formikWay.values.routeSetter}
               onChange={formikWay.handleChange}
               className="p-2.5"
+              sx={{ margin: '0 !important' }}
             />
             {formikWay.errors.routeSetter && formikWay.touched.routeSetter && (
               <p style={{ color: '#ff4444' }}>{formikWay.errors.routeSetter}</p>
@@ -315,10 +337,12 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
               value={formikWay.values.style}
               onChange={formikWay.handleChange}
               className="p-2.5"
+              sx={{ margin: '0 !important' }}
             />
             {formikWay.errors.style && formikWay.touched.style && (
               <p style={{ color: '#ff4444' }}>{formikWay.errors.style}</p>
             )}
+            <SchemaPage onImageProcessed={setTransformedImage} />
           </Box>
         </DialogContent>
         <DialogActions>

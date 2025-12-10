@@ -323,6 +323,13 @@ export default function App() {
           },
         },
       },
+      MuiDialog: {
+        styleOverrides: {
+          paper: {
+            borderRadius: '16px', // Ajustez la valeur selon vos besoins
+          },
+        },
+      },
     },
   });
 

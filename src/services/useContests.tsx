@@ -10,15 +10,16 @@ import axiosClient from '../axios-client';
 import { RANKING } from '@/types/ranking';
 import { WAY } from '@/types/way';
 import { useAuth } from './useAuth';
+import { CONTEST } from '@/types/contest';
 
 let baseUrl = import.meta.env.VITE_URL;
 
 interface ContestsContextType {
   // We defined the Contest type in `index.d.ts`, but it's
   // a simple object with email, name and password.
-  contests: any;
+  contests: CONTEST[];
   myContests: any;
-  contest: any;
+  contest: CONTEST;
   contestWays: any;
   contestUsers: any;
   contestRanking: RANKING[] | undefined;
