@@ -147,7 +147,7 @@ const PlaceZone = () => {
                   gap: 2,
                   overflow: 'auto',
                   p: 2,
-                  maxHeight: '70vh',
+                  maxHeight: '400px',
                 }}
               >
                 {ways &&

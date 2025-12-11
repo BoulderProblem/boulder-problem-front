@@ -187,6 +187,7 @@ const PlaceHeader = (props: any) => {
                 onClick={() => updatePlace(place.id)}
                 sx={{
                   maxWidth: '200px',
+                  color: 'white !important',
                   backgroundColor: 'var(--primary-600)', // si ta couleur Tailwind est en CSS var
                   '&:hover': {
                     backgroundColor: 'var(--primary-700)',

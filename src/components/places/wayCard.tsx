@@ -29,6 +29,7 @@ import { useLocation } from 'react-router';
 import CommentCard from '../posts/CommentCard';
 import { useAuth } from '@/services/useAuth';
 import MessageInput from '../posts/MessageInput';
+import { useAvatar } from '@/hooks/useAvatar';
 
 const optionsValid = [
   { id: 'notvalid', label: 'Non validé', icon: <PanoramaFishEyeIcon /> },
@@ -65,7 +66,10 @@ const WayCard: React.FC<WayCardProps> = ({
 
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md')); // md = >= 900px
-
+  let wayUrl = '';
+  if (way.image) {
+    wayUrl = useAvatar(way.id.toString(), way.id.toString(), token, 'way');
+  }
   const wayClickNote = (wayId: number) => {
     setWayId(wayId);
     setOpenNote(true);
@@ -148,6 +152,9 @@ const WayCard: React.FC<WayCardProps> = ({
         sx={{
           minWidth: 250,
           borderLeft: `6px solid ${way.color.color}`,
+          backgroundImage: `url(${wayUrl})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
           borderRadius: 6,
           boxShadow: 3,
           flexShrink: 0,
@@ -158,8 +165,13 @@ const WayCard: React.FC<WayCardProps> = ({
             e.stopPropagation();
             wayClickValid(way.id);
           }}
+          sx={{
+            backgroundColor: way.image ? 'rgba(0, 0, 0, 0.3)' : '',
+          }}
         >
-          <CardContent sx={{ height: '100%' }}>
+          <CardContent
+            sx={{ height: '100%', color: way.image ? 'white' : 'inherit' }}
+          >
             <Box
               display="flex"
               alignItems="center"
@@ -168,13 +180,9 @@ const WayCard: React.FC<WayCardProps> = ({
               marginBottom={1}
             >
               {location.pathname.includes('contests') ? (
-                <Box display="flex" alignItems="center" gap={0.5}>
-                  mur: {way.name}
-                </Box>
+                <Typography variant="body2">mur: {way.name}</Typography>
               ) : (
-                <Box display="flex" alignItems="center" gap={0.5}>
-                  {way.name}
-                </Box>
+                <Typography variant="body2">{way.name}</Typography>
               )}
               <Box display="flex" alignItems="center" gap={0.5}>
                 {!way.valid && <PanoramaFishEyeIcon />}
@@ -195,15 +203,10 @@ const WayCard: React.FC<WayCardProps> = ({
                 salle: {way.wall!.zone.place.name}
               </Box>
             ) : null}
-            <Typography variant="body2" color="text.secondary" className="pt-1">
+            <Typography variant="body2" className="pt-1">
               <BuildIcon /> {way.routeSetter}
             </Typography>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              className="pt-3"
-              component="div"
-            >
+            <Typography variant="body2" className="pt-3" component="div">
               <Box display="flex" alignItems="center" gap={2}>
                 <Box display="flex" alignItems="center" gap={0.5}>
                   <SignalCellularAltIcon /> {way.difficulty.label}

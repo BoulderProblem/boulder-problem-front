@@ -13,6 +13,7 @@ import {
   InputAdornment,
   Grid,
   Avatar,
+  Button,
 } from '@mui/material';
 import { MobileTimePicker } from '@mui/x-date-pickers/MobileTimePicker';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
@@ -384,16 +385,24 @@ const Place = (props: any) => {
                   </Grid>
 
                   <Grid size={4}>
-                    <div className="flex justify-evenly">
-                      <div>
-                        <button
-                          className="btn text-white bg-primary-600 hover:bg-primary-700"
-                          onClick={openModal}
-                        >
-                          Horaires
-                        </button>
-                      </div>
-                    </div>
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      onClick={openModal}
+                      sx={{
+                        maxWidth: '200px',
+                        color: 'white !important',
+                        backgroundColor: 'var(--primary-600)', // si ta couleur Tailwind est en CSS var
+                        '&:hover': {
+                          backgroundColor: 'var(--primary-700)',
+                        },
+                        borderRadius: '10px',
+                        textTransform: 'none',
+                        fontWeight: 600,
+                      }}
+                    >
+                      Horaires
+                    </Button>
                   </Grid>
                 </Grid>
                 <Grid container spacing={2}>
@@ -619,14 +628,24 @@ const Place = (props: any) => {
                 </Grid>
 
                 <div className="flex justify-evenly">
-                  <div>
-                    <button
-                      className="btn text-white bg-primary-600 hover:bg-primary-700"
-                      onClick={handleSubmit}
-                    >
-                      Enregistrer
-                    </button>
-                  </div>
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    onClick={handleSubmit}
+                    sx={{
+                      maxWidth: '200px',
+                      color: 'white !important',
+                      backgroundColor: 'var(--primary-600)', // si ta couleur Tailwind est en CSS var
+                      '&:hover': {
+                        backgroundColor: 'var(--primary-700)',
+                      },
+                      borderRadius: '10px',
+                      textTransform: 'none',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Enregistrer
+                  </Button>
                 </div>
               </form>
             </Grid>
