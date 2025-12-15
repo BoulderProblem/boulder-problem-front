@@ -43,7 +43,6 @@ const Place = (props: any) => {
 
   const [inputs, setInputs] = useState<PLACE | null>(null);
   const [openHours, setOpenHours] = useState(false);
-  let avatarUrl;
 
   const iconPerson = new L.Icon({
     iconUrl: icon,
@@ -56,7 +55,6 @@ const Place = (props: any) => {
     getPlace(parseInt(props.id || '0')).then((response: PLACE) => {
       setInputs(response);
       initHoraires(response.hours);
-      avatarUrl = useAvatar(response.id.toString(), '', token, 'place');
     });
     getPlaceZones(parseInt(props.id || '0'));
     getUsers('', 1);
@@ -317,57 +315,14 @@ const Place = (props: any) => {
     <div>
       {inputs ? (
         <div>
-          <div className="mt-5">
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 3, sm: 3 }}>
-                <div className="h-full flex items-center justify-end">
-                  <div className="w-[6rem] h-[6rem] avatar">
-                    {inputs && inputs.logo ? (
-                      <div className="relative group overflow-hidden p-1">
-                        <Avatar
-                          src={avatarUrl}
-                          alt="Profile"
-                          sx={{
-                            width: 72,
-                            height: 72,
-                          }}
-                        />
-                        <div className="absolute flex bottom-0 right-0 !w-10 !h-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <ImageCropUpload
-                            onImageCropped={(croppedBlob) => {
-                              //save image
-                              saveLogo(croppedBlob);
-                              // Tu peux l'envoyer à un serveur ou le prévisualiser
-                            }}
-                          />
-                        </div>
-                      </div>
-                    ) : (
-                      <ImageCropUpload
-                        onImageCropped={(croppedBlob) => {
-                          //save image
-                          saveLogo(croppedBlob);
-                          // Tu peux l'envoyer à un serveur ou le prévisualiser
-                        }}
-                        className="w-full"
-                      />
-                    )}
-                  </div>
-                </div>
-              </Grid>
-              <Grid size={{ xs: 6, sm: 6 }}>
-                <h1 className="text-center my-5">{inputs.name || ''}</h1>
-              </Grid>
-              <Grid size={{ xs: 3, sm: 3 }}>
-                <div className="h-full m-auto ">
-                  <p className="font-bold text-lg">
-                    {place ? place.favoriteCount : 0}
-                  </p>{' '}
-                  favoris
-                </div>
-              </Grid>
-            </Grid>
-          </div>
+          {place && (
+            <Header
+              inputs={inputs}
+              saveLogo={saveLogo}
+              place={place}
+              token={token}
+            />
+          )}
           <Grid container spacing={2} columns={{ xs: 1, sm: 12 }}>
             <Grid size={8} className="p-6">
               <form className="space-y-4 md:space-y-6">
@@ -792,5 +747,67 @@ const Place = (props: any) => {
     </div>
   );
 };
+interface HeaderProps {
+  inputs: any; // Remplacez 'any' par le type approprié
+  saveLogo: (blob: Blob | null) => void;
+  place: PLACE;
+  token: string;
+}
 
+const Header: React.FC<HeaderProps> = ({ inputs, saveLogo, place, token }) => {
+  const avatarUrl = useAvatar(place.id.toString(), '', token, 'place');
+  return (
+    <div className="mt-5">
+      <Grid container spacing={2}>
+        <Grid size={{ xs: 3, sm: 3 }}>
+          <div className="h-full flex items-center justify-end">
+            <div className="w-[6rem] h-[6rem] avatar">
+              {inputs && inputs.logo ? (
+                <div className="relative group overflow-hidden p-1">
+                  <Avatar
+                    src={avatarUrl}
+                    alt="Profile"
+                    sx={{
+                      width: 72,
+                      height: 72,
+                    }}
+                  />
+                  <div className="absolute flex bottom-0 right-0 !w-10 !h-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <ImageCropUpload
+                      onImageCropped={(croppedBlob) => {
+                        //save image
+                        saveLogo(croppedBlob);
+                        // Tu peux l'envoyer à un serveur ou le prévisualiser
+                      }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <ImageCropUpload
+                  onImageCropped={(croppedBlob) => {
+                    //save image
+                    saveLogo(croppedBlob);
+                    // Tu peux l'envoyer à un serveur ou le prévisualiser
+                  }}
+                  className="w-full"
+                />
+              )}
+            </div>
+          </div>
+        </Grid>
+        <Grid size={{ xs: 6, sm: 6 }}>
+          <h1 className="text-center my-5">{inputs.name || ''}</h1>
+        </Grid>
+        <Grid size={{ xs: 3, sm: 3 }}>
+          <div className="h-full m-auto ">
+            <p className="font-bold text-lg">
+              {place ? place.favoriteCount : 0}
+            </p>{' '}
+            favoris
+          </div>
+        </Grid>
+      </Grid>
+    </div>
+  );
+};
 export default Place; // Don’t forget to use export default!

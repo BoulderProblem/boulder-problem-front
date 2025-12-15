@@ -18,15 +18,26 @@ import {
   Delete as DeleteIcon,
 } from '@mui/icons-material';
 import React, { useRef, useState, useEffect } from 'react';
+import imageCompression from 'browser-image-compression';
+import { useAvatar } from '@/hooks/useAvatar';
+import { useAuth } from '@/services/useAuth';
 
 interface SchemaPageProps {
   onImageProcessed?: (imageDataUrl: string) => void;
+  imageUrl: string;
+  wayId: string;
 }
 
-export default function SchemaPage({ onImageProcessed }: SchemaPageProps) {
+export default function SchemaPage({
+  onImageProcessed,
+  imageUrl,
+  wayId,
+}: SchemaPageProps) {
+  const { token } = useAuth();
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const resultCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const loupeRef = useRef<HTMLCanvasElement | null>(null);
+  const [hasImageInResultCanvas, setHasImageInResultCanvas] = useState(false);
 
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [targetColor, setTargetColor] = useState({ r: 0, g: 120, b: 255 });
@@ -35,16 +46,95 @@ export default function SchemaPage({ onImageProcessed }: SchemaPageProps) {
     x: number;
     y: number;
   } | null>(null);
+  let avatarUrl = '';
+  if (wayId !== '') {
+    avatarUrl = useAvatar(wayId || '', wayId || '', token || '', 'way');
+  }
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    const loadAndDisplayImage = async () => {
+      if (!wayId) return;
+
+      try {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+
+        img.onload = () => {
+          const canvas = resultCanvasRef.current;
+          if (!canvas) return;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+
+          // Ajuster la taille du canvas à celle de l'image
+          canvas.width = img.width;
+          canvas.height = img.height;
+
+          // Dessiner l'image
+          ctx.drawImage(img, 0, 0);
+        };
+
+        if (
+          imageUrl &&
+          (imageUrl.startsWith('data:') || imageUrl.startsWith('http'))
+        ) {
+          img.src = imageUrl;
+        } else if (avatarUrl) {
+          setHasImageInResultCanvas(true);
+          img.src = avatarUrl;
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement de l'image:", error);
+      }
+    };
+
+    loadAndDisplayImage();
+  }, [wayId, imageUrl, avatarUrl]);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const img = new Image();
-    img.src = URL.createObjectURL(file);
-    img.onload = () => {
-      setImage(img);
-    };
+    try {
+      const options = {
+        maxSizeMB: 0.5, // Taille maximale du fichier en MB
+        maxWidthOrHeight: 800, // Taille maximale en largeur/hauteur
+        useWebWorker: true, // Utilise un Web Worker pour de meilleures performances
+      };
+
+      let compressedFile: File;
+      try {
+        compressedFile = await imageCompression(file, options);
+      } catch (error) {
+        console.error('Erreur lors de la compression:', error);
+        compressedFile = file; // En cas d'erreur, on garde le fichier original
+      }
+
+      // Créer une URL pour l'image compressée
+      const img = new Image();
+      const imgUrl = URL.createObjectURL(compressedFile);
+
+      img.onload = () => {
+        setImage(img);
+        // Convertir en base64 pour le stockage
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8); // Qualité à 80%
+          if (onImageProcessed) {
+            onImageProcessed(dataUrl);
+          }
+        }
+        URL.revokeObjectURL(imgUrl); // Nettoyer l'URL
+      };
+
+      img.src = imgUrl;
+    } catch (error) {
+      console.error("Erreur lors du traitement de l'image:", error);
+    }
   };
 
   const handleChange = (_event: Event, newValue: number | number[]) => {
@@ -198,6 +288,7 @@ export default function SchemaPage({ onImageProcessed }: SchemaPageProps) {
     }
 
     ctx.putImageData(imageData, 0, 0);
+    setHasImageInResultCanvas(true);
 
     if (onImageProcessed) {
       onImageProcessed(canvas.toDataURL('image/png'));
@@ -207,19 +298,6 @@ export default function SchemaPage({ onImageProcessed }: SchemaPageProps) {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box sx={{ mb: 4, textAlign: 'center' }}>
-        <Typography
-          variant="h4"
-          component="h1"
-          gutterBottom
-          sx={{
-            fontWeight: 700,
-            color: 'primary.main',
-            mb: 3,
-          }}
-        >
-          Éditeur de Schéma
-        </Typography>
-
         <Box
           sx={{
             display: 'flex',
@@ -254,6 +332,7 @@ export default function SchemaPage({ onImageProcessed }: SchemaPageProps) {
             onClick={() => {
               if (onImageProcessed) onImageProcessed('');
               setImage(null);
+              setHasImageInResultCanvas(false);
               const previewCtx = previewCanvasRef.current?.getContext('2d');
               const resultCtx = resultCanvasRef.current?.getContext('2d');
               if (previewCtx && previewCanvasRef.current) {
@@ -273,7 +352,6 @@ export default function SchemaPage({ onImageProcessed }: SchemaPageProps) {
                 );
               }
             }}
-            disabled={!image}
             sx={{ borderRadius: 2, px: 4, py: 1.5, minWidth: '200px' }}
           >
             Supprimer l'image
@@ -281,8 +359,8 @@ export default function SchemaPage({ onImageProcessed }: SchemaPageProps) {
         </Box>
       </Box>
 
-      {image && (
-        <Grid container spacing={2}>
+      <Grid container spacing={2}>
+        {image && (
           <Grid size={{ xs: 12, md: 6 }}>
             <Card
               sx={{
@@ -351,8 +429,9 @@ export default function SchemaPage({ onImageProcessed }: SchemaPageProps) {
               </CardContent>
             </Card>
           </Grid>
-
-          <Grid size={{ xs: 12, md: 6 }}>
+        )}
+        {(image || hasImageInResultCanvas) && (
+          <Grid size={{ xs: 12, md: image ? 6 : 12 }}>
             <Card
               sx={{
                 height: '100%',
@@ -365,31 +444,33 @@ export default function SchemaPage({ onImageProcessed }: SchemaPageProps) {
                 title="Résultat"
                 titleTypographyProps={{ variant: 'h6', fontWeight: 600 }}
                 action={
-                  <Box sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
-                    <Box
-                      sx={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 1,
-                        bgcolor: `rgb(${targetColor.r}, ${targetColor.g}, ${targetColor.b})`,
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        mr: 1.5,
-                      }}
-                    />
-                    <Box>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        display="block"
-                      >
-                        Couleur
-                      </Typography>
-                      <Typography variant="body2" fontWeight={500}>
-                        {targetColor.r}, {targetColor.g}, {targetColor.b}
-                      </Typography>
+                  image && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+                      <Box
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 1,
+                          bgcolor: `rgb(${targetColor.r}, ${targetColor.g}, ${targetColor.b})`,
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          mr: 1.5,
+                        }}
+                      />
+                      <Box>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          display="block"
+                        >
+                          Couleur
+                        </Typography>
+                        <Typography variant="body2" fontWeight={500}>
+                          {targetColor.r}, {targetColor.g}, {targetColor.b}
+                        </Typography>
+                      </Box>
                     </Box>
-                  </Box>
+                  )
                 }
               />
               <CardContent
@@ -414,36 +495,38 @@ export default function SchemaPage({ onImageProcessed }: SchemaPageProps) {
                   />
                 </Paper>
 
-                <Box sx={{ px: 3, pb: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-                    <ZoomIcon color="action" sx={{ mr: 1, fontSize: 20 }} />
-                    <Typography variant="body2" color="text.secondary">
-                      Tolérance de couleur
-                    </Typography>
-                  </Box>
-                  <Slider
-                    value={tolerance}
-                    onChange={handleChange}
-                    min={10}
-                    max={200}
-                    valueLabelDisplay="auto"
-                    valueLabelFormat={(value) => `${value}%`}
-                    sx={{
-                      '& .MuiSlider-thumb': {
-                        width: 16,
-                        height: 16,
-                        '&:hover, &.Mui-focusVisible': {
-                          boxShadow: '0 0 0 6px rgba(25, 118, 210, 0.16)',
+                {image && (
+                  <Box sx={{ px: 3, pb: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                      <ZoomIcon color="action" sx={{ mr: 1, fontSize: 20 }} />
+                      <Typography variant="body2" color="text.secondary">
+                        Tolérance de couleur
+                      </Typography>
+                    </Box>
+                    <Slider
+                      value={tolerance}
+                      onChange={handleChange}
+                      min={10}
+                      max={200}
+                      valueLabelDisplay="auto"
+                      valueLabelFormat={(value) => `${value}%`}
+                      sx={{
+                        '& .MuiSlider-thumb': {
+                          width: 16,
+                          height: 16,
+                          '&:hover, &.Mui-focusVisible': {
+                            boxShadow: '0 0 0 6px rgba(25, 118, 210, 0.16)',
+                          },
                         },
-                      },
-                    }}
-                  />
-                </Box>
+                      }}
+                    />
+                  </Box>
+                )}
               </CardContent>
             </Card>
           </Grid>
-        </Grid>
-      )}
+        )}
+      </Grid>
     </Container>
   );
 }

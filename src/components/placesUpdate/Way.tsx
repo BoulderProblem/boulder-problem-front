@@ -16,7 +16,6 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { WAY } from '@/types/way';
 import SchemaPage from './SchemaPage';
-import imageCompression from 'browser-image-compression';
 
 const Way = React.forwardRef((props: { wallId: string }, ref) => {
   const { ways, colors, difficulties, getWay, updateWay, addWay, deleteWay } =
@@ -115,54 +114,20 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
 
   // add way
   async function handleAddWay(values: any) {
-    try {
-      let compressedImage = values.image;
+    const wayData = {
+      ...values,
+      image: transformedImage,
+    };
 
-      // Si c'est une nouvelle image (pas une URL existante)
-      if (transformedImage && !transformedImage.startsWith('http')) {
-        const imageFile = await fetch(transformedImage)
-          .then((res) => res.blob())
-          .then(
-            (blob) => new File([blob], 'way-image.jpg', { type: 'image/jpeg' })
-          );
-
-        const options = {
-          maxSizeMB: 0.5, // Taille maximale du fichier en MB
-          maxWidthOrHeight: 1200, // Taille maximale en largeur/hauteur
-          useWebWorker: true, // Utilise un Web Worker pour de meilleures performances
-        };
-
-        try {
-          const compressedFile = await imageCompression(imageFile, options);
-          compressedImage = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(compressedFile);
-            reader.onload = () => resolve(reader.result as string);
-          });
-        } catch (error) {
-          console.error('Erreur lors de la compression:', error);
-          // En cas d'erreur, on garde l'image originale
-          compressedImage = transformedImage;
-        }
-      }
-
-      const wayData = {
-        ...values,
-        ...(transformedImage && { image: compressedImage }),
-      };
-
-      if (values.id) {
-        // update Way
-        updateWay(values.id, wayData);
-      } else {
-        // create way
-        wayData.wallId = props.wallId;
-        addWay(wayData);
-      }
-      handleClose();
-    } catch (error) {
-      console.error("Erreur lors de l'ajout de la voie:", error);
+    if (values.id) {
+      // update Way
+      updateWay(values.id, wayData);
+    } else {
+      // create way
+      wayData.wallId = props.wallId;
+      addWay(wayData);
     }
+    handleClose();
   }
 
   return (
@@ -376,7 +341,11 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
             {formikWay.errors.style && formikWay.touched.style && (
               <p style={{ color: '#ff4444' }}>{formikWay.errors.style}</p>
             )}
-            <SchemaPage onImageProcessed={setTransformedImage} />
+            <SchemaPage
+              onImageProcessed={setTransformedImage}
+              imageUrl={formikWay.values.image}
+              wayId={formikWay.values.id}
+            />
           </Box>
         </DialogContent>
         <DialogActions>

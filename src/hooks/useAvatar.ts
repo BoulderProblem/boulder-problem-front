@@ -28,7 +28,7 @@ export function useAvatar(
         url = `${baseUrl}/places/${id}/logo?size=100`;
       }
       if (kind === 'way') {
-        url = `${baseUrl}/ways/${id}/image?size=300`;
+        url = `${baseUrl}/ways/${id}/image?size=500`;
         console.log(url);
       }
       if (kind === 'user') {
