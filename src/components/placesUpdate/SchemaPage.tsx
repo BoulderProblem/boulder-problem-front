@@ -48,7 +48,7 @@ export default function SchemaPage({
   } | null>(null);
   let avatarUrl = '';
   if (wayId !== '') {
-    avatarUrl = useAvatar(wayId || '', wayId || '', token || '', 'way');
+    avatarUrl = useAvatar(wayId || '', imageUrl, token || '', 'way');
   }
 
   useEffect(() => {

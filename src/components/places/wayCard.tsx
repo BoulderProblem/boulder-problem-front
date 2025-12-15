@@ -68,7 +68,7 @@ const WayCard: React.FC<WayCardProps> = ({
   const isDesktop = useMediaQuery(theme.breakpoints.up('md')); // md = >= 900px
   let wayUrl = '';
   if (way.image) {
-    wayUrl = useAvatar(way.id.toString(), way.id.toString(), token, 'way');
+    wayUrl = useAvatar(way.id.toString(), way.image, token, 'way');
   }
   const wayClickNote = (wayId: number) => {
     setWayId(wayId);

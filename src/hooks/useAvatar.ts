@@ -15,8 +15,8 @@ export function useAvatar(
   useEffect(() => {
     if (!avatarName) return;
 
-    if (avatarCache[kind + '_' + id]) {
-      setUrl(avatarCache[kind + '_' + id]);
+    if (avatarCache[kind + '_' + id + '_' + avatarName]) {
+      setUrl(avatarCache[kind + '_' + id + '_' + avatarName]);
       return;
     }
 
