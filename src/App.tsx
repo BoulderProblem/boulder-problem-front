@@ -32,7 +32,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import Footer from './components/Footer';
 import { useAuth } from './services/useAuth';
 import { useAvatar } from './hooks/useAvatar';
-import logo from './assets/logo.svg';
+import Logo from './assets/logo.svg?react';
 
 // Adapter React Router pour Toolpad
 function useReactRouterAdapter(): Router {
@@ -347,10 +347,14 @@ export default function App() {
           branding={{
             title: 'Boulder Problem',
             logo: (
-              <img
-                src={logo}
-                alt="Boulder Problem"
-                style={{ width: 32, height: 32, borderRadius: '20%' }}
+              <Logo
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '20%',
+                  color: '#66a6bb',
+                }}
+                title="Boulder Problem"
               />
             ),
           }}
