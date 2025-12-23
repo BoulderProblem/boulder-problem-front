@@ -118,7 +118,6 @@ const Way = React.forwardRef((props: { wallId: string }, ref) => {
       ...values,
       image: transformedImage,
     };
-
     if (values.id) {
       // update Way
       updateWay(values.id, wayData);

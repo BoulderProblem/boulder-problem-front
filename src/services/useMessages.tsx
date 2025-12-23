@@ -224,6 +224,8 @@ export function MessagesProvider({
 
         let decryptedMessages = await Promise.all(
           response.data.map(async (conv: any) => {
+            console.log(priv);
+            console.log(pubSrvKey);
             for (let group of conv.groupKeys) {
               group.privKey = await decryptGroupKeyFromServer(
                 group.ciphertext,

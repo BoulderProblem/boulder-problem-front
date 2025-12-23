@@ -25,6 +25,7 @@ interface AuthContextType {
   nbMessagesUnread: number;
   error?: any;
   SetToken: (token: string) => void;
+  SetPriv: (priv: string) => void;
   login: (email: string, password: string) => void;
   loginFirebase: (token: string, id: string) => Promise<void>;
   signUp: (email: string, name: string, password: string) => void;
@@ -35,6 +36,7 @@ interface AuthContextType {
     password: string
   ) => Promise<void>;
   SetNbMessagesUnread: (nb: number, reset: boolean) => void;
+  getPubSrvKey: () => Promise<void>;
   logout: () => void;
   getStats: () => void;
 }
@@ -124,6 +126,10 @@ export function AuthProvider({
     let pubSrv = localStorage.getItem('PUBSRV');
     setPriv(priv ? priv : '');
     setPubSrvKey(pubSrv ? pubSrv : '');
+    if (!pubSrv) {
+      getPubSrvKey();
+    }
+
     if (token) {
       axiosClient
         .get(`${baseUrl}/user`)
@@ -143,6 +149,11 @@ export function AuthProvider({
   function SetToken(token: string) {
     localStorage.setItem('ACCESS_TOKEN', token);
     setToken(token);
+  }
+
+  function SetPriv(priv: string) {
+    localStorage.setItem('PRIV', priv);
+    setPriv(priv);
   }
 
   function login(email: string, password: string) {
@@ -204,6 +215,12 @@ export function AuthProvider({
           });
         });
       });
+  }
+
+  async function getPubSrvKey() {
+    return await axiosClient.get(`${baseUrl}/srv_key`).then((res) => {
+      return setPubSrvKey(res.data.pubSrvKey);
+    });
   }
 
   async function forgotPassword(email: string) {
@@ -313,6 +330,7 @@ export function AuthProvider({
       nbMessagesUnread,
       error,
       SetToken,
+      SetPriv,
       login,
       loginFirebase,
       forgotPassword,
@@ -321,6 +339,7 @@ export function AuthProvider({
       logout,
       getStats,
       SetNbMessagesUnread,
+      getPubSrvKey,
     }),
     [user, stats, token, priv, pubSrvKey, nbMessagesUnread, loading, error]
   );
