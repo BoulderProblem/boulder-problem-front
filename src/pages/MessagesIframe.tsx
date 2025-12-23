@@ -15,7 +15,7 @@ const MessagesIframe = () => {
 
   useEffect(() => {
     function onMessage(event: MessageEvent) {
-      if (event.origin !== 'https://app.example') return;
+      if (event.origin !== 'https://boulder-problem.chabs.fr') return;
       if (event.data?.type !== 'ANDROID_INIT') return;
       if (initialized.current) return;
 
