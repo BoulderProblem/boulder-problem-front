@@ -167,7 +167,6 @@ const Main = () => {
   ];
 
   const router = createBrowserRouter(route);
-
   return <RouterProvider router={router} />;
 };
 
